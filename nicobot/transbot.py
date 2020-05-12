@@ -63,7 +63,7 @@ class Config:
     TODO Find a better way to log requests.Response objects
 """
 def _logResponse( r ):
-    logging.debug("<<< Response : %s\tbody: %.60s[...]", repr(r), r.content )
+    logging.debug("<<< Response : %s\tbody: %s", repr(r), r.content )
 
 
 
@@ -99,7 +99,7 @@ class TransBot(Bot):
         else:
             self.languages = self.loadLanguages(file=languages_file)
         # How many different languages to try to translate to
-        self.tries = 3
+        self.tries = 5
 
         # After self.languages has been set, we can iterate over to translate keywords
         kws = self.loadKeywords( keywords=keywords, file=keywords_file, limit=LIMIT_KEYWORDS )
@@ -226,7 +226,7 @@ class TransBot(Bot):
             target: Target language short code (e.g. 'en')
             source: Source language short code ; if not given will try to guess
 
-            Returns the plain translated message or None if no translation could be found.
+            Returns the full JSON translation as per the IBM cloud service or None if no translation could be found.
         """
 
         # curl -X POST -u "apikey:{apikey}" --header "Content-Type: application/json" --data "{\"text\": [\"Hello, world! \", \"How are you?\"], \"model_id\":\"en-es\"}" "{url}/v3/translate?version=2018-05-01"
@@ -247,9 +247,7 @@ class TransBot(Bot):
         # TODO Log full response when it's usefull (i.e. when a message is going to be answered)
         _logResponse(r)
         if r.status_code == requests.codes.ok:
-            j = r.json()
-            translation = j['translations']
-            return translation[0]
+            return r.json()
         # A 404 can happen if there is no translation available
         elif r.status_code == requests.codes.not_found:
             return None
@@ -283,8 +281,10 @@ class TransBot(Bot):
             for lang in langs:
                 # Gets a translation in this random language
                 translation = self.translate( message, target=lang['language'] )
-                if translation:
-                    translated = translation['translation'].rstrip()
+                logging.debug("Got translation in '%s' : %s",lang['language'],repr(translation))
+                if translation and len(translation['translations'])>0:
+                    translated = translation['translations'][0]['translation'].rstrip()
+                    # Note : the detected language is in translation['detected_language']
                     try:
                         lang_emoji = flag.flag(lang['language'])
                     except ValueError:
