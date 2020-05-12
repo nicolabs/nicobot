@@ -103,6 +103,7 @@ class TransBot(Bot):
 
         # After self.languages has been set, we can iterate over to translate keywords
         kws = self.loadKeywords( keywords=keywords, file=keywords_file, limit=LIMIT_KEYWORDS )
+        # And build a regular expression pattern with all keywords and their translations
         pattern = kws[0]
         for keyword in kws[1:]:
             pattern = pattern + r'|' + keyword
@@ -187,6 +188,7 @@ class TransBot(Bot):
 
         kws = []
 
+        # TODO remove duplicates
         for keyword in keywords:
             logging.debug("Init %s...",keyword)
             kws = kws + [ keyword ]
@@ -197,9 +199,11 @@ class TransBot(Bot):
                     break
                 try:
                     translation = self.translate( keyword, target=lang['language'] )
-                    translated = translation['translation'].rstrip()
-                    logging.debug("Adding translation %s in %s for %s", translated, lang, keyword)
-                    kws = kws + [ translated ]
+                    if translation:
+                        for t in translation['translations']:
+                            translated = t['translation'].rstrip()
+                            logging.debug("Adding translation %s in %s for %s", t, lang, keyword)
+                            kws = kws + [ translated ]
                 except:
                     logging.exception("Could not translate %s into %s", keyword, repr(lang))
                     pass
