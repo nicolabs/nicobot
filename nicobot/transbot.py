@@ -47,7 +47,7 @@ class Config:
             'ibmcloud_apikey': None,
             'input_file': sys.stdin,
             'keywords': [],
-            'keywords_file': None,
+            'keywords_files': [],
             'languages': [],
             'languages_file': None,
             'locale': None,
@@ -76,10 +76,10 @@ class TransBot(Bot):
     """
 
 
-    def __init__( self, chatter, ibmcloud_url, ibmcloud_apikey, keywords=None, keywords_file=None, languages=None, languages_file=None, shutdown_pattern=r'bye nicobot' ):
+    def __init__( self, chatter, ibmcloud_url, ibmcloud_apikey, keywords=[], keywords_files=[], languages=None, languages_file=None, shutdown_pattern=r'bye nicobot' ):
         """
             keywords: list of keywords that will trigger this bot (in any supported language)
-            keywords_file: JSON file where to find the list of keywords (or write into)
+            keywords_files: list of JSON files with each a list of keywords (or write into)
             languages: List of supported languages in this format : https://cloud.ibm.com/apidocs/language-translator#list-identifiable-languages
             languages_file: JSON file where to find the list of target languages (or write into)
             shutdown_pattern: a regular expression pattern that terminates this bot
@@ -101,8 +101,8 @@ class TransBot(Bot):
         # How many different languages to try to translate to
         self.tries = 5
 
-        # After self.languages has been set, we can iterate over to translate keywords
-        kws = self.loadKeywords( keywords=keywords, file=keywords_file, limit=LIMIT_KEYWORDS )
+        # After self.languages has been set, we can iterate over it to translate keywords
+        kws = self.loadKeywords( keywords=keywords, files=keywords_files, limit=LIMIT_KEYWORDS )
         # And build a regular expression pattern with all keywords and their translations
         pattern = kws[0]
         for keyword in kws[1:]:
@@ -162,31 +162,30 @@ class TransBot(Bot):
             r.raise_for_status()
 
 
-    def loadKeywords( self, keywords=[], file=None, limit=None ):
+    def loadKeywords( self, keywords=[], files=[], limit=None ):
         """
             Generates a list of translations from a list of keywords.
 
             Requires self.languages to be filled before !
 
-            If 'keywords' is not empty, will download the translations from IBM Cloud into 'file'.
-            Otherwise, will try to read from 'file', falling back to IBM Cloud and saving it into 'file' if it fails.
+            If 'keywords' is not empty, will download the translations from IBM Cloud
+            and if a single 'file' was given, will save them into it.
+            Otherwise, will read from all the given 'files'
         """
 
         # TODO It starts with the same code as in loadLanguages : make it a function
 
-        # Gets the list from a local file
-        if not keywords or len(keywords) == 0:
-            logging.debug("Reading from %s..." % file)
-            try:
-                with open(file,'r') as f:
-                    j = json.load(f)
-                    logging.debug("Read keyword list : %s",repr(j))
-                    return j
-            except:
-                raise ValueError("Could not read keywords list from %s and no keyword given" % file)
-                pass
-
         kws = []
+
+        # Gets the list from a local file
+        if len(keywords) == 0:
+            for file in files:
+                logging.debug("Reading from %s..." % file)
+                # May throw an error
+                with open(file,'r') as f:
+                    kws = kws + json.load(f)
+            logging.debug("Read keyword list : %s",repr(kws))
+            return kws
 
         # TODO remove duplicates
         for keyword in keywords:
@@ -209,16 +208,17 @@ class TransBot(Bot):
                     pass
         logging.debug("Keywords : %s", repr(kws))
 
-        if file:
+        # TODO ? Save the translations for each keyword into a separate file ?
+        if files and len(files) == 1:
             try:
-                logging.debug("Saving keywords translations into %s...", file)
-                with open(file,'w') as f:
+                logging.debug("Saving keywords translations into %s...", files[0])
+                with open(files[0],'w') as f:
                     json.dump(kws,f)
             except:
-                logging.exception("Could not save keywords translations into %s", file)
+                logging.exception("Could not save keywords translations into %s", files[0])
                 pass
         else:
-            logging.debug("Not saving keywords as no file was given")
+            logging.debug("Not saving keywords as a (single) file was not given")
 
         return kws
 
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     parser.add_argument('--verbosity', '-V', dest='verbosity', default=config.verbosity, help="Log level")
     # Core arguments
     parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="Keyword bot should react to (will write them into the file specified with --keywords-file)")
-    parser.add_argument("--keywords-file", dest="keywords_file", help="File to load from and write keywords to")
+    parser.add_argument("--keywords-files", dest="keywords_files", action="append", help="File to load from and write keywords to")
     parser.add_argument("--language", "-l", dest="languages", action="append", help="Target language")
     parser.add_argument("--languages-file", dest="languages_file", help="File to load from and write languages to")
     parser.add_argument("--shutdown", dest="shutdown", help="Shutdown keyword regular expression pattern")
@@ -425,16 +425,30 @@ if __name__ == '__main__':
 
     # config.keywords is used if given
     # else, check for an existing keywords_file
-    if not config.keywords_file:
+    if len(config.keywords_files) == 0:
         # As a last resort, use 'keywords.json' in the config directory
-        config.keywords_file = os.path.join(config.config_dir,'keywords.json')
+        config.keywords_files = [ os.path.join(config.config_dir,'keywords.json') ]
     # Convenience check to better warn the user
     if not config.keywords:
-        try:
-            with open(config.keywords_file,'r') as f:
-                pass
-        except:
-            raise ValueError("Could not open %s : please generate with --keywords first or create the file indicated with --keywords-file"%config.keywords_file)
+        found_keywords_file = []
+        for keywords_file in config.keywords_files:
+            try:
+                with open(keywords_file,'r') as f:
+                    found_keywords_file = found_keywords_file + [keywords_file]
+                    continue
+            except:
+                # Also allows filenames relative to config_dir
+                try:
+                    relative_filename = os.path.join(config.config_dir,keywords_file)
+                    with open(relative_filename,'r') as f:
+                        found_keywords_file = found_keywords_file + [relative_filename]
+                        continue
+                except:
+                    pass
+        if len(found_keywords_file) > 0:
+            config.keywords_files = found_keywords_file
+        else:
+            raise ValueError("Could not open any keywords file in %s : please generate with --keywords first or create the file indicated with --keywords-file"%repr(config.keywords_files))
 
     # config.languages is used if given
     # else, check for an existing languages_file
@@ -475,7 +489,7 @@ if __name__ == '__main__':
     #
 
     TransBot(
-        keywords=config.keywords, keywords_file=config.keywords_file,
+        keywords=config.keywords, keywords_files=config.keywords_files,
         languages=config.languages, languages_file=config.languages_file,
         ibmcloud_url=config.ibmcloud_url, ibmcloud_apikey=config.ibmcloud_apikey,
         shutdown_pattern=config.shutdown,

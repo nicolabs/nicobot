@@ -1,3 +1,8 @@
+# A list of keywords files to load (if different from the default 'keywords.json')
+keywords_files:
+    - hello.keywords.json
+    - goodbye.keywords.json
+
 # IBM Cloud credentials for your 'Language Translator' service instance : get them from your
 # See detailed instructions : https://cloud.ibm.com/apidocs/language-translator
 ibmcloud_url: https://api.us-south.language-translator.watson.cloud.ibm.com/instances/6bbda3b3-d572-45e1-8c54-22d6ed9e52c2
