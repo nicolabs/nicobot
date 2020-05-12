@@ -104,9 +104,9 @@ class TransBot(Bot):
         # After self.languages has been set, we can iterate over it to translate keywords
         kws = self.loadKeywords( keywords=keywords, files=keywords_files, limit=LIMIT_KEYWORDS )
         # And build a regular expression pattern with all keywords and their translations
-        pattern = kws[0]
+        pattern = r'\b%s\b' % kws[0]
         for keyword in kws[1:]:
-            pattern = pattern + r'|' + keyword
+            pattern = pattern + r'|\b%s\b' % keyword
         # Built regular expression pattern that triggers an answer from this bot
         self.re_keywords = pattern
         # Regular expression pattern of messages that stop the bot
@@ -428,7 +428,8 @@ if __name__ == '__main__':
     if len(config.keywords_files) == 0:
         # As a last resort, use 'keywords.json' in the config directory
         config.keywords_files = [ os.path.join(config.config_dir,'keywords.json') ]
-    # Convenience check to better warn the user
+    # Convenience check to better warn the user and allow filenames relative to config_dir
+    # TODO Might probably be done in a more elegant way...
     if not config.keywords:
         found_keywords_file = []
         for keywords_file in config.keywords_files:
@@ -437,7 +438,7 @@ if __name__ == '__main__':
                     found_keywords_file = found_keywords_file + [keywords_file]
                     continue
             except:
-                # Also allows filenames relative to config_dir
+                # Allows filenames relative to config_dir
                 try:
                     relative_filename = os.path.join(config.config_dir,keywords_file)
                     with open(relative_filename,'r') as f:
