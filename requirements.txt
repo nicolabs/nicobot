@@ -1,0 +1,8 @@
+# Requirements for nicobot.py
+# https://requests.readthedocs.io/en/master/
+requests
+# https://github.com/cvzi/flag
+emoji-country-flag
+python-i18n
+# https://pyyaml.org/wiki/PyYAMLDocumentation
+pyyaml
