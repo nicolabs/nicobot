@@ -295,7 +295,7 @@ class TransBot(Bot):
                         lang_emoji= "🏳️‍🌈"
                     answer = "%s %s" % (translated,lang_emoji)
                     logging.debug(">> %s" % answer)
-                    self.chatter.send(answer)
+                    self.chatter.send( i18n.t('all_messages',message=answer) )
                     # Returns as soon as one translation was done
                     return
                 else:
@@ -309,7 +309,7 @@ class TransBot(Bot):
 
     def onExit( self ):
 
-        sent = self.chatter.send( i18n.t('Goodbye') )
+        sent = self.chatter.send( i18n.t('all_messages',message=i18n.t('Goodbye')) )
 
 
     def run( self ):
@@ -320,7 +320,7 @@ class TransBot(Bot):
             2. Waits for messages to translate
         """
 
-        self.chatter.send( i18n.t('Hello') )
+        self.chatter.send( i18n.t('all_messages',message=i18n.t('Hello')) )
         self.registerExitHandler()
         self.chatter.start(self)
 
@@ -416,7 +416,16 @@ if __name__ == '__main__':
     i18n.set('locale',config.locale.split('_')[0])
     logging.debug("i18n locale : %s"%i18n.get('locale'))
     i18n.set('filename_format', 'i18n.{locale}.{format}')    # Removing the namespace from keys is simpler for us
+    i18n.set('error_on_missing_translation',True)
     i18n.load_path.append(config.config_dir)
+
+    # These MUST be instanciated AFTER i18n has been configured !
+    try:
+        i18n.t('all_messages',message="")
+    except:
+        i18n.add_translation('all_messages',r'%{message}')
+    if not config.shutdown:
+        config.shutdown = i18n.t('all_messages',message=i18n.t('Shutdown'))
 
     if not config.ibmcloud_url:
         raise ValueError("Missing required parameter : --ibmcloud-url")
@@ -463,10 +472,6 @@ if __name__ == '__main__':
                 pass
         except:
             raise ValueError("Could not open %s : please remove --languages to generate it automatically or create the file indicated with --languages-file"%config.languages_file)
-
-    if not config.shutdown:
-        # This MUST be instanciated AFTER i18n has been configured !
-        config.shutdown = i18n.t('Shutdown')
 
     # Creates the chat engine depending on the 'backend' parameter
     if config.backend == "signal":

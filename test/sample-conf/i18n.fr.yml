@@ -1,4 +1,6 @@
 fr:
-    Hello: "🤟 nicobot paré 🤟"
+    # If present, this is a template to use for all messages
+    all_messages: 🤖 %{message}
+    Hello: nicobot paré 🤟
     Goodbye: A+ 👋
     Shutdown: couché nicobot
