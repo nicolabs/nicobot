@@ -26,7 +26,10 @@ See below for Signal requirements.
 ## Transbot
 
 *Transbot* is a chatbot interface to IBM Watson™ Language Translator service that translates messages.
-Whenever it sees a keyword in a conversation, *transbot* will translate the whole message into a random language.
+
+For instance, with the sample configuration in `test/sample-conf`, it will translate any message like `nicobot <message> in chinese` for instance or simply `nicobot  <message>` (into the current language).
+
+It can also automatically translate messages containing keywords into a random language. The sample configuration will make it translate any message featuring "Hello" or "Goodbye" in many languages.
 
 ### Quick start
 
@@ -53,7 +56,8 @@ Below are the most important configuration options :
 
 - **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot.py --keyword <a_keyword> --keyword <another_keyword> ...` a **first time with** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the default name.
-- **--language**, **--languages-file** : you should not need to use these options unless you only want to translate into a given set of languages. The first time the bot runs, it will download the list of supported languages into `languages.json` and reuse it afterwards (or the file indicated with `--languages-file`).
+- **--languages-file** : The first time the bot runs, it will download the list of supported languages into `languages.<locale>.json` and reuse it afterwards but you can give it a specific file with the set of languages you want. You can use `--locale` to set the desired locale.
+- **--locale** will select the locale to use for default translations (with no target language specified) and as the default parsing language for keywords.
 - **--ibmcloud-url** and **--ibmcloud-apikey** can be obtained from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
 - **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
 - **--username** selects the account to use to send and read message ; its format depends on the backend

@@ -21,6 +21,7 @@ import flag
 import yaml
 
 # Own classes
+from helpers import *
 from bot import Bot
 from console import ConsoleChatter
 from signalcli import SignalChatter
@@ -76,12 +77,17 @@ class TransBot(Bot):
     """
 
 
-    def __init__( self, chatter, ibmcloud_url, ibmcloud_apikey, keywords=[], keywords_files=[], languages=None, languages_file=None, shutdown_pattern=r'bye nicobot' ):
+    def __init__( self,
+        chatter, ibmcloud_url, ibmcloud_apikey,
+        keywords=[], keywords_files=[],
+        languages=[], languages_file=None, locale=re.split(r'[_-]',locale.getlocale()[0]),
+        shutdown_pattern=r'bye nicobot' ):
         """
             keywords: list of keywords that will trigger this bot (in any supported language)
             keywords_files: list of JSON files with each a list of keywords (or write into)
             languages: List of supported languages in this format : https://cloud.ibm.com/apidocs/language-translator#list-identifiable-languages
             languages_file: JSON file where to find the list of target languages (or write into)
+            locale: overrides the default locale ; tuple like : ('en','GB')
             shutdown_pattern: a regular expression pattern that terminates this bot
             chatter: the backend chat engine
             ibmcloud_url (required): IBM Cloud API base URL (e.g. 'https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx')
@@ -93,11 +99,11 @@ class TransBot(Bot):
         self.ibmcloud_apikey = ibmcloud_apikey
         self.chatter = chatter
 
-        # After IBM credentials have been set we can retrieve the list of supported languages
-        if languages:
-            self.languages = languages
-        else:
-            self.languages = self.loadLanguages(file=languages_file)
+        self.locale = locale
+        self.languages = languages
+        if languages_file:
+            # Only after IBM credentials have been set can we retrieve the list of supported languages
+            self.languages = self.loadLanguages(file=languages_file,locale=locale[0])
         # How many different languages to try to translate to
         self.tries = 5
 
@@ -113,7 +119,7 @@ class TransBot(Bot):
         self.re_shutdown = shutdown_pattern
 
 
-    def loadLanguages( self, force=False, file=None ):
+    def loadLanguages( self, force=False, file=None, locale='en' ):
         """
             Loads the list of known languages.
 
@@ -142,22 +148,41 @@ class TransBot(Bot):
             'Accept': 'application/json',
             'X-Watson-Learning-Opt-Out': 'true'
             }
+        # FIXME Since IBM API doesn't support an Accept-Language header to get the languages name in the locale, we need to query it again
         logging.debug(">>> GET %s, %s",url,repr(headers))
         r = requests.get(url, headers=headers, auth=('apikey',self.ibmcloud_apikey), timeout=TIMEOUT)
         _logResponse(r)
+
         if r.status_code == requests.codes.ok:
+            languages_root = r.json()
+            languages = languages_root['languages']
+
+            # IBM Cloud always returns language names in english
+            # So we need to translate them if the locale is different
+            if locale != 'en':
+                languages_names = [ l['name'] for l in languages ]
+                translations = self.translate(languages_names,source='en',target=locale)
+                logging.debug("Got the following translations for languages names : %s",repr(translations))
+                # From my tests seems that IBM cloud returns the original text if it could not translate it
+                # so the output list will always be the same size as the input one
+                t = 0
+                for language in languages:
+                    language['name'] = translations['translations'][t]['translation']
+                    t = t + 1
+
             # Save it for the next time
             if file:
                 try:
                     logging.debug("Saving languages to %s..." % file)
                     with open(file,'w') as f:
-                        f.write(r.text)
+                        json.dump(languages_root,f)
                 except:
                     logging.exception("Could not save the languages list to %s" % file)
                     pass
             else:
                 logging.debug("Not saving languages as no file was given")
-            return r.json()['languages']
+
+            return languages
         else:
             r.raise_for_status()
 
@@ -197,7 +222,7 @@ class TransBot(Bot):
                 if limit and len(kws) >= limit:
                     break
                 try:
-                    translation = self.translate( keyword, target=lang['language'] )
+                    translation = self.translate( [keyword], target=lang['language'] )
                     if translation:
                         for t in translation['translations']:
                             translated = t['translation'].rstrip()
@@ -223,9 +248,9 @@ class TransBot(Bot):
         return kws
 
 
-    def translate( self, message, target, source=None ):
+    def translate( self, messages, target, source=None ):
         """
-            Translates a given message.
+            Translates a given list of messages.
 
             target: Target language short code (e.g. 'en')
             source: Source language short code ; if not given will try to guess
@@ -236,7 +261,7 @@ class TransBot(Bot):
         # curl -X POST -u "apikey:{apikey}" --header "Content-Type: application/json" --data "{\"text\": [\"Hello, world! \", \"How are you?\"], \"model_id\":\"en-es\"}" "{url}/v3/translate?version=2018-05-01"
         url = "%s/v3/translate?version=2018-05-01" % self.ibmcloud_url
         body = {
-            "text": [message],
+            "text": messages,
             "target": target
             }
         if source:
@@ -259,6 +284,43 @@ class TransBot(Bot):
             r.raise_for_status()
 
 
+    def formatTranslation( self, translation, target ):
+        """
+            Common decoration of translated messages
+
+            transation = the result of translate()
+            target = reminder of which target language was asked (does not appear in the response of translate())
+        """
+
+        text = translation['translations'][0]['translation']
+        try:
+            # Note : translation['detected_language'] is the detected source language, if guessed
+            lang_emoji = flag.flag(target)
+        except ValueError:
+            lang_emoji= "🏳️‍🌈"
+        answer = "%s %s" % (text,lang_emoji)
+        return i18n.t('all_messages',message=answer)
+
+
+    def identifyLanguage( self, language_name ):
+        """
+            Finds the language code from its name
+        """
+
+        # First checks if this is already the language's code (more accurate)
+        if language_name in [ l['language'] for l in self.languages ]:
+            return language_name
+        # Else, really try with the language's name
+        else:
+            matching_names = [ l for l in self.languages if re.search(language_name.strip(),l['name'],re.IGNORECASE) ]
+            logging.debug("Identified languages by name : %s",matching_names)
+            if len(matching_names) > 0:
+                # Only take the first one
+                return matching_names[0]['language']
+            else:
+                return None
+
+
     def onMessage( self, message ):
         """
             Called by self.chatter whenever a message hsa arrived :
@@ -269,14 +331,55 @@ class TransBot(Bot):
             message: A plain text message
             Returns the crafted translation
         """
+        logging.debug("onMessage(%s)",message)
 
+        # Preparing the 'translate a message' case
+        to_lang = self.locale[0]
+        matched_translate = re.search( i18n.t('translate'), message.strip(), flags=re.IGNORECASE )
+        # Case where the target language is given
+        if matched_translate:
+            to_lang = self.identifyLanguage( matched_translate.group('language') )
+            logging.debug("Found target language in message : %s"%to_lang)
+        # Case where the target language is not given ; we will simply use the current locale
+        else:
+            matched_translate = re.search( i18n.t('translate_default_locale'), message.strip(), flags=re.IGNORECASE )
+
+        ###
+        #
+        # Case 'shutdown'
+        #
         # FIXME re.compile((i18n.t('Shutdown'),re.IGNORECASE).search(message) does not work
         # as expected so we use re.search(...)
         if re.search( self.re_shutdown, message, re.IGNORECASE ):
             logging.debug("Shutdown asked")
             self.chatter.stop()
 
-        # Only if the message contains a keyword
+        ###
+        #
+        # Case 'translate a message'
+        #
+        elif matched_translate:
+            if to_lang:
+                translation = self.translate( [matched_translate.group('message')],target=to_lang )
+                logging.debug("Got translation : %s",repr(translation))
+                if translation and len(translation['translations'])>0:
+                    answer = self.formatTranslation(translation,target=to_lang)
+                    logging.debug(">> %s" % answer)
+                    self.chatter.send(answer)
+                    # Returns as soon as one translation was done
+                    return
+                else:
+                    # TODO Make translate throw an error with details
+                    logging.warning("Did not get a translation in %s for %s",to_lang,message)
+                    self.chatter.send( i18n.t('all_messages',message=i18n.t('IDontKnow')) )
+            else:
+                logging.warning("Could not identify target language in %s",message)
+                self.chatter.send( i18n.t('all_messages',message=i18n.t('IDontKnow')) )
+
+        ###
+        #
+        # Case 'answer to keywords'
+        #
         elif re.search( self.re_keywords, message, flags=re.IGNORECASE ):
 
             # Selects a few random target languages each time
@@ -284,18 +387,12 @@ class TransBot(Bot):
 
             for lang in langs:
                 # Gets a translation in this random language
-                translation = self.translate( message, target=lang['language'] )
-                logging.debug("Got translation in '%s' : %s",lang['language'],repr(translation))
+                translation = self.translate( [message], target=lang['language'] )
+                logging.debug("Got translation : %s",repr(translation))
                 if translation and len(translation['translations'])>0:
-                    translated = translation['translations'][0]['translation'].rstrip()
-                    # Note : the detected language is in translation['detected_language']
-                    try:
-                        lang_emoji = flag.flag(lang['language'])
-                    except ValueError:
-                        lang_emoji= "🏳️‍🌈"
-                    answer = "%s %s" % (translated,lang_emoji)
+                    answer = self.formatTranslation(translation,target=lang['language'])
                     logging.debug(">> %s" % answer)
-                    self.chatter.send( i18n.t('all_messages',message=answer) )
+                    self.chatter.send(answer)
                     # Returns as soon as one translation was done
                     return
                 else:
@@ -304,7 +401,7 @@ class TransBot(Bot):
             logging.warning("Could not find a translation in %s for %s",repr(langs),message)
 
         else:
-            logging.debug("Message did not have a keyword")
+            logging.debug("Message did not match any known pattern")
 
 
     def onExit( self ):
@@ -345,8 +442,8 @@ if __name__ == '__main__':
     parser.add_argument('--verbosity', '-V', dest='verbosity', default=config.verbosity, help="Log level")
     # Core arguments
     parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="Keyword bot should react to (will write them into the file specified with --keywords-file)")
-    parser.add_argument("--keywords-files", dest="keywords_files", action="append", help="File to load from and write keywords to")
-    parser.add_argument("--language", "-l", dest="languages", action="append", help="Target language")
+    parser.add_argument("--keywords-file", dest="keywords_files", action="append", help="File to load from and write keywords to")
+    parser.add_argument('--locale', '-l', dest='locale', default=config.locale, help="Change default locale (e.g. 'fr_FR')")
     parser.add_argument("--languages-file", dest="languages_file", help="File to load from and write languages to")
     parser.add_argument("--shutdown", dest="shutdown", help="Shutdown keyword regular expression pattern")
     parser.add_argument("--ibmcloud-url", dest="ibmcloud_url", help="IBM Cloud API base URL (get it from your resource https://cloud.ibm.com/resources)")
@@ -359,8 +456,6 @@ if __name__ == '__main__':
     parser.add_argument('--recipient', '-r', dest='recipient', help="Recipient's number (e.g. +12345678901)")
     # Signal-specific arguments
     parser.add_argument('--signal-cli', dest='signal_cli', default=config.signal_cli, help="Path to `signal-cli` if not in PATH")
-    # Misc. options
-    parser.add_argument('--locale', '-L', dest='locale', default=config.locale, help="Change default locale (e.g. 'fr')")
 
     #
     # 1st pass only matters for 'bootstrap' options : configuration file and logging
@@ -410,10 +505,11 @@ if __name__ == '__main__':
     # i18n + l10n
     logging.debug("Current locale : %s"%repr(locale.getlocale()))
     if not config.locale:
-        config.locale = locale.getlocale()[0]
+        # e.g. locale.getlocale() may return ('en_US','UTF-8') : we only keep the 'en_US' part
+        config.locale = re.split(r'[_-]',locale.getlocale()[0])
     # See https://pypi.org/project/python-i18n/
     # FIXME Manually sets the locale : how come a Python library named 'i18n' doesn't take into account the Python locale by default ?
-    i18n.set('locale',config.locale.split('_')[0])
+    i18n.set('locale',config.locale[0])
     logging.debug("i18n locale : %s"%i18n.get('locale'))
     i18n.set('filename_format', 'i18n.{locale}.{format}')    # Removing the namespace from keys is simpler for us
     i18n.set('error_on_missing_translation',True)
@@ -425,7 +521,7 @@ if __name__ == '__main__':
     except:
         i18n.add_translation('all_messages',r'%{message}')
     if not config.shutdown:
-        config.shutdown = i18n.t('all_messages',message=i18n.t('Shutdown'))
+        config.shutdown = i18n.t('Shutdown')
 
     if not config.ibmcloud_url:
         raise ValueError("Missing required parameter : --ibmcloud-url")
@@ -438,40 +534,29 @@ if __name__ == '__main__':
         # As a last resort, use 'keywords.json' in the config directory
         config.keywords_files = [ os.path.join(config.config_dir,'keywords.json') ]
     # Convenience check to better warn the user and allow filenames relative to config_dir
-    # TODO Might probably be done in a more elegant way...
     if not config.keywords:
-        found_keywords_file = []
+        found_keywords_files = []
         for keywords_file in config.keywords_files:
-            try:
-                with open(keywords_file,'r') as f:
-                    found_keywords_file = found_keywords_file + [keywords_file]
-                    continue
-            except:
-                # Allows filenames relative to config_dir
-                try:
-                    relative_filename = os.path.join(config.config_dir,keywords_file)
-                    with open(relative_filename,'r') as f:
-                        found_keywords_file = found_keywords_file + [relative_filename]
-                        continue
-                except:
-                    pass
-        if len(found_keywords_file) > 0:
-            config.keywords_files = found_keywords_file
+            relative_filename = os.path.join(config.config_dir,keywords_file)
+            winners = filter_files( [keywords_file, relative_filename], should_exist=True, fallback_to=None )
+            if len(winners) > 0:
+                found_keywords_files = found_keywords_files + winners
+        if len(found_keywords_files) > 0:
+            config.keywords_files = found_keywords_files
         else:
             raise ValueError("Could not open any keywords file in %s : please generate with --keywords first or create the file indicated with --keywords-file"%repr(config.keywords_files))
 
-    # config.languages is used if given
-    # else, check for an existing languages_file
-    if not config.languages_file:
-        # As a last resort, use 'keywords.json' in the config directory
-        config.languages_file = os.path.join(config.config_dir,'languages.json')
+    # Finds an existing languages_file
+    # By default, uses 'languages.<lang>.json' or 'languages.json' in the config directory
+    config.languages_file = filter_files( [
+        config.languages_file,
+        os.path.join( config.config_dir, "languages.%s.json"%config.locale[0] ),
+        os.path.join( config.config_dir, 'languages.json' ) ],
+        should_exist=True,
+        fallback_to=1 )[0]
     # Convenience check to better warn the user
-    if not config.languages:
-        try:
-            with open(config.languages_file,'r') as f:
-                pass
-        except:
-            raise ValueError("Could not open %s : please remove --languages to generate it automatically or create the file indicated with --languages-file"%config.languages_file)
+    if not config.languages_file:
+        raise ValueError("Missing language file : please use only --languages-file to generate it automatically or --language for each target language")
 
     # Creates the chat engine depending on the 'backend' parameter
     if config.backend == "signal":
@@ -496,7 +581,8 @@ if __name__ == '__main__':
 
     TransBot(
         keywords=config.keywords, keywords_files=config.keywords_files,
-        languages=config.languages, languages_file=config.languages_file,
+        languages_file=config.languages_file,
+        locale=config.locale,
         ibmcloud_url=config.ibmcloud_url, ibmcloud_apikey=config.ibmcloud_apikey,
         shutdown_pattern=config.shutdown,
         chatter=chatter
