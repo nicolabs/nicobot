@@ -16,5 +16,8 @@ en:
     # Key sentence that shuts the bot down
     Shutdown: bye nicobot
 
+    # Set the following banners explicitely to the empty string "" to disable them
     Hello: nicobot ready 🤟
     Goodbye: See you later 👋
+    # Hello: ""
+    # Goodbye: ""

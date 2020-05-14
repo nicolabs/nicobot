@@ -348,8 +348,9 @@ class TransBot(Bot):
             logging.debug("Found target language in message : %s"%to_lang)
         # Case where the target language is not given ; we will simply use the current locale
         else:
-            logging.debug("Detected 'translate a message' case")
             matched_translate = re.search( i18n.t('translate_default_locale'), message.strip(), flags=re.IGNORECASE )
+            if matched_translate:
+                logging.debug("Detected 'translate a message' case")
 
         ###
         #
@@ -411,7 +412,11 @@ class TransBot(Bot):
 
     def onExit( self ):
 
-        sent = self.chatter.send( i18n.t('all_messages',message=i18n.t('Goodbye')) )
+        goodbye = i18n.t('Goodbye')
+        if goodbye and goodbye.strip():
+            sent = self.chatter.send( i18n.t('all_messages',message=goodbye) )
+        else:
+            logging.debug("No 'Goodbye' text : nothing was sent")
 
 
     def run( self ):
@@ -422,7 +427,11 @@ class TransBot(Bot):
             2. Waits for messages to translate
         """
 
-        self.chatter.send( i18n.t('all_messages',message=i18n.t('Hello')) )
+        hello = i18n.t('Hello')
+        if hello and hello.strip():
+            self.chatter.send( i18n.t('all_messages',message=hello) )
+        else:
+            logging.debug("No 'Hello' text : nothing was sent")
         self.registerExitHandler()
         self.chatter.start(self)
 

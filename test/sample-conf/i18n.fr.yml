@@ -16,5 +16,8 @@ fr:
     # Phrase clé pour éteindre le bot
     Shutdown: couché nicobot
 
+    # Remplacez ces messages par une chaîne vide "" afin de les désactiver
     Hello: nicobot paré 🤟
     Goodbye: A+ 👋
+    # Hello: ""
+    # Goodbye: ""
