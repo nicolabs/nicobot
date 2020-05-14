@@ -27,7 +27,7 @@ See below for Signal requirements.
 
 *Transbot* is a chatbot interface to IBM Watson™ Language Translator service that translates messages.
 
-For instance, with the sample configuration in `test/sample-conf`, it will translate any message like `nicobot <message> in chinese` for instance or simply `nicobot  <message>` (into the current language).
+For instance, with the sample configuration in `test/sample-conf`, it will translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
 
 It can also automatically translate messages containing keywords into a random language. The sample configuration will make it translate any message featuring "Hello" or "Goodbye" in many languages.
 
