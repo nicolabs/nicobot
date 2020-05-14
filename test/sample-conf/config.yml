@@ -1,3 +1,5 @@
+#locale: en
+
 # A list of keywords files to load (if different from the default 'keywords.json')
 keywords_files:
     - hello.keywords.json

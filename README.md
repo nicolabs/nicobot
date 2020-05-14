@@ -33,11 +33,18 @@ It can also automatically translate messages containing keywords into a random l
 
 ### Quick start
 
-1. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
-2. Fill them into `test/sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
-3. Run `python3 nicobot/transbot.py -C test/sample-conf`
-4. Input `Hello world` in the console : the bot will print a random translation of "Hello World"
-5. Input `Bye nicobot` : the bot will terminate
+1. Install prerequistes ; sample session for Debian-like systems :
+    ```
+    sudo apt install python3 python3-pip
+    git clone https://github.com/nicolabs/nicobot.git
+    cd nicobot
+    pip3 install -r requirements.txt
+    ```
+2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
+3. Fill them into `test/sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
+4. Run `python3 nicobot/transbot.py -C test/sample-conf`
+5. Input `Hello world` in the console : the bot will print a random translation of "Hello World"
+6. Input `Bye nicobot` : the bot will terminate
 
 If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
 

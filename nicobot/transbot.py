@@ -51,7 +51,8 @@ class Config:
             'keywords_files': [],
             'languages': [],
             'languages_file': None,
-            'locale': None,
+            # e.g. locale.getlocale() may return ('en_US','UTF-8') : we only keep the 'en_US' part here (the same as the expected command-line parameter)
+            'locale': locale.getlocale()[0],
             'recipient': None,
             'shutdown': None,
             'signal_cli': shutil.which("signal-cli"),
@@ -306,9 +307,12 @@ class TransBot(Bot):
         """
             Finds the language code from its name
         """
+        # TODO should be at 'trace' level
+        logging.debug("identifyLanguage(%s)",language_name)
 
         # First checks if this is already the language's code (more accurate)
         if language_name in [ l['language'] for l in self.languages ]:
+            logging.debug("Identified language is already a code : %s",language_name)
             return language_name
         # Else, really try with the language's name
         else:
@@ -318,6 +322,7 @@ class TransBot(Bot):
                 # Only take the first one
                 return matching_names[0]['language']
             else:
+                logging.warning("Could not identify language %s",language_name)
                 return None
 
 
@@ -338,10 +343,12 @@ class TransBot(Bot):
         matched_translate = re.search( i18n.t('translate'), message.strip(), flags=re.IGNORECASE )
         # Case where the target language is given
         if matched_translate:
+            logging.debug("Detected 'translate a message with target' case")
             to_lang = self.identifyLanguage( matched_translate.group('language') )
             logging.debug("Found target language in message : %s"%to_lang)
         # Case where the target language is not given ; we will simply use the current locale
         else:
+            logging.debug("Detected 'translate a message' case")
             matched_translate = re.search( i18n.t('translate_default_locale'), message.strip(), flags=re.IGNORECASE )
 
         ###
@@ -366,8 +373,6 @@ class TransBot(Bot):
                     answer = self.formatTranslation(translation,target=to_lang)
                     logging.debug(">> %s" % answer)
                     self.chatter.send(answer)
-                    # Returns as soon as one translation was done
-                    return
                 else:
                     # TODO Make translate throw an error with details
                     logging.warning("Did not get a translation in %s for %s",to_lang,message)
@@ -473,14 +478,21 @@ if __name__ == '__main__':
     # Loads the config file that will be used to lookup some missing parameters
     if not config.config_file:
         config.config_file = os.path.join(config.config_dir,"config.yml")
+        logging.debug("Using default config file : %s "%config.config_file)
     try:
         with open(config.config_file,'r') as file:
             # The FullLoader parameter handles the conversion from YAML
             # scalar values to Python the dictionary format
-            dictConfig = yaml.full_load(file)
+            try:
+                # This is the required syntax in newer pyyaml distributions
+                dictConfig = yaml.load(file, Loader=yaml.FullLoader)
+            except:
+                # Some systems (e.g. raspbian) ship with an older version of pyyaml
+                dictConfig = yaml.load(file)
             logging.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
             config.__dict__.update(dictConfig)
-    except:
+    except Exception as e:
+        logging.debug(e, exc_info=True)
         pass
     # From here the config object has only the default values for all configuration options
     #logging.debug( "Configuration after bootstrap : %s", repr(vars(config)) )
@@ -504,12 +516,11 @@ if __name__ == '__main__':
 
     # i18n + l10n
     logging.debug("Current locale : %s"%repr(locale.getlocale()))
-    if not config.locale:
-        # e.g. locale.getlocale() may return ('en_US','UTF-8') : we only keep the 'en_US' part
-        config.locale = re.split(r'[_-]',locale.getlocale()[0])
+    # e.g. if config.locale is 'en_US' we split it into : ['en', 'US'] ; dash separator is the RFC norm '-', but underscore '_' is used with Python
+    lang = re.split( r'[_-]', config.locale )
     # See https://pypi.org/project/python-i18n/
     # FIXME Manually sets the locale : how come a Python library named 'i18n' doesn't take into account the Python locale by default ?
-    i18n.set('locale',config.locale[0])
+    i18n.set('locale',lang[0])
     logging.debug("i18n locale : %s"%i18n.get('locale'))
     i18n.set('filename_format', 'i18n.{locale}.{format}')    # Removing the namespace from keys is simpler for us
     i18n.set('error_on_missing_translation',True)
@@ -550,7 +561,7 @@ if __name__ == '__main__':
     # By default, uses 'languages.<lang>.json' or 'languages.json' in the config directory
     config.languages_file = filter_files( [
         config.languages_file,
-        os.path.join( config.config_dir, "languages.%s.json"%config.locale[0] ),
+        os.path.join( config.config_dir, "languages.%s.json"%lang[0] ),
         os.path.join( config.config_dir, 'languages.json' ) ],
         should_exist=True,
         fallback_to=1 )[0]
@@ -582,7 +593,7 @@ if __name__ == '__main__':
     TransBot(
         keywords=config.keywords, keywords_files=config.keywords_files,
         languages_file=config.languages_file,
-        locale=config.locale,
+        locale=lang,
         ibmcloud_url=config.ibmcloud_url, ibmcloud_apikey=config.ibmcloud_apikey,
         shutdown_pattern=config.shutdown,
         chatter=chatter
