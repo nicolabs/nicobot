@@ -13,6 +13,7 @@ import json
 import i18n
 import re
 import locale
+import time
 
 from chatter import Chatter
 
@@ -42,7 +43,7 @@ class SignalChatter(Chatter):
         self.signal_cli = signal_cli
 
         # Properties set elsewhere
-        self.sentTimestamp = None
+        self.startTime = None
         # If True, will terminate the main loop
         self.shutdown = False
         self.bot = None
@@ -51,6 +52,9 @@ class SignalChatter(Chatter):
     def start( self, bot ):
 
         self.bot = bot
+        # Timestamp in Signal messages is a number of milliseconds since the epoch
+        # See https://github.com/signalapp/libsignal-service-java/blob/a88d6a65330ab311079e198dedd25605b1aecc5f/java/src/main/java/org/whispersystems/signalservice/api/messages/SignalServiceDataMessage.java#L344
+        self.startTime = time.time() * 1000
 
         while not self.shutdown:
             self.filterMessages( self.receiveMessages() )
@@ -71,7 +75,6 @@ class SignalChatter(Chatter):
 
         sent = proc.stdout
         logging.debug("Sent message : %s"%repr(sent))
-        self.sentTimestamp = int(sent)
 
 
     def reply( self, source ):
@@ -112,7 +115,7 @@ class SignalChatter(Chatter):
         for event in events:
             logging.debug("Filtering message : %s" % repr(event))
             envelope = event['envelope']
-            if envelope['timestamp'] > self.sentTimestamp:
+            if envelope['timestamp'] > self.startTime:
                 if envelope['dataMessage']:
                     dataMessage = envelope['dataMessage']
                     if dataMessage['message']:
