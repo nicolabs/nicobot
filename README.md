@@ -2,6 +2,8 @@
 
 🤟 A collection of *cool* chat bots 🤟
 
+> Well, there's only one of them as of today... Plus it's absolutely **EXPERIMENTAL** : use it at your own risk !
+
 It features :
 
 - Participating in [Signal](https://www.signal.org/fr/) conversations
@@ -25,15 +27,18 @@ See below for Signal requirements.
 
 ## Transbot
 
-*Transbot* is a chatbot interface to IBM Watson™ Language Translator service that translates messages.
+*Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service.
 
-For instance, with the sample configuration in `test/sample-conf`, it will translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
+**Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-It can also automatically translate messages containing keywords into a random language. The sample configuration will make it translate any message featuring "Hello" or "Goodbye" in many languages.
+The included sample configuration in `test/sample-conf`, demoes how to make it translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
+
+It can also automatically translate messages containing keywords into a random language.
+The sample configuration shows how to make it translate any message containing "Hello" or "Goodbye" in many languages.
 
 ### Quick start
 
-1. Install prerequistes ; sample session for Debian-like systems :
+1. Install prerequistes ; for Debian systems this will look like :
     ```
     sudo apt install python3 python3-pip
     git clone https://github.com/nicolabs/nicobot.git
@@ -57,7 +62,6 @@ See below for more options...
 ### Main configuration options and files
 
 Run `transbot.py -h` to get a description of all options.
-A sample configuration is available in the `test/sample-conf/` directory.
 
 Below are the most important configuration options :
 
@@ -73,16 +77,15 @@ Below are the most important configuration options :
 
 The **i18n.\<locale>.yml** file contains localization strings for your locale and fun :
 - *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
-- It also defines the message pattern that terminates the bot.
+- It also defines the pattern that terminates the bot.
 
-Finally, see the following chapter about the **config.yml** file.
+Finally, see the next chapter to learn about the **config.yml** file.
 
 
 ### Config.yml configuration file
 
 Options can also be taken from a configuration file : by default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
-This file is in YAML format with all options at the root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a 's' appended for lists (options that can appear several times).
-E.g. `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
+This file is in YAML format with all options at the root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (options `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
 ```yaml
 keywords_files:
     - 1.json
@@ -98,7 +101,7 @@ Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you do
 
 By using `--backend signal` you can make the bot chat with Signal users.
 
-### Prerequiste
+### Prerequistes
 
 You must first [install and configure *signal-cli*](https://github.com/AsamK/signal-cli#installation).
 
@@ -106,7 +109,10 @@ Then you must [*register* or *link*](https://github.com/AsamK/signal-cli/blob/ma
 
     signal-cli link --name MyComputer
 
-### Parameters
+Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) for more details.
+
+
+### Signal-specific options
 
 With signal, make sure :
 
