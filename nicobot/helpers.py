@@ -4,6 +4,13 @@
     Helper functions
 """
 
+import logging
+
+
+# Adds a log level finer than DEBUG
+TRACE = 5
+logging.addLevelName(TRACE,'TRACE')
+
 
 def filter_files( files, should_exist=False, fallback_to=None ):
     """

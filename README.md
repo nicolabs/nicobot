@@ -12,7 +12,7 @@ It features :
 
 Requires :
 
-- Python 3
+- Python 3 (>= 3.4.2)
 - [signal-cli](https://github.com/AsamK/signal-cli) (for the *Signal* backend)
 - An IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
@@ -69,6 +69,7 @@ Below are the most important configuration options :
 - **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
 - **--username** selects the account to use to send and read message ; its format depends on the backend
 - **--recipient** and **--group** select the recipient (only one of them should be given) ; its format depends on the backend
+- **--stealth** will make the bot connect and listen to messages but print any answer instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 The **i18n.\<locale>.yml** file contains localization strings for your locale and fun :
 - *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.

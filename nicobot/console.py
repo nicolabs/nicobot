@@ -9,9 +9,6 @@ class ConsoleChatter:
         Bot engine that reads from a stream and outputs to another
     """
 
-    input = None
-    output = None
-
     def __init__( self, input=sys.stdin, output=sys.stdout ):
         self.input = input
         self.output = output

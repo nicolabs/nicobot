@@ -25,6 +25,8 @@ from helpers import *
 from bot import Bot
 from console import ConsoleChatter
 from signalcli import SignalChatter
+from stealth import StealthChatter
+
 
 
 # Default timeout for requests in seconds
@@ -56,6 +58,8 @@ class Config:
             'recipient': None,
             'shutdown': None,
             'signal_cli': shutil.which("signal-cli"),
+            'signal_stealth': False,
+            'stealth': False,
             'username': None,
             'verbosity': "INFO"
             })
@@ -468,8 +472,10 @@ if __name__ == '__main__':
     parser.add_argument('--username', '-u', dest='username', help="Sender's number (e.g. +12345678901 for the 'signal' backend)")
     parser.add_argument('--group', '-g', dest='group', help="Group's ID in base64 (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==' for the 'signal' backend)")
     parser.add_argument('--recipient', '-r', dest='recipient', help="Recipient's number (e.g. +12345678901)")
+    parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")
     # Signal-specific arguments
     parser.add_argument('--signal-cli', dest='signal_cli', default=config.signal_cli, help="Path to `signal-cli` if not in PATH")
+    parser.add_argument('--signal-stealth', dest='signal_stealth', action="store_true", default=config.signal_stealth, help="Activate Signal chatter's specific stealth mode")
 
     #
     # 1st pass only matters for 'bootstrap' options : configuration file and logging
@@ -477,11 +483,14 @@ if __name__ == '__main__':
     parser.parse_args(namespace=config)
 
     # Logging configuration
-    logLevel = getattr(logging, config.verbosity.upper(), None)
-    if not isinstance(logLevel, int):
+    try:
+        # Before Python 3.4 and back since 3.4.2 we can simply pass a level name rather than a numeric value (Yes !)
+        # Otherwise manually parsing textual log levels was not clean IMHO anyway : https://docs.python.org/2/howto/logging.html#logging-to-a-file
+        logLevel = logging.getLevelName(config.verbosity.upper())
+        # Logs are output to stderr ; stdout is reserved to print the answer(s)
+        logging.basicConfig(level=logLevel, stream=sys.stderr)
+    except ValueError:
     	raise ValueError('Invalid log level: %s' % config.verbosity)
-    # Logs are output to stderr ; stdout is reserved to print the answer(s)
-    logging.basicConfig(level=logLevel, stream=sys.stderr)
     logging.debug( "Configuration for bootstrap : %s", repr(vars(config)) )
 
     # Loads the config file that will be used to lookup some missing parameters
@@ -590,10 +599,14 @@ if __name__ == '__main__':
             username=config.username,
             recipient=config.recipient,
             group=config.group,
-            signal_cli=config.signal_cli)
+            signal_cli=config.signal_cli,
+            stealth=config.signal_stealth)
     # By default (or if backend == "console"), will read from stdin or a given file and output to console
     else:
         chatter = ConsoleChatter(config.input_file,sys.stdout)
+
+    if config.stealth:
+        chatter = StealthChatter(chatter)
 
     #
     # Real start
