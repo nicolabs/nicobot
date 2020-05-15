@@ -135,14 +135,12 @@ class SignalChatter(Chatter):
                             if envelope['source'] == self.recipient:
                                 logging.debug("<<< %s" % message)
                                 self.bot.onMessage(message)
-                                return True
                             else:
                                 logging.debug("Discarding message not from recipient %s"%self.recipient)
                         elif self.group:
                             if dataMessage['groupInfo'] and dataMessage['groupInfo']['groupId']:
                                 logging.debug("<<< %s" % message)
                                 self.bot.onMessage(message)
-                                return True
                             else:
                                 logging.debug("Discarding message not from group %s" % self.group)
                         else:
@@ -153,8 +151,6 @@ class SignalChatter(Chatter):
                     logging.debug("Discarding message without data")
             else:
                 logging.debug("Discarding message that was sent before I started")
-
-        return False
 
 
 
