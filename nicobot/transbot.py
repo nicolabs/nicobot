@@ -19,6 +19,7 @@ import random
 # Provides an easy way to get the unicode sequence for country flags
 import flag
 import yaml
+import urllib.request
 
 # Own classes
 from helpers import *
@@ -37,7 +38,14 @@ TIMEOUT = 60
 # Set to something > 0 to limit the number of translations for the keywords (for tests)
 LIMIT_KEYWORDS = None
 
-# Default (empty actually) configuration, to ease depth navigation
+# See https://github.com/nicolabs/nicobot/issues/8
+# Description : https://unicode.org/reports/tr35/#Likely_Subtags
+# Original XML version : http://cldr.unicode.org/index/cldr-spec/language-tag-equivalences
+# This is the URL to the JSON version
+LIKELY_SUBTAGS_URL = "https://raw.githubusercontent.com/unicode-cldr/cldr-core/master/supplemental/likelySubtags.json"
+
+
+# Default configuration (some defaults still need to be set up after command line has been parsed)
 class Config:
 
     def __init__(self):
@@ -53,6 +61,7 @@ class Config:
             'keywords_files': [],
             'languages': [],
             'languages_file': None,
+            'languages_likely': None,
             # e.g. locale.getlocale() may return ('en_US','UTF-8') : we only keep the 'en_US' part here (the same as the expected command-line parameter)
             'locale': locale.getlocale()[0],
             'recipient': None,
@@ -85,13 +94,15 @@ class TransBot(Bot):
     def __init__( self,
         chatter, ibmcloud_url, ibmcloud_apikey,
         keywords=[], keywords_files=[],
-        languages=[], languages_file=None, locale=re.split(r'[_-]',locale.getlocale()[0]),
+        languages=[], languages_file=None, languages_likely=None,
+        locale=re.split(r'[_-]',locale.getlocale()[0]),
         shutdown_pattern=r'bye nicobot' ):
         """
             keywords: list of keywords that will trigger this bot (in any supported language)
             keywords_files: list of JSON files with each a list of keywords (or write into)
             languages: List of supported languages in this format : https://cloud.ibm.com/apidocs/language-translator#list-identifiable-languages
             languages_file: JSON file where to find the list of target languages (or write into)
+            languages_likely: JSON URI where to find Unicode's likely subtags (or write into)
             locale: overrides the default locale ; tuple like : ('en','GB')
             shutdown_pattern: a regular expression pattern that terminates this bot
             chatter: the backend chat engine
@@ -111,6 +122,8 @@ class TransBot(Bot):
             self.languages = self.loadLanguages(file=languages_file,locale=locale[0])
         # How many different languages to try to translate to
         self.tries = 5
+
+        self.likelyLanguages = self.loadLikelyLanguages(languages_likely)
 
         # After self.languages has been set, we can iterate over it to translate keywords
         kws = self.loadKeywords( keywords=keywords, files=keywords_files, limit=LIMIT_KEYWORDS )
@@ -172,7 +185,7 @@ class TransBot(Bot):
                 # so the output list will always be the same size as the input one
                 t = 0
                 for language in languages:
-                    language['name'] = translations['translations'][t]['translation']
+                    language['name'] = translations['translations'][t]['translation'].strip()
                     t = t + 1
 
             # Save it for the next time
@@ -230,7 +243,7 @@ class TransBot(Bot):
                     translation = self.translate( [keyword], target=lang['language'] )
                     if translation:
                         for t in translation['translations']:
-                            translated = t['translation'].rstrip()
+                            translated = t['translation'].strip()
                             logging.debug("Adding translation %s in %s for %s", t, lang, keyword)
                             kws = kws + [ translated ]
                 except:
@@ -251,6 +264,31 @@ class TransBot(Bot):
             logging.debug("Not saving keywords as a (single) file was not given")
 
         return kws
+
+
+    def loadLikelyLanguages( self, file ):
+        """
+            Returns a dict from a Likely Subtags JSON structure in the given file.
+            If the file cannot be read, will download it from LIKELY_SUBTAGS_URL and save it with the given filename.
+        """
+
+        try:
+            logging.debug("Loading likely languages from %s",file)
+            with open(file,'r') as f:
+                return json.load(f)
+        except:
+            logging.debug("Downloading likely subtags from %s",LIKELY_SUBTAGS_URL)
+            with urllib.request.urlopen(LIKELY_SUBTAGS_URL) as response:
+                likelySubtags = response.read()
+                logging.log(TRACE,"Got likely subtags : %s",repr(likelySubtags))
+                # Saves it for the next time
+                try:
+                    logging.debug("Saving likely subtags into %s",file)
+                    with open(file,'w') as f:
+                        f.write(likelySubtags.decode())
+                except:
+                    logging.exception("Error saving the likely languages into %s",repr(file))
+                return json.loads(likelySubtags)
 
 
     def translate( self, messages, target, source=None ):
@@ -289,6 +327,28 @@ class TransBot(Bot):
             r.raise_for_status()
 
 
+    def languageToCountry( self, lang ):
+        """
+            Returns the most likely ISO 3361 country code from an (~ISO 639 or IBM-custom) language
+            or the given 'lang' if no country code could be identified.
+
+            lang : the language returned by IBM Translator service (is it ISO 639 ?)
+
+            See https://github.com/nicolabs/nicobot/issues/8
+            Likely subtags explanation and format :
+            - https://unicode.org/reports/tr35/#Likely_Subtags
+            - http://cldr.unicode.org/index/cldr-spec/language-tag-equivalences
+        """
+        try:
+            aa_Bbbb_CC = self.likelyLanguages['supplemental']['likelySubtags'][lang]
+            logging.log(TRACE,"Found likely subtags %s for language %s",aa_Bbbb_CC,lang)
+            # The last part is the ISO 3361 country code
+            return re.split( r'[_-]', aa_Bbbb_CC )[-1]
+        except:
+            logging.warning("Could not find a country code for %s : returning itself",lang, exc_info=True)
+            return lang
+
+
     def formatTranslation( self, translation, target ):
         """
             Common decoration of translated messages
@@ -297,11 +357,13 @@ class TransBot(Bot):
             target = reminder of which target language was asked (does not appear in the response of translate())
         """
 
-        text = translation['translations'][0]['translation']
+        text = translation['translations'][0]['translation'].strip()
         try:
             # Note : translation['detected_language'] is the detected source language, if guessed
-            lang_emoji = flag.flag(target)
+            country = self.languageToCountry(target)
+            lang_emoji = flag.flag(country)
         except ValueError:
+            logging.debug("Error looking for flag %s",target,exc_info=True)
             lang_emoji= "🏳️‍🌈"
         answer = "%s %s" % (text,lang_emoji)
         return i18n.t('all_messages',message=answer)
@@ -473,6 +535,7 @@ if __name__ == '__main__':
     parser.add_argument("--keywords-file", dest="keywords_files", action="append", help="File to load from and write keywords to")
     parser.add_argument('--locale', '-l', dest='locale', default=config.locale, help="Change default locale (e.g. 'fr_FR')")
     parser.add_argument("--languages-file", dest="languages_file", help="File to load from and write languages to")
+    parser.add_argument("--languages-likely", dest="languages_likely", default=config.languages_likely, help="URI to Unicode's Likely Subtags (best language <-> country matches) in JSON format")
     parser.add_argument("--shutdown", dest="shutdown", help="Shutdown keyword regular expression pattern")
     parser.add_argument("--ibmcloud-url", dest="ibmcloud_url", help="IBM Cloud API base URL (get it from your resource https://cloud.ibm.com/resources)")
     parser.add_argument("--ibmcloud-apikey", dest="ibmcloud_apikey", help="IBM Cloud API key (get it from your resource : https://cloud.ibm.com/resources)")
@@ -597,6 +660,13 @@ if __name__ == '__main__':
     if not config.languages_file:
         raise ValueError("Missing language file : please use only --languages-file to generate it automatically or --language for each target language")
 
+    # Finds a "likely language" file
+    config.languages_likely = filter_files([
+        config.languages_likely,
+        os.path.join( config.config_dir, 'likelySubtags.json' ) ],
+        should_exist=True,
+        fallback_to=1 )[0]
+
     # Creates the chat engine depending on the 'backend' parameter
     if config.backend == "signal":
         if not config.signal_cli:
@@ -624,7 +694,7 @@ if __name__ == '__main__':
 
     TransBot(
         keywords=config.keywords, keywords_files=config.keywords_files,
-        languages_file=config.languages_file,
+        languages_file=config.languages_file, languages_likely=config.languages_likely,
         locale=lang,
         ibmcloud_url=config.ibmcloud_url, ibmcloud_apikey=config.ibmcloud_apikey,
         shutdown_pattern=config.shutdown,
