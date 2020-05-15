@@ -561,7 +561,7 @@ if __name__ == '__main__':
         # Otherwise manually parsing textual log levels was not clean IMHO anyway : https://docs.python.org/2/howto/logging.html#logging-to-a-file
         logLevel = logging.getLevelName(config.verbosity.upper())
         # Logs are output to stderr ; stdout is reserved to print the answer(s)
-        logging.basicConfig(level=logLevel, stream=sys.stderr)
+        logging.basicConfig(level=logLevel, stream=sys.stderr, format='%(asctime)s\t%(levelname)s\t%(message)s')
     except ValueError:
     	raise ValueError('Invalid log level: %s' % config.verbosity)
     logging.debug( "Configuration for bootstrap : %s", repr(vars(config)) )
