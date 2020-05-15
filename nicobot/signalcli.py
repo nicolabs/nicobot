@@ -152,7 +152,7 @@ class SignalChatter(Chatter):
                 else:
                     logging.debug("Discarding message without data")
             else:
-                logging.debug("Discarding message that was sent before ours")
+                logging.debug("Discarding message that was sent before I started")
 
         return False
 

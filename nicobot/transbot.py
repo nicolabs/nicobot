@@ -416,11 +416,16 @@ class TransBot(Bot):
 
     def onExit( self ):
 
-        goodbye = i18n.t('Goodbye')
-        if goodbye and goodbye.strip():
-            sent = self.chatter.send( i18n.t('all_messages',message=goodbye) )
-        else:
+        # TODO Better use gettext in the end
+        try:
+            goodbye = i18n.t('Goodbye')
+            if goodbye and goodbye.strip():
+                sent = self.chatter.send( i18n.t('all_messages',message=goodbye) )
+            else:
+                logging.debug("Empty 'Goodbye' text : nothing was sent")
+        except KeyError:
             logging.debug("No 'Goodbye' text : nothing was sent")
+            pass
 
 
     def run( self ):
@@ -431,11 +436,16 @@ class TransBot(Bot):
             2. Waits for messages to translate
         """
 
-        hello = i18n.t('Hello')
-        if hello and hello.strip():
-            self.chatter.send( i18n.t('all_messages',message=hello) )
-        else:
+        # TODO Better use gettext in the end
+        try:
+            hello = i18n.t('Hello')
+            if hello and hello.strip():
+                self.chatter.send( i18n.t('all_messages',message=hello) )
+            else:
+                logging.debug("Empty 'Hello' text : nothing was sent")
+        except KeyError:
             logging.debug("No 'Hello' text : nothing was sent")
+            pass
         self.registerExitHandler()
         self.chatter.start(self)
 

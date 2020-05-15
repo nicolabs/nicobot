@@ -19,3 +19,6 @@ username: "+33123456789"
 recipient: "+33123456789"
 # Get this group ID with the command `signal-cli -u +33123456789 listGroups`
 #group: "mABCDNVoEFGz0YeZM1234Q=="
+
+# Activates stealth mode
+#stealth: on
