@@ -85,7 +85,7 @@ Finally, see the next chapter to learn about the **config.yml** file.
 ### Config.yml configuration file
 
 Options can also be taken from a configuration file : by default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
-This file is in YAML format with all options at the root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a 's' appended for lists (options ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
+This file is in YAML format with all options at the root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (options `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
 ```yaml
 keywords_files:
     - 1.json
