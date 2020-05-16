@@ -400,7 +400,7 @@ class TransBot(Bot):
             including the flag of the random language.
 
             message: A plain text message
-            Returns the crafted translation
+            Returns nothing
         """
         logging.debug("onMessage(%s)",message)
 

@@ -11,13 +11,10 @@ class Bot:
 
     def onMessage( self, message ):
         """
-            Called by self.chatter whenever a message hsa arrived :
-            if the given message contains any of the keywords in any language,
-            will answer with a translation in a random language
-            including the flag of the random language.
+            Called by self.chatter whenever a message has arrived.
 
             message: A plain text message
-            Returns the crafted translation
+            Returns nothing
         """
         pass
 
