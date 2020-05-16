@@ -1,8 +1,14 @@
-# Requirements for nicobot.py
+##### Requirements for all features #####
+# (None yet)
+
+##### Requirements for signalcli #####
+python-i18n
+
+###### Requirements for transbot #####
+python-i18n
 # https://requests.readthedocs.io/en/master/
 requests
 # https://github.com/cvzi/flag
 emoji-country-flag
-python-i18n
 # https://pyyaml.org/wiki/PyYAMLDocumentation
 pyyaml
