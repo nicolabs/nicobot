@@ -31,7 +31,7 @@ See below for Signal requirements.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-The included sample configuration in `test/sample-conf`, demoes how to make it translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
+The included sample configuration in `test/transbot-sample-conf`, demoes how to make it translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
 
 It can also automatically translate messages containing keywords into a random language.
 The sample configuration shows how to make it translate any message containing "Hello" or "Goodbye" in many languages.
@@ -46,15 +46,15 @@ The sample configuration shows how to make it translate any message containing "
     pip3 install -r requirements.txt
     ```
 2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
-3. Fill them into `test/sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
-4. Run `python3 nicobot/transbot.py -C test/sample-conf`
+3. Fill them into `test/transbot-sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
+4. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf`
 5. Input `Hello world` in the console : the bot will print a random translation of "Hello World"
 6. Input `Bye nicobot` : the bot will terminate
 
 If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
 
 1. Install and configure `signal-cli` (see below for details)
-2. Run `python3 nicobot/transbot.py -C test/sample-conf -b signal -u '+33123456789' -r '+34987654321'` with `-u +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
+2. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf -b signal -u '+33123456789' -r '+34987654321'` with `-u +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
 
 See below for more options...
 
@@ -92,7 +92,7 @@ keywords_files:
     - 2.json
 ```
 
-A sample configuration is available in the `test/sample-conf/` directory.
+A sample configuration is available in the `test/transbot-sample-conf/` directory.
 
 Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you don't know about YAML.
 
