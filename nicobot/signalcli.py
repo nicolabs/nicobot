@@ -19,9 +19,9 @@ from chatter import Chatter
 from helpers import *
 
 
-# Generic timeout for all signal-cli commands
-TIMEOUT = 15
-# Custom timeout to pass to signal-cli when receiving messages
+# Generic timeout for signal-cli commands to return (actually only 'send' because 'receive' uses its own timeout)
+SEND_TIMEOUT = 30
+# Custom timeout to pass to signal-cli when receiving messages (negative values disable timeout)
 RECEIVE_TIMEOUT = 5
 
 
@@ -30,7 +30,7 @@ class SignalChatter(Chatter):
         A signal bot relying on signal-cli
     """
 
-    def __init__( self, username, recipient=None, group=None, signal_cli=shutil.which("signal-cli"), stealth=False ):
+    def __init__( self, username, recipient=None, group=None, signal_cli=shutil.which("signal-cli"), stealth=False, send_timeout=SEND_TIMEOUT, receive_timeout=RECEIVE_TIMEOUT ):
 
         """
             stealth: if True, will connect and listen to messages but instead of sending answers, will print them
@@ -50,6 +50,8 @@ class SignalChatter(Chatter):
         self.stealth = stealth
         if self.stealth:
             logging.debug("Stealth mode : will not send message")
+        self.send_timeout = send_timeout
+        self.receive_timeout = receive_timeout
 
         # Properties set elsewhere
         self.startTime = None
@@ -81,7 +83,7 @@ class SignalChatter(Chatter):
         # throws an error in case of status <> 0
         logging.debug(cmd)
         if not self.stealth:
-            proc = subprocess.run( cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, check=True, timeout=TIMEOUT )
+            proc = subprocess.run( cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, check=True, timeout=self.send_timeout )
             sent = proc.stdout
             logging.debug("Sent message : %s"%repr(sent))
         logging.debug( ">>> %s" % message )
@@ -98,7 +100,13 @@ class SignalChatter(Chatter):
         self.shutdown = True
 
 
-    def receiveMessages( self, timeout=RECEIVE_TIMEOUT, input=None ):
+    def receiveMessages( self, timeout=None, input=None ):
+        """
+            timeout: uses self.receive_timeout by default ; negative values disable timeout
+        """
+
+        if not timeout:
+            timeout = self.receive_timeout
 
         cmd = [ self.signal_cli, "-u", self.username, "receive", "--json" ]
         if timeout:
@@ -112,11 +120,11 @@ class SignalChatter(Chatter):
         events = []
         for bline in iter(input.readline, b''):
             logging.debug("Read line : %s" % bline)
-            try:
-                line = bline.decode()
-            except (UnicodeDecodeError, AttributeError):
-                line = bline
-            events = events + [json.loads(line.rstrip())]
+            # try:
+            #     line = bline.decode()
+            # except (UnicodeDecodeError, AttributeError):
+            #     line = bline
+            events = events + [json.loads(bline.rstrip())]
 
         return events
 
@@ -151,61 +159,3 @@ class SignalChatter(Chatter):
                     logging.debug("Discarding message without data")
             else:
                 logging.debug("Discarding message that was sent before I started")
-
-
-
-# if __name__ == '__main__':
-#
-#     """ FIXME This entry point is not working anymore ! """
-#
-#     parser = argparse.ArgumentParser( description='Sends a XMPP message and reads the answer' )
-#     # Core parameters
-#     parser.add_argument('--username', '-u', dest='username', required=True, help="Sender's number (e.g. +12345678901)")
-#     parser.add_argument('--group', '-g', dest='group', help="Group's ID in base64 (e.g. mPC9JNVoKDGz0YeZMsbL1Q==)")
-#     parser.add_argument('--recipient', '-r', dest='recipient', help="Recipient's number (e.g. +12345678901)")
-#     parser.add_argument('--signal-cli', '-s', dest='signal_cli', default=shutil.which("signal-cli"), help="Path to `signal-cli` if not in PATH")
-#     # Misc. options
-#     parser.add_argument("--i18n-dir", "-I", dest="i18n_dir", default=os.path.dirname(os.path.realpath(__file__)), help="Directory where to find translation files. Defaults to this script's directory.")
-#     parser.add_argument('--verbosity', '-V', dest='log_level', default="INFO", help="Log level")
-#     parser.add_argument("--test", '-T', dest="test", action="store_true", default=False, help="Activate test mode")
-#     parser.add_argument('--locale', '-L', dest='locale', default=None, help="Change default locale (e.g. 'fr')")
-#     args = parser.parse_args()
-#
-#     if not args.signal_cli:
-#         raise ValueError("Could not find the 'signal-cli' command in PATH and no --signal-cli given")
-#
-#     if not args.recipient and not args.group:
-#         raise ValueError("Either --recipient or --group must be provided")
-#
-#     # Logging configuration
-#     # TODO Allow for a trace level (high-volume debug)
-#     # TODO How to tag logs from this module so that their level can be tuned specifically ?
-#     logLevel = getattr(logging, args.log_level.upper(), None)
-#     if not isinstance(logLevel, int):
-#     	raise ValueError('Invalid log level: %s' % args.log_level)
-#     # Logs are output to stderr ; stdout is reserved to print the answer(s)
-#     logging.basicConfig(level=logLevel, stream=sys.stderr)
-#
-#     logging.debug("Current locale : %s"%repr(locale.getlocale()))
-#     if args.locale:
-#         loc = args.locale
-#     else:
-#         loc = locale.getlocale()[0]
-#
-#     # See https://pypi.org/project/python-i18n/
-#     logging.debug("i18n_dir : %s"%args.i18n_dir)
-#     # FIXME Manually set the locale : how come a Python library named 'i18n' doesn't take into account the Python locale by default ?
-#     i18n.set('locale',loc.split('_')[0])
-#     logging.debug("i18n locale : %s"%i18n.get('locale'))
-#     i18n.set('filename_format', 'i18n.{locale}.{format}')    # Removing the namespace is simpler for us
-#     i18n.load_path.append(args.i18n_dir)
-#
-#     # This MUST be instanciated AFTER i18n ha been configured !
-#     RE_SHUTDOWN = re.compile( i18n.t('Shutdown'), re.IGNORECASE )
-#
-#     """ Real start """
-#     bot = SignalChatter( username=args.username, signal_cli=args.signal_cli, recipient=args.recipient, group=args.group )
-#     if args.test:
-#         bot.run(sys.stdin)
-#     else:
-#         bot.run()
