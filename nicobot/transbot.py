@@ -81,6 +81,15 @@ def _logResponse( r ):
     logging.debug("<<< Response : %s\tbody: %s", repr(r), r.content )
 
 
+def sanitizeNotPattern( string ):
+    """
+        Returns a string that will only all 'non-word' characters escaped with backslash
+        in order to use it in a regular expression pattern without including special character.
+
+        We could just replace any character 'c' with '\c' but replacing only special characters keep it somewhat still readable.
+    """
+    return re.sub( r'([^\w])', '\\\\\\1', string )
+
 
 class TransBot(Bot):
     """
@@ -128,9 +137,9 @@ class TransBot(Bot):
         # After self.languages has been set, we can iterate over it to translate keywords
         kws = self.loadKeywords( keywords=keywords, files=keywords_files, limit=LIMIT_KEYWORDS )
         # And build a regular expression pattern with all keywords and their translations
-        pattern = r'\b%s\b' % kws[0]
+        pattern = r'\b%s\b' % sanitizeNotPattern(kws[0])
         for keyword in kws[1:]:
-            pattern = pattern + r'|\b%s\b' % keyword
+            pattern = pattern + r'|\b%s\b' % sanitizeNotPattern(keyword)
         # Built regular expression pattern that triggers an answer from this bot
         self.re_keywords = pattern
         # Regular expression pattern of messages that stop the bot
@@ -478,6 +487,8 @@ class TransBot(Bot):
 
     def onExit( self ):
 
+        logging.debug("Exiting...")
+
         # TODO Better use gettext in the end
         try:
             goodbye = i18n.t('Goodbye')
@@ -498,7 +509,7 @@ class TransBot(Bot):
             2. Waits for messages to translate
         """
 
-        # TODO Better use gettext in the end
+        # TODO Better using gettext, in the end
         try:
             hello = i18n.t('Hello')
             if hello and hello.strip():
@@ -510,6 +521,7 @@ class TransBot(Bot):
             pass
         self.registerExitHandler()
         self.chatter.start(self)
+        logging.debug("Chatter loop ended")
 
 
 
