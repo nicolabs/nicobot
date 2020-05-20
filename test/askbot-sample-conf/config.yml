@@ -1,0 +1,14 @@
+# Each entry is a couple of [ name, pattern ]
+patterns:
+    - [ "yes", "(?i)\\b(yes|ok)\\b" ]
+    - [ "no", "(?i)\\bno\\b" ]
+    - [ "cancel", "(?i)\\b(cancel|abort)\\b" ]
+
+backend: console
+#backend: signal
+
+# Make sure to put quotes around the username field as it is a phone number for Signal
+username: "+33123456789"
+recipient: "+33123456789"
+# Get this group ID with the command `signal-cli -u +33123456789 listGroups`
+#group: "mABCDNVoEFGz0YeZM1234Q=="
