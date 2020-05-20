@@ -1,6 +1,9 @@
 # nicobot
 
-🤟 A collection of *cool* chat bots 🤟
+A collection of 🤟 *cool* 🤟 chat bots :
+
+- *Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service
+- *Askbot* is a one-shot chatbot that will throw a question and wait for an answer
 
 > My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk !
 
@@ -57,7 +60,7 @@ If you want to send & receive messages through *Signal* instead of reading from 
 1. Install and configure `signal-cli` (see below for details)
 2. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
 
-See below for more options...
+See dedicated chapters below for more options...
 
 
 ### Main configuration options and files
@@ -75,17 +78,19 @@ The **i18n.\<locale>.yml** file contains localization strings for your locale an
 - *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
 - It also defines the pattern that terminates the bot.
 
+A sample configuration is available in the `test/transbot-sample-conf/` directory.
+
 
 
 ## Askbot
 
-*Askbot* is a one-shot chatbot that will throw a question and waits for an answer.
+*Askbot* is a one-shot chatbot that will throw a question and wait for an answer.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-When run, it will send a message if provided and wait for an answer, in different ways (see options below).
-Once the conditions are met to terminate, the bot will print the result in [JSON](https://www.json.org/) format.
-The caller will have to parse this JSON structure in order to know what the answer was and what were the exit(s) condition(s).
+When run, it will send a message (if provided) and wait for an answer, in different ways (see options below).
+Once the conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
+This JSON structure will have to be parsed in order to retrieve the answer and determine what were the exit(s) condition(s).
 
 ### Main configuration options
 
@@ -93,8 +98,8 @@ Run `askbot.py -h` to get a description of all options.
 
 Below are the most important configuration options for this bot (please also check the generic options below) :
 
-- **--max-count <integer>** will define how many messages to read at maximum before exiting. This allows the recipient to send several messages in answer, but currently all of those messages are only returned at once after they all have been typed so they cannot be parsed one by one. To give x tries to the recipient, run x times this bot instead.
-- **--pattern <name> <pattern>** defines a pattern that make the bot quit when matched. It is a [regular expression pattern](https://docs.python.org/3/howto/regex.html#regex-howto). It can be given several times, hence the `<name>` field that will allow identifying which pattern(s) matched.
+- **--max-count <integer>** will define how many messages to read at maximum before exiting. This allows the recipient to send several messages in answer. However currently all of those messages are returned at once after they all have been read by the bot so they cannot be parsed on the fly. To give _x_ tries to the recipient, run _x_ times this bot instead.
+- **--pattern <name> <pattern>** defines a pattern that will end the bot when matched. It takes 2 arguments : a symbolic name and a [regular expression pattern](https://docs.python.org/3/howto/regex.html#regex-howto) that will be tested against each message. It can be passed several times in the same command line, hence the `<name>` argument, which will allow identifying which pattern(s) matched.
 
 Sample configuration can be found in `test/askbot-sample-conf`.
 
@@ -104,7 +109,7 @@ The following command will :
 
 - Send the message "Do you like me" to +34987654321 on Signal
 - Wait for a maximum of 3 messages in answer and return
-- Return immediately if one message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
+- Or return immediately if one message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
 
     python3 askbot.py -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
 
@@ -150,10 +155,10 @@ If the user *+34987654321* would reply "I don't know" then "Ok then : NO !", the
 A few notes about the example : in `-p yes '(?i)\b(yes|ok)\b'` :
 - `(?i)` enables case-insensitive match
 - `\b` means "edge of a word" ; it is used to make sure the wanted text will not be part of another word (e.g. `tik tok` would match `ok` otherwise)
-- note that no `^` nor `$` are used (though they could) in order to simplify the expression and avoid putting `.*` before and after to allow any word before and after
-- the pattern is labeled 'yes' so it can easily be identified in the JSON output and checked for a positive match
+- Note that a _search_ is done on the messages (not a _match_) so it is not required to specify a full expression with `^` and `$` (though you may if you want). This makes the pattern more readable.
+- The pattern is labeled 'yes' so it can easily be identified in the JSON output and checked for a positive match
 
-Also you can notice that it's important either to define patterns that don't overlap (here the message match both 'yes' and 'no') or to be ready to handle unknow states.
+Also you can notice the importance to define patterns that don't overlap (here the message matched both 'yes' and 'no') or to handle unknow states.
 
 You could parse the output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/).
 For instance, to get the name of the matched patterns in Python :
@@ -171,6 +176,8 @@ It will return the list of the names of the patterns that matched the last messa
 
 ### Main generic options
 
+The following options are common to both bots :
+
 - **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
 - **--username** selects the account to use to send and read message ; its format depends on the backend
@@ -181,14 +188,14 @@ It will return the list of the names of the patterns that matched the last messa
 ### Config.yml configuration file
 
 Options can also be taken from a configuration file : by default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
-This file is in YAML format with all options at the root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (options `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
+This file is in YAML format with all options at root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (options `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
 ```yaml
 keywords_files:
     - 1.json
     - 2.json
 ```
 
-A sample configuration is available in the `test/transbot-sample-conf/` directory.
+See also sample configurations in the `test/` directory.
 
 Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you don't know about YAML.
 
@@ -225,11 +232,10 @@ Sample command line to run the bot with Signal :
 
 ### Python libraries
 
-- [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp
-- [https://lab.louiz.org/poezio/slixmpp](slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; however the quick start example does not work OOTB...
-- https://github.com/horazont/aioxmpp : the official library, seems the most complete but misses practical introduction
+- [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp, and no OMEMO...
+- [slixmpp](https://lab.louiz.org/poezio/slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; however the quick start example does not work OOTB... It supports OMEMO so it's probably going to be to winner.
+- [github.com/horazont/aioxmpp](https://github.com/horazont/aioxmpp) : officially referenced library from xmpp.org, seems the most complete but misses practical introduction and does not provide OMEMO OOTB.
 
-None of them seems to support OMEMO out of the box :-(
 
 ### IBM Cloud
 
