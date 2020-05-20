@@ -3,6 +3,7 @@
 import atexit
 import signal
 import sys
+import logging
 
 class Bot:
     """
@@ -24,11 +25,12 @@ class Bot:
             Called just before exiting ; the chatter should still be available.
             Subclass MUST call registerExitHandler for this to work !
         """
-        pass
+        logging.debug("Exiting...")
 
 
     def onSignal( self, sig, frame ):
         # Thanks https://stackoverflow.com/questions/23468042/the-invocation-of-signal-handler-and-atexit-handler-in-python
+        logging.debug("Got signal %s %s",sig,repr(frame))
         sys.exit(0)
 
 
