@@ -1,6 +1,9 @@
 # nicobot
 
-🤟 A collection of *cool* chat bots 🤟
+A collection of 🤟 *cool* 🤟 chat bots :
+
+- *Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service
+- *Askbot* is a one-shot chatbot that will throw a question and wait for an answer
 
 > My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk !
 
@@ -79,13 +82,13 @@ The **i18n.\<locale>.yml** file contains localization strings for your locale an
 
 ## Askbot
 
-*Askbot* is a one-shot chatbot that will throw a question and waits for an answer.
+*Askbot* is a one-shot chatbot that will throw a question and wait for an answer.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-When run, it will send a message if provided and wait for an answer, in different ways (see options below).
-Once the conditions are met to terminate, the bot will print the result in [JSON](https://www.json.org/) format.
-The caller will have to parse this JSON structure in order to know what the answer was and what were the exit(s) condition(s).
+When run, it will send a message (if provided) and wait for an answer, in different ways (see options below).
+Once the conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
+This JSON structure will have to be parsed in order to retrieve the answer and determine what were the exit(s) condition(s).
 
 ### Main configuration options
 
