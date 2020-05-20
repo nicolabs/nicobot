@@ -554,7 +554,7 @@ if __name__ == '__main__':
     # Chatter-generic arguments
     parser.add_argument("--backend", "-b", dest="backend", choices=["signal","console"], default=config.backend, help="Chat backend to use")
     parser.add_argument("--input-file", "-i", dest="input_file", default=config.input_file, help="File to read messages from (one per line)")
-    parser.add_argument('--username', '-u', dest='username', help="Sender's number (e.g. +12345678901 for the 'signal' backend)")
+    parser.add_argument('--username', '-U', dest='username', help="Sender's number (e.g. +12345678901 for the 'signal' backend)")
     parser.add_argument('--group', '-g', dest='group', help="Group's ID in base64 (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==' for the 'signal' backend)")
     parser.add_argument('--recipient', '-r', dest='recipient', help="Recipient's number (e.g. +12345678901)")
     parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")

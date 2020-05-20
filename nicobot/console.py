@@ -12,13 +12,22 @@ class ConsoleChatter:
     def __init__( self, input=sys.stdin, output=sys.stdout ):
         self.input = input
         self.output = output
+        self.exit = False
 
     def start( self, bot ):
+        # TODO Do it asynchronous (rather than testing self.exit between each instruction)
+        if self.exit:
+            return
         for line in self.input:
-            bot.onMessage( line )
+            if self.exit:
+                return
+            logging.debug( "<<< %s", line )
+            bot.onMessage( line.rstrip() )
+            if self.exit:
+                return
 
     def send( self, message ):
-        print( message, file=self.output, flush=True )
+        logging.debug( ">>> %s", message )
 
     def stop( self ):
-        sys.exit(0)
+        self.exit = True
