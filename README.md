@@ -2,9 +2,9 @@
 
 🤟 A collection of *cool* chat bots 🤟
 
-> Well, there's only one of them as of today... Plus it's absolutely **EXPERIMENTAL** : use it at your own risk !
+> My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk !
 
-It features :
+This project features :
 
 - Participating in [Signal](https://www.signal.org/fr/) conversations
 - Using [IBM Watson™ Language Translator](https://cloud.ibm.com/apidocs/language-translator) cloud API
@@ -16,13 +16,14 @@ Requires :
 
 - Python 3 (>= 3.4.2)
 - [signal-cli](https://github.com/AsamK/signal-cli) (for the *Signal* backend)
-- An IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
+- For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
 Install Python dependencies with :
 
     pip3 install -r requirements.txt
 
-See below for Signal requirements.
+See below for *Signal* requirements.
+
 
 
 ## Transbot
@@ -38,7 +39,7 @@ The sample configuration shows how to make it translate any message containing "
 
 ### Quick start
 
-1. Install prerequistes ; for Debian systems this will look like :
+1. Install prerequisites ; for Debian systems this will look like :
     ```
     sudo apt install python3 python3-pip
     git clone https://github.com/nicolabs/nicobot.git
@@ -54,7 +55,7 @@ The sample configuration shows how to make it translate any message containing "
 If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
 
 1. Install and configure `signal-cli` (see below for details)
-2. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf -b signal -u '+33123456789' -r '+34987654321'` with `-u +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
+2. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
 
 See below for more options...
 
@@ -63,23 +64,118 @@ See below for more options...
 
 Run `transbot.py -h` to get a description of all options.
 
-Below are the most important configuration options :
+Below are the most important configuration options for this bot (please also check the generic options below) :
 
-- **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot.py --keyword <a_keyword> --keyword <another_keyword> ...` a **first time with** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the default name.
 - **--languages-file** : The first time the bot runs, it will download the list of supported languages into `languages.<locale>.json` and reuse it afterwards but you can give it a specific file with the set of languages you want. You can use `--locale` to set the desired locale.
 - **--locale** will select the locale to use for default translations (with no target language specified) and as the default parsing language for keywords.
 - **--ibmcloud-url** and **--ibmcloud-apikey** can be obtained from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
-- **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
-- **--username** selects the account to use to send and read message ; its format depends on the backend
-- **--recipient** and **--group** select the recipient (only one of them should be given) ; its format depends on the backend
-- **--stealth** will make the bot connect and listen to messages but print any answer instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 The **i18n.\<locale>.yml** file contains localization strings for your locale and fun :
 - *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
 - It also defines the pattern that terminates the bot.
 
-Finally, see the next chapter to learn about the **config.yml** file.
+
+
+## Askbot
+
+*Askbot* is a one-shot chatbot that will throw a question and waits for an answer.
+
+**Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
+
+When run, it will send a message if provided and wait for an answer, in different ways (see options below).
+Once the conditions are met to terminate, the bot will print the result in [JSON](https://www.json.org/) format.
+The caller will have to parse this JSON structure in order to know what the answer was and what were the exit(s) condition(s).
+
+### Main configuration options
+
+Run `askbot.py -h` to get a description of all options.
+
+Below are the most important configuration options for this bot (please also check the generic options below) :
+
+- **--max-count <integer>** will define how many messages to read at maximum before exiting. This allows the recipient to send several messages in answer, but currently all of those messages are only returned at once after they all have been typed so they cannot be parsed one by one. To give x tries to the recipient, run x times this bot instead.
+- **--pattern <name> <pattern>** defines a pattern that make the bot quit when matched. It is a [regular expression pattern](https://docs.python.org/3/howto/regex.html#regex-howto). It can be given several times, hence the `<name>` field that will allow identifying which pattern(s) matched.
+
+Sample configuration can be found in `test/askbot-sample-conf`.
+
+### Example
+
+The following command will :
+
+- Send the message "Do you like me" to +34987654321 on Signal
+- Wait for a maximum of 3 messages in answer and return
+- Return immediately if one message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
+
+    python3 askbot.py -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
+
+If the user *+34987654321* would reply "I don't know" then "Ok then : NO !", the output would be :
+
+```json
+{
+    "max_responses": false,
+    "messages": [{
+        "message": "I don't know...",
+        "patterns": [{
+            "name": "yes",
+            "pattern": "(?i)\\b(yes|ok)\\b",
+            "matched": false
+        }, {
+            "name": "no",
+            "pattern": "(?i)\\bno\\b",
+            "matched": false
+        }, {
+            "name": "cancel",
+            "pattern": "(?i)\\b(cancel|abort)\\b",
+            "matched": false
+        }]
+    }, {
+        "message": "Ok then : NO !",
+        "patterns": [{
+            "name": "yes",
+            "pattern": "(?i)\\b(yes|ok)\\b",
+            "matched": true
+        }, {
+            "name": "no",
+            "pattern": "(?i)\\bno\\b",
+            "matched": true
+        }, {
+            "name": "cancel",
+            "pattern": "(?i)\\b(cancel|abort)\\b",
+            "matched": false
+        }]
+    }]
+}
+```
+
+A few notes about the example : in `-p yes '(?i)\b(yes|ok)\b'` :
+- `(?i)` enables case-insensitive match
+- `\b` means "edge of a word" ; it is used to make sure the wanted text will not be part of another word (e.g. `tik tok` would match `ok` otherwise)
+- note that no `^` nor `$` are used (though they could) in order to simplify the expression and avoid putting `.*` before and after to allow any word before and after
+- the pattern is labeled 'yes' so it can easily be identified in the JSON output and checked for a positive match
+
+Also you can notice that it's important either to define patterns that don't overlap (here the message match both 'yes' and 'no') or to be ready to handle unknow states.
+
+You could parse the output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/).
+For instance, to get the name of the matched patterns in Python :
+
+```python
+output = json.loads('{ "max_responses": false, "messages": [...] }')
+matched = [ p['name'] for p in output['messages'][-1]['patterns'] if p['matched'] ]
+```
+
+It will return the list of the names of the patterns that matched the last message ; e.g. `['yes','no']` in our above example.
+
+
+## Generic instructions
+
+
+### Main generic options
+
+- **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
+- **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
+- **--username** selects the account to use to send and read message ; its format depends on the backend
+- **--recipient** and **--group** select the recipient (only one of them should be given) ; its format depends on the backend
+- **--stealth** will make the bot connect and listen to messages but print any answer instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 
 ### Config.yml configuration file
@@ -117,11 +213,11 @@ Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/si
 With signal, make sure :
 
 - the `--username` parameter is your phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign)
-- specify either `--recipient` as an international phone number or `--group` with a base 64 group ID (e.g. `--group "mABCDNVoEFGz0YeZM1234Q=="`). Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -u +336123456789 listGroups`
+- specify either `--recipient` as an international phone number or `--group` with a base 64 group ID (e.g. `--group "mABCDNVoEFGz0YeZM1234Q=="`). Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -U +336123456789 listGroups`
 
 Sample command line to run the bot with Signal :
 
-    python3 nicobot/transbot.py -b signal -u +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
+    python3 nicobot/transbot.py -b signal -U +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
 
 
 
