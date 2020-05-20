@@ -35,29 +35,49 @@ class Config:
             'config_dir': os.getcwd(),
             'group': None,
             'input_file': sys.stdin,
+            'max_count': -1,
+            'patterns': [],
             'recipient': None,
             'signal_cli': shutil.which("signal-cli"),
             'signal_stealth': False,
             'stealth': False,
             'timeout': None,
             'username': None,
-            'verbosity': "INFO"
+            'verbosity': "INFO",
             })
 
+
+class Status:
+
+    def __init__(self):
+        self.__dict__.update({
+            'max_count': False,
+            'messages': [],
+            })
 
 
 class AskBot(Bot):
     """
         Sends a message and reads the answer.
         Can be configured with retries, pattern matching, ...
+
+        patterns : a list of 2-element list/tuple as [name,pattern]
     """
 
-    def __init__( self, chatter, input=sys.stdin, output=sys.stdout, err=sys.stderr ):
+    def __init__( self, chatter, message, output=sys.stdout, err=sys.stderr, patterns=[], max_count=-1 ):
+
+        # TODO Implement a global session timeout after which the bot exits
+        self.status = Status()
+        self.responses_count = 0
 
         self.chatter = chatter
-        self.input = input
+        self.message = message
         self.output = output
         self.err = err
+        self.max_count = max_count
+        self.patterns = []
+        for pattern in patterns:
+            self.patterns.append({ 'name':pattern[0], 'pattern':re.compile(pattern[1]) })
 
 
     def onMessage( self, message ):
@@ -65,9 +85,35 @@ class AskBot(Bot):
             Called by self.chatter whenever a message has arrived.
 
             message: A plain text message
-            Returns nothing
+            Returns the full status with exit conditions
         """
-        print(message)
+
+        status_message = { 'message':message, 'patterns':[] }
+        self.status.messages.append(status_message)
+
+        self.responses_count = self.responses_count + 1
+        logging.info("<<< %s", message)
+
+        # If we reached the last message or if we exceeded it (possible if we received several answers in a batch)
+        if self.max_count>0 and self.responses_count >= self.max_count:
+            logging.debug("Max amount of messages reached")
+            self.status.max_count = True
+
+        # Another way to quit : pattern matching
+        for p in self.patterns:
+            name = p['name']
+            pattern = p['pattern']
+            status_pattern = { 'name':name, 'pattern':pattern.pattern, 'matched':False }
+            status_message['patterns'].append(status_pattern)
+            if pattern.search(message):
+                logging.debug("Pattern '%s' matched",name)
+                status_pattern['matched'] = True
+        matched = [ p for p in status_message['patterns'] if p['matched'] ]
+
+        # Check if any exit condition is met to notify the underlying chatter engine
+        if self.status.max_count or len(matched) > 0:
+            logging.debug("At least one pattern matched : exiting...")
+            self.chatter.stop()
 
 
     def run( self ):
@@ -76,14 +122,20 @@ class AskBot(Bot):
 
             1. Sends the given message(s)
             2. Reads and print maximum 'attempts' messages
+
+            Returns the execution status of this bot
         """
 
-        logging.debug("Bot starting...")
+        logging.debug("Bot ready.")
         self.registerExitHandler()
-        for line in self.input:
-            self.chatter.send(line)
+        if self.message:
+            self.chatter.send(self.message)
+        # Blocks on this line until the bot exits
+        logging.debug("Bot reading answer...")
         self.chatter.start(self)
 
+        logging.debug("Bot done.")
+        return self.status
 
 
 if __name__ == '__main__':
@@ -111,15 +163,17 @@ if __name__ == '__main__':
     # Chatter-generic arguments
     parser.add_argument("--backend", "-b", dest="backend", choices=["signal","console"], default=config.backend, help="Chat backend to use")
     parser.add_argument("--input-file", "-i", dest="input_file", default=config.input_file, help="File to read messages from (one per line)")
-    parser.add_argument('--username', '-u', '--jabberid', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
+    parser.add_argument('--username', '-U', '--jabberid', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
     parser.add_argument('--recipient', '-r', '--receiver', dest='recipient', action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
     parser.add_argument('--group', '-g', dest='group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
     parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")
     # Other core options
-    parser.add_argument('--password', '-p', dest='password', help="Senders's password")
+    parser.add_argument('--password', '-P', dest='password', help="Senders's password")
+    parser.add_argument('--max-count', dest='max_count', type=int, default=config.max_count, help="Read this maximum number of responses before exiting")
     parser.add_argument('--message', '-m', dest='message', help="Message to send. If missing, will read from --input-file")
     parser.add_argument('--message-file', '-f', dest='message_file', type=argparse.FileType('r'), default=sys.stdin, help="File with the message to send. If missing, will be read from standard input")
-    parser.add_argument('--timeout', '-t', dest='timeout', type=int, help="How much time t wait for an answer before quiting (in seconds)")
+    parser.add_argument('--pattern', '-p', dest='patterns', action='append', nargs=2, help="Exits with status 0 whenever a message matches this pattern ; otherwise with status 1")
+    parser.add_argument('--timeout', '-t', dest='timeout', type=int, default=config.timeout, help="How much time t wait for an answer before quiting (in seconds)")
     # Misc. options
     parser.add_argument("--debug", "-d", action="store_true", dest='debug', default=False, help="Activate debug logs (overrides --verbosity)")
     # Signal-specific arguments
@@ -146,8 +200,8 @@ if __name__ == '__main__':
     try:
         # Allows config_file to be relative to the config_dir
         config.config_file = filter_files(
-            [config.config_file,
-            os.path.join(config.config_dir,"config.yml")],
+            [args.config_file,
+            os.path.join(args.config_dir,"config.yml")],
             should_exist=True,
             fallback_to=1 )[0]
         logging.debug("Using config file %s",config.config_file)
@@ -157,17 +211,17 @@ if __name__ == '__main__':
             try:
                 # This is the required syntax in newer pyyaml distributions
                 dictConfig = yaml.load(file, Loader=yaml.FullLoader)
-            except:
+            except AttributeError:
                 # Some systems (e.g. raspbian) ship with an older version of pyyaml
                 dictConfig = yaml.load(file)
             logging.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
             config.__dict__.update(dictConfig)
-    except Exception as e:
+    except OSError as e:
         # If it was a user-set option, stop here
         if args.config_file == config.config_file:
             raise e
         else:
-            logging.info("Could not read %s ; no config file will be used",config.config_file)
+            logging.debug("Could not open %s ; no config file will be used",config.config_file)
             logging.debug(e, exc_info=True)
             pass
     # From here the config object has only the default values for all configuration options
@@ -204,7 +258,8 @@ if __name__ == '__main__':
             recipient=config.recipient[0],
             group=config.group,
             signal_cli=config.signal_cli,
-            stealth=config.signal_stealth)
+            stealth=config.signal_stealth
+            )
         # TODO  :timeout=config.timeout
     # By default (or if backend == "console"), will read from stdin or a given file and output to console
     else:
@@ -217,6 +272,11 @@ if __name__ == '__main__':
     # Real start
     #
 
-    AskBot(
-        chatter=chatter
-        ).run()
+    bot = AskBot(
+        chatter=chatter,
+        message=config.message,
+        patterns=config.patterns,
+        max_count=config.max_count
+        )
+    status = bot.run()
+    print( json.dumps(vars(status)), file=sys.stdout, flush=True )
