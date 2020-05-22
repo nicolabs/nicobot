@@ -200,6 +200,18 @@ See also sample configurations in the `test/` directory.
 Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you don't know about YAML.
 
 
+
+## Using the Jabber/XMPP backend
+
+By using `--backend jabber` you can make the bot chat with XMPP (a.k.a. Jabber) users.
+
+### Jabber-specific options
+
+- `--username` and `--password` are the JabberID (e.g. *myusername@myserver.im*) and password of the bot's account, used to send and read messages. If either parameter is missing, will try to read `jid` and `password` from `~/.xtalk` file.
+- `--recipient` is the JabberID of the person to send the message to
+
+
+
 ## Using the Signal backend
 
 By using `--backend signal` you can make the bot chat with Signal users.
@@ -230,13 +242,6 @@ Sample command line to run the bot with Signal :
 
 ## Resources
 
-### Python libraries
-
-- [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp, and no OMEMO...
-- [slixmpp](https://lab.louiz.org/poezio/slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; however the quick start example does not work OOTB... It supports OMEMO so it's probably going to be to winner.
-- [github.com/horazont/aioxmpp](https://github.com/horazont/aioxmpp) : officially referenced library from xmpp.org, seems the most complete but misses practical introduction and [does not provide OMEMO OOTB](https://github.com/horazont/aioxmpp/issues/338).
-
-
 ### IBM Cloud
 
 - [Language Translator service](https://cloud.ibm.com/catalog/services/language-translator)
@@ -246,3 +251,17 @@ Sample command line to run the bot with Signal :
 
 - [Signal home](https://signal.org/)
 - [signal-cli man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc)
+
+### Jabber
+
+- Official XMPP libraries : https://xmpp.org/software/libraries.html
+- OMEMO compatible clients : https://omemo.top/
+- [OMEMO official Python library](https://github.com/omemo/python-omemo) : looks very immature
+- *Gaijim*, a Windows/MacOS/Linux XMPP client with OMEMO support : [gajim.org](https://gajim.org/) | [dev.gajim.org/gajim](https://dev.gajim.org/gajim)
+- *Conversations*, an Android XMPP client with OMEMO support and paid hosting : https://conversations.im
+
+Python libraries :
+
+- [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp, and no OMEMO...
+- [github.com/horazont/aioxmpp](https://github.com/horazont/aioxmpp) : officially referenced library from xmpp.org, seems the most complete but misses practical introduction and [does not provide OMEMO OOTB](https://github.com/horazont/aioxmpp/issues/338).
+- [slixmpp](https://lab.louiz.org/poezio/slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; plus it [supports OMEMO](https://lab.louiz.org/poezio/slixmpp-omemo/) so it's the winner. [API doc](https://slixmpp.readthedocs.io/).

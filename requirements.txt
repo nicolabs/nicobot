@@ -12,3 +12,6 @@ requests
 emoji-country-flag
 # https://pyyaml.org/wiki/PyYAMLDocumentation
 pyyaml
+
+##### Requirements for jabber #####
+slixmpp-omemo
