@@ -1,6 +1,10 @@
+# -*- coding: utf-8 -*-
+
+import argparse
+import asyncio
 import logging
-import time
 import os
+import time
 
 from slixmpp import ClientXMPP, JID
 from slixmpp.exceptions import IqTimeout, IqError
@@ -9,7 +13,6 @@ import slixmpp_omemo
 from slixmpp_omemo import PluginCouldNotLoad, MissingOwnKey, EncryptionPrepareException
 from slixmpp_omemo import UndecidedException, UntrustedException, NoAvailableSession
 from omemo.exceptions import MissingBundleException
-import asyncio
 
 # Own classes
 from chatter import Chatter
@@ -316,3 +319,19 @@ class JabberChatter(Chatter):
             Stops waiting for messages and exits the engine
         """
         self.xmpp.disconnect()
+
+
+
+def arg_parser():
+    """
+        Returns a parent parser for jabber-specific arguments
+    """
+
+    parser = argparse.ArgumentParser(add_help=False)
+
+    # Jabber-specific arguments
+    parser.add_argument('--jabber-username', '--jabberid', '--jid', dest='jabber_username', help="Username when using the Jabber/XMPP backend (overrides --username)")
+    parser.add_argument('--jabber-recipient', dest='jabber_recipients', action='append', default=[], help="Recipient when using the Jabber/XMPP backend (overrides --recipient)")
+    parser.add_argument('--jabber-password', dest='jabber_password', help="Senders's password")
+
+    return parser

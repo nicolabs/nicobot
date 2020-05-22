@@ -20,9 +20,12 @@ import urllib.request
 # Own classes
 from helpers import *
 from bot import Bot
+from bot import ArgHelper as BotArgHelper
 from console import ConsoleChatter
-from jabber import *
+from jabber import JabberChatter
+from jabber import arg_parser as jabber_arg_parser
 from signalcli import SignalChatter
+from signalcli import ArgHelper as SignalArgHelper
 from stealth import StealthChatter
 
 
@@ -37,12 +40,8 @@ class Config:
             'input_file': sys.stdin,
             'max_count': -1,
             'patterns': [],
-            'recipient': None,
-            'signal_cli': shutil.which("signal-cli"),
-            'signal_stealth': False,
             'stealth': False,
             'timeout': None,
-            'username': None,
             'verbosity': "INFO",
             })
 
@@ -130,6 +129,7 @@ class AskBot(Bot):
         self.registerExitHandler()
 
         self.chatter.connect()
+        # FIXME Sometimes the message is not received by the recipient (but the logs show it's sent ?)
         if self.message:
             self.chatter.send(self.message)
 
@@ -156,35 +156,16 @@ if __name__ == '__main__':
     # config is the final, merged configuration
     config = Config()
 
-    parser = argparse.ArgumentParser( description='Sends a XMPP message and reads the answer', formatter_class=argparse.ArgumentDefaultsHelpFormatter )
-    # Bootstrap options
-    parser.add_argument("--config-file", "-c", "--config", dest="config_file", default=config.config_file, help="YAML configuration file.")
-    parser.add_argument("--config-dir", "-C", dest="config_dir", default=config.config_dir, help="Directory where to find configuration files by default.")
-    parser.add_argument('--verbosity', '-V', dest='verbosity', default=config.verbosity, help="Log level")
-    # Chatter-generic arguments
-    parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','signal'], default=config.backend, help="Chat backend to use")
-    parser.add_argument("--input-file", "-i", dest="input_file", default=config.input_file, help="File to read messages from (one per line)")
-    parser.add_argument('--username', '-U', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
-    parser.add_argument('--recipient', '-r', '--receiver', dest='recipients', default=[], action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
-    parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")
-    # Other core options
+    parser = argparse.ArgumentParser(
+        parents=[ BotArgHelper().arg_parser(), jabber_arg_parser(), SignalArgHelper().arg_parser() ],
+        description='Sends a XMPP message and reads the answer',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter )
+    # Core options for this bot
     parser.add_argument('--max-count', dest='max_count', type=int, default=config.max_count, help="Read this maximum number of responses before exiting")
     parser.add_argument('--message', '-m', dest='message', help="Message to send. If missing, will read from --input-file")
     parser.add_argument('--message-file', '-f', dest='message_file', type=argparse.FileType('r'), default=sys.stdin, help="File with the message to send. If missing, will be read from standard input")
     parser.add_argument('--pattern', '-p', dest='patterns', action='append', nargs=2, help="Exits with status 0 whenever a message matches this pattern ; otherwise with status 1")
     parser.add_argument('--timeout', '-t', dest='timeout', type=int, default=config.timeout, help="How much time t wait for an answer before quiting (in seconds)")
-    # Misc. options
-    parser.add_argument("--debug", "-d", action="store_true", dest='debug', default=False, help="Activate debug logs (overrides --verbosity)")
-    # Signal-specific arguments
-    parser.add_argument('--signal-cli', dest='signal_cli', default=config.signal_cli, help="Path to `signal-cli` if not in PATH")
-    parser.add_argument('--signal-username', dest='signal_username', help="Username when using the Signal backend (overrides --username)")
-    parser.add_argument('--signal-group', dest='group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
-    parser.add_argument('--signal-recipient', dest='signal_recipients', action='append', default=[], help="Recipient when using the Signal backend (overrides --recipient)")
-    parser.add_argument('--signal-stealth', dest='signal_stealth', action="store_true", default=config.signal_stealth, help="Activate Signal chatter's specific stealth mode")
-    # Jabber-specific arguments
-    parser.add_argument('--jabber-username', '--jabberid', '--jid', dest='jabber_username', help="Username when using the Jabber/XMPP backend (overrides --username)")
-    parser.add_argument('--jabber-recipient', dest='jabber_recipients', action='append', default=[], help="Recipient when using the Jabber/XMPP backend (overrides --recipient)")
-    parser.add_argument('--jabber-password', dest='jabber_password', help="Senders's password")
 
     #
     # 1st pass only matters for 'bootstrap' options : configuration file and logging
