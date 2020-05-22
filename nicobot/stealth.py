@@ -2,9 +2,10 @@
 
 import logging
 import sys
+from chatter import Chatter
 
 
-class StealthChatter:
+class StealthChatter(Chatter):
     """
         Wraps a bot engine and prints messages rather than sending them
     """

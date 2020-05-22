@@ -509,6 +509,8 @@ class TransBot(Bot):
             2. Waits for messages to translate
         """
 
+        self.chatter.connect()
+
         # TODO Better using gettext, in the end
         try:
             hello = i18n.t('Hello')
@@ -519,6 +521,7 @@ class TransBot(Bot):
         except KeyError:
             logging.debug("No 'Hello' text : nothing was sent")
             pass
+
         self.registerExitHandler()
         self.chatter.start(self)
         logging.debug("Chatter loop ended")
@@ -530,6 +533,8 @@ if __name__ == '__main__':
     """
         A convenient CLI to play with this bot
     """
+
+    # TODO Update with the latest options from askbot (and make the generic ones go into bot.py)
 
     #
     # Two-pass arguments parsing

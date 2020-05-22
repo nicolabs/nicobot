@@ -21,6 +21,7 @@ import urllib.request
 from helpers import *
 from bot import Bot
 from console import ConsoleChatter
+from jabber import *
 from signalcli import SignalChatter
 from stealth import StealthChatter
 
@@ -128,8 +129,11 @@ class AskBot(Bot):
 
         logging.debug("Bot ready.")
         self.registerExitHandler()
+
+        self.chatter.connect()
         if self.message:
             self.chatter.send(self.message)
+
         # Blocks on this line until the bot exits
         logging.debug("Bot reading answer...")
         self.chatter.start(self)
@@ -161,10 +165,10 @@ if __name__ == '__main__':
     parser.add_argument("--config-dir", "-C", dest="config_dir", default=config.config_dir, help="Directory where to find configuration files by default.")
     parser.add_argument('--verbosity', '-V', dest='verbosity', default=config.verbosity, help="Log level")
     # Chatter-generic arguments
-    parser.add_argument("--backend", "-b", dest="backend", choices=["signal","console"], default=config.backend, help="Chat backend to use")
+    parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','xmpp','signal'], default=config.backend, help="Chat backend to use")
     parser.add_argument("--input-file", "-i", dest="input_file", default=config.input_file, help="File to read messages from (one per line)")
     parser.add_argument('--username', '-U', '--jabberid', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
-    parser.add_argument('--recipient', '-r', '--receiver', dest='recipient', action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
+    parser.add_argument('--recipient', '-r', '--receiver', dest='recipients', action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
     parser.add_argument('--group', '-g', dest='group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
     parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")
     # Other core options
@@ -246,23 +250,47 @@ if __name__ == '__main__':
     #
 
     # Creates the chat engine depending on the 'backend' parameter
-    if config.backend == "signal":
+    if config.backend in ['jabber','xmpp']:
+        logging.debug("Jabber/XMPP backend selected")
+        # Gets jid and password
+        if not config.username or not config.password:
+            logging.debug("Missing username or password : reading from .xtalk")
+            xtalkConf = read_xtalk_file()
+            logging.debug("Got from .xtalk : %r",xtalkConf)
+            config.username = xtalkConf['jid']
+            config.password = xtalkConf['password']
+        if not config.username:
+            raise ValueError("Missing --username and no ~.xtalk file")
+        if not config.password:
+            raise ValueError("Missing --password and no ~.xtalk file")
+        if len(config.recipients)==0 and not config.group:
+            raise ValueError("Missing --recipient")
+        chatter = JabberChatter(
+            jid=config.username,
+            password=config.password,
+            recipient=config.recipients[0]
+            )
+
+    elif config.backend == 'signal':
+        logging.debug("Signal backend selected")
         if not config.signal_cli:
             raise ValueError("Could not find the 'signal-cli' command in PATH and no --signal-cli given")
         if not config.username:
             raise ValueError("Missing a username")
-        if not config.recipient and not config.group:
+        if len(config.recipient)==0 and not config.group:
             raise ValueError("Either --recipient or --group must be provided")
         chatter = SignalChatter(
             username=config.username,
-            recipient=config.recipient[0],
+            recipient=config.recipients[0],
             group=config.group,
             signal_cli=config.signal_cli,
             stealth=config.signal_stealth
             )
         # TODO  :timeout=config.timeout
+
     # By default (or if backend == "console"), will read from stdin or a given file and output to console
     else:
+        logging.debug("Console backend selected")
         chatter = ConsoleChatter(config.input_file,sys.stdout)
 
     if config.stealth:
