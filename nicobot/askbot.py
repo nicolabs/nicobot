@@ -34,7 +34,6 @@ class Config:
             'backend': "console",
             'config_file': "config.yml",
             'config_dir': os.getcwd(),
-            'group': None,
             'input_file': sys.stdin,
             'max_count': -1,
             'patterns': [],
@@ -147,8 +146,6 @@ if __name__ == '__main__':
     """
         A convenient CLI to play with this bot.
 
-        Arguments are compatible with https://github.com/xmpppy/xmpppy/blob/master/xmpp/cli.py and `$HOME/.xtalk`
-        but new ones are added.
         TODO Put generic arguments in bot.py and inherit from it (should probably provide a parent ArgumentParser)
     """
 
@@ -165,14 +162,12 @@ if __name__ == '__main__':
     parser.add_argument("--config-dir", "-C", dest="config_dir", default=config.config_dir, help="Directory where to find configuration files by default.")
     parser.add_argument('--verbosity', '-V', dest='verbosity', default=config.verbosity, help="Log level")
     # Chatter-generic arguments
-    parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','xmpp','signal'], default=config.backend, help="Chat backend to use")
+    parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','signal'], default=config.backend, help="Chat backend to use")
     parser.add_argument("--input-file", "-i", dest="input_file", default=config.input_file, help="File to read messages from (one per line)")
-    parser.add_argument('--username', '-U', '--jabberid', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
-    parser.add_argument('--recipient', '-r', '--receiver', dest='recipients', action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
-    parser.add_argument('--group', '-g', dest='group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
+    parser.add_argument('--username', '-U', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
+    parser.add_argument('--recipient', '-r', '--receiver', dest='recipients', default=[], action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
     parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")
     # Other core options
-    parser.add_argument('--password', '-P', dest='password', help="Senders's password")
     parser.add_argument('--max-count', dest='max_count', type=int, default=config.max_count, help="Read this maximum number of responses before exiting")
     parser.add_argument('--message', '-m', dest='message', help="Message to send. If missing, will read from --input-file")
     parser.add_argument('--message-file', '-f', dest='message_file', type=argparse.FileType('r'), default=sys.stdin, help="File with the message to send. If missing, will be read from standard input")
@@ -182,9 +177,14 @@ if __name__ == '__main__':
     parser.add_argument("--debug", "-d", action="store_true", dest='debug', default=False, help="Activate debug logs (overrides --verbosity)")
     # Signal-specific arguments
     parser.add_argument('--signal-cli', dest='signal_cli', default=config.signal_cli, help="Path to `signal-cli` if not in PATH")
+    parser.add_argument('--signal-username', dest='signal_username', help="Username when using the Signal backend (overrides --username)")
+    parser.add_argument('--signal-group', dest='group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
+    parser.add_argument('--signal-recipient', dest='signal_recipients', action='append', default=[], help="Recipient when using the Signal backend (overrides --recipient)")
     parser.add_argument('--signal-stealth', dest='signal_stealth', action="store_true", default=config.signal_stealth, help="Activate Signal chatter's specific stealth mode")
     # Jabber-specific arguments
-    # TODO
+    parser.add_argument('--jabber-username', '--jabberid', '--jid', dest='jabber_username', help="Username when using the Jabber/XMPP backend (overrides --username)")
+    parser.add_argument('--jabber-recipient', dest='jabber_recipients', action='append', default=[], help="Recipient when using the Jabber/XMPP backend (overrides --recipient)")
+    parser.add_argument('--jabber-password', dest='jabber_password', help="Senders's password")
 
     #
     # 1st pass only matters for 'bootstrap' options : configuration file and logging
@@ -250,39 +250,38 @@ if __name__ == '__main__':
     #
 
     # Creates the chat engine depending on the 'backend' parameter
-    if config.backend in ['jabber','xmpp']:
+    if config.backend == 'jabber':
         logging.debug("Jabber/XMPP backend selected")
-        # Gets jid and password
-        if not config.username or not config.password:
-            logging.debug("Missing username or password : reading from .xtalk")
-            xtalkConf = read_xtalk_file()
-            logging.debug("Got from .xtalk : %r",xtalkConf)
-            config.username = xtalkConf['jid']
-            config.password = xtalkConf['password']
-        if not config.username:
-            raise ValueError("Missing --username and no ~.xtalk file")
-        if not config.password:
-            raise ValueError("Missing --password and no ~.xtalk file")
-        if len(config.recipients)==0 and not config.group:
-            raise ValueError("Missing --recipient")
+        username = config.jabber_username if config.jabber_username else config.username
+        if not username:
+            raise ValueError("Missing --jabber-username")
+        if not config.jabber_password:
+            raise ValueError("Missing --jabber-password")
+        recipients = config.jabber_recipients + config.recipients
+        if len(recipients)==0:
+            raise ValueError("Missing --jabber-recipient")
+        # TODO allow multiple recipients
         chatter = JabberChatter(
-            jid=config.username,
-            password=config.password,
-            recipient=config.recipients[0]
+            jid=username,
+            password=config.jabber_password,
+            recipient=recipients[0]
             )
 
     elif config.backend == 'signal':
         logging.debug("Signal backend selected")
         if not config.signal_cli:
             raise ValueError("Could not find the 'signal-cli' command in PATH and no --signal-cli given")
-        if not config.username:
-            raise ValueError("Missing a username")
-        if len(config.recipient)==0 and not config.group:
-            raise ValueError("Either --recipient or --group must be provided")
+        username = config.signal_username if config.signal_username else config.username
+        if not username:
+            raise ValueError("Missing --signal-username")
+        recipients = config.signal_recipients + config.recipients
+        if len(recipients)==0 and not config.signal_group:
+            raise ValueError("Either --signal-recipient or --signal-group must be provided")
+        # TODO allow multiple recipients
         chatter = SignalChatter(
-            username=config.username,
-            recipient=config.recipients[0],
-            group=config.group,
+            username=username,
+            recipient=recipients[0],
+            group=config.signal_group,
             signal_cli=config.signal_cli,
             stealth=config.signal_stealth
             )

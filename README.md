@@ -180,8 +180,6 @@ The following options are common to both bots :
 
 - **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
-- **--username** selects the account to use to send and read message ; its format depends on the backend
-- **--recipient** and **--group** select the recipient (only one of them should be given) ; its format depends on the backend
 - **--stealth** will make the bot connect and listen to messages but print any answer instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 
@@ -207,8 +205,8 @@ By using `--backend jabber` you can make the bot chat with XMPP (a.k.a. Jabber) 
 
 ### Jabber-specific options
 
-- `--username` and `--password` are the JabberID (e.g. *myusername@myserver.im*) and password of the bot's account, used to send and read messages. If either parameter is missing, will try to read `jid` and `password` from `~/.xtalk` file.
-- `--recipient` is the JabberID of the person to send the message to
+- `--jabber-username` and `--jabber-password` are the JabberID (e.g. *myusername@myserver.im*) and password of the bot's account used to send and read messages. If `--jabber-username` missing, `--username` will be used.
+- `--jabber-recipient` is the JabberID of the person to send the message to. If missing, `--recipient` will be used.
 
 
 
@@ -229,10 +227,8 @@ Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/si
 
 ### Signal-specific options
 
-With signal, make sure :
-
-- the `--username` parameter is your phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign)
-- specify either `--recipient` as an international phone number or `--group` with a base 64 group ID (e.g. `--group "mABCDNVoEFGz0YeZM1234Q=="`). Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -U +336123456789 listGroups`
+- `--signal-username` selects the account to use to send and read message : it is a phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign). If missing, `--username` will be used.
+- `--signal-recipient` and `--signal-group` select the recipient (only one of them should be given). Make sure `--signal-recipient` is in international phone number format and `--signal-group` is a base 64 group ID (e.g. `--signal-group "mABCDNVoEFGz0YeZM1234Q=="`). If `--signal-recipient` is missing, `--recipient` will be used. Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -U +336123456789 listGroups`
 
 Sample command line to run the bot with Signal :
 

@@ -16,21 +16,6 @@ from chatter import Chatter
 from helpers import *
 
 
-""" Copy-pasted from https://github.com/xmpppy/xmpppy/blob/master/docs/examples/xtalk.py """
-def read_xtalk_file( filename=os.environ['HOME']+'/.xtalk' ):
-
-    jidparams={}
-    if os.access(filename,os.R_OK):
-        for ln in open(filename).readlines():
-            if not ln[0] in ('#',';'):
-                key,val=ln.strip().split('=',1)
-                jidparams[key.lower()]=val
-    for mandatory in ['jid','password']:
-        if mandatory not in jidparams.keys():
-            raise ValueError('Please point ~/.xtalk config file to valid JID for sending messages. It should look like:\n\n#Uncomment fields before use and type in correct credentials.\n#JID=romeo@montague.net/resource (/resource is optional)\n#PASSWORD=juliet')
-    return jidparams
-
-
 
 class SliXmppClient(ClientXMPP):
 
