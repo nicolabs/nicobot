@@ -631,7 +631,7 @@ if __name__ == '__main__':
         fallback_to=1 )[0]
 
     # Creates the chat engine depending on the 'backend' parameter
-    chatter = BotArgsHelper.chatter(args)
+    chatter = BotArgsHelper.chatter(config)
 
     #
     # Real start
