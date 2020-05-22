@@ -11,14 +11,22 @@ ibmcloud_url: https://api.us-south.language-translator.watson.cloud.ibm.com/inst
 ibmcloud_apikey: "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
 
 backend: console
+#backend: jabber
 #backend: signal
 
 # Signal credentials
 # Make sure to put quotes around the username field as it is a phone number for Signal
-username: "+33123456789"
-recipient: "+33123456789"
+signal_username: "+33123456789"
+signal_recipients:
+    - "+33123456789"
 # Get this group ID with the command `signal-cli -u +33123456789 listGroups`
-#group: "mABCDNVoEFGz0YeZM1234Q=="
+#signal_group: "mABCDNVoEFGz0YeZM1234Q=="
+
+# Used when backend = jabber
+jabber_username: mybot@conversations.im
+jabber_password: TheBestPasswordInTheWorld
+jabber_recipients:
+    - itsme@conversations.im
 
 # Activates stealth mode
 #stealth: on
