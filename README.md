@@ -180,8 +180,6 @@ The following options are common to both bots :
 
 - **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
-- **--username** selects the account to use to send and read message ; its format depends on the backend
-- **--recipient** and **--group** select the recipient (only one of them should be given) ; its format depends on the backend
 - **--stealth** will make the bot connect and listen to messages but print any answer instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 
@@ -198,6 +196,18 @@ keywords_files:
 See also sample configurations in the `test/` directory.
 
 Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you don't know about YAML.
+
+
+
+## Using the Jabber/XMPP backend
+
+By using `--backend jabber` you can make the bot chat with XMPP (a.k.a. Jabber) users.
+
+### Jabber-specific options
+
+- `--jabber-username` and `--jabber-password` are the JabberID (e.g. *myusername@myserver.im*) and password of the bot's account used to send and read messages. If `--jabber-username` missing, `--username` will be used.
+- `--jabber-recipient` is the JabberID of the person to send the message to. If missing, `--recipient` will be used.
+
 
 
 ## Using the Signal backend
@@ -217,10 +227,8 @@ Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/si
 
 ### Signal-specific options
 
-With signal, make sure :
-
-- the `--username` parameter is your phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign)
-- specify either `--recipient` as an international phone number or `--group` with a base 64 group ID (e.g. `--group "mABCDNVoEFGz0YeZM1234Q=="`). Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -U +336123456789 listGroups`
+- `--signal-username` selects the account to use to send and read message : it is a phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign). If missing, `--username` will be used.
+- `--signal-recipient` and `--signal-group` select the recipient (only one of them should be given). Make sure `--signal-recipient` is in international phone number format and `--signal-group` is a base 64 group ID (e.g. `--signal-group "mABCDNVoEFGz0YeZM1234Q=="`). If `--signal-recipient` is missing, `--recipient` will be used. Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -U +336123456789 listGroups`
 
 Sample command line to run the bot with Signal :
 
@@ -229,13 +237,6 @@ Sample command line to run the bot with Signal :
 
 
 ## Resources
-
-### Python libraries
-
-- [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp, and no OMEMO...
-- [slixmpp](https://lab.louiz.org/poezio/slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; however the quick start example does not work OOTB... It supports OMEMO so it's probably going to be to winner.
-- [github.com/horazont/aioxmpp](https://github.com/horazont/aioxmpp) : officially referenced library from xmpp.org, seems the most complete but misses practical introduction and [does not provide OMEMO OOTB](https://github.com/horazont/aioxmpp/issues/338).
-
 
 ### IBM Cloud
 
@@ -246,3 +247,17 @@ Sample command line to run the bot with Signal :
 
 - [Signal home](https://signal.org/)
 - [signal-cli man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc)
+
+### Jabber
+
+- Official XMPP libraries : https://xmpp.org/software/libraries.html
+- OMEMO compatible clients : https://omemo.top/
+- [OMEMO official Python library](https://github.com/omemo/python-omemo) : looks very immature
+- *Gaijim*, a Windows/MacOS/Linux XMPP client with OMEMO support : [gajim.org](https://gajim.org/) | [dev.gajim.org/gajim](https://dev.gajim.org/gajim)
+- *Conversations*, an Android XMPP client with OMEMO support and paid hosting : https://conversations.im
+
+Python libraries :
+
+- [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp, and no OMEMO...
+- [github.com/horazont/aioxmpp](https://github.com/horazont/aioxmpp) : officially referenced library from xmpp.org, seems the most complete but misses practical introduction and [does not provide OMEMO OOTB](https://github.com/horazont/aioxmpp/issues/338).
+- [slixmpp](https://lab.louiz.org/poezio/slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; plus it [supports OMEMO](https://lab.louiz.org/poezio/slixmpp-omemo/) so it's the winner. [API doc](https://slixmpp.readthedocs.io/).

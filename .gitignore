@@ -131,3 +131,4 @@ dmypy.json
 # All local-only / private files
 **/local*
 **/priv*
+**/.omemo

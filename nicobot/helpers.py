@@ -4,8 +4,10 @@
     Helper functions
 """
 
-import sys
 import logging
+import os
+import sys
+import yaml
 
 
 # Adds a log level finer than DEBUG
@@ -56,3 +58,61 @@ def filter_files( files, should_exist=False, fallback_to=None ):
         return files[fallback_to:fallback_to+1]
 
     return found
+
+
+def parse_args_2pass( parser, config ):
+
+    #
+    # 1st pass only matters for 'bootstrap' options : configuration file and logging
+    #
+    # Note : we don't let the parse_args method merge the 'args' into config yet,
+    # because it would not be possible to make the difference between the default values
+    # and the ones explictely given by the user
+    # This is usefull for instance to throw an exception if a file given by the user doesn't exist, which is different than the default filename
+    # 'config' is therefore the defaults overriden by user options while 'args' has only user options
+    args = parser.parse_args()
+
+    # Logging configuration
+    configure_logging(args.verbosity,debug=args.debug)
+    logging.debug( "Configuration for bootstrap : %s", repr(vars(args)) )
+
+    # Fills the config with user-defined default options from a config file
+    try:
+        # Allows config_file to be relative to the config_dir
+        config.config_file = filter_files(
+            [args.config_file,
+            os.path.join(args.config_dir,"config.yml")],
+            should_exist=True,
+            fallback_to=1 )[0]
+        logging.debug("Using config file %s",config.config_file)
+        with open(config.config_file,'r') as file:
+            # The FullLoader parameter handles the conversion from YAML
+            # scalar values to Python the dictionary format
+            try:
+                # This is the required syntax in newer pyyaml distributions
+                dictConfig = yaml.load(file, Loader=yaml.FullLoader)
+            except AttributeError:
+                # Some systems (e.g. raspbian) ship with an older version of pyyaml
+                dictConfig = yaml.load(file)
+            logging.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
+            config.__dict__.update(dictConfig)
+    except OSError as e:
+        # If it was a user-set option, stop here
+        if args.config_file == config.config_file:
+            raise e
+        else:
+            logging.debug("Could not open %s ; no config file will be used",config.config_file)
+            logging.debug(e, exc_info=True)
+            pass
+    # From here the config object has only the default values for all configuration options
+
+    #
+    # 2nd pass parses all options
+    #
+    # Updates again the existing config object with all parsed options
+    config = parser.parse_args(namespace=config)
+    # From the bootstrap parameters, only logging level may need to be read again
+    configure_logging(config.verbosity,debug=config.debug)
+    logging.debug( "Final configuration : %s", repr(vars(config)) )
+
+    return config

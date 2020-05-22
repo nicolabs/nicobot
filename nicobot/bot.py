@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import argparse
 import atexit
+import logging
+import os
 import signal
 import sys
-import logging
+
+
+from console import ConsoleChatter
+from jabber import JabberChatter
+from signalcli import SignalChatter
+from stealth import StealthChatter
+
 
 class Bot:
     """
@@ -46,3 +55,116 @@ class Bot:
             Starts the bot
         """
         pass
+
+
+
+class ArgsHelper:
+
+    """
+        Command-line parsing helper for bot-generic options
+    """
+
+    def __init__(self):
+
+        # Default configuration (some defaults still need to be set up after command line has been parsed)
+        self.__dict__.update({
+            'backend': "console",
+            'config_file': "config.yml",
+            'config_dir': os.getcwd(),
+            'input_file': sys.stdin,
+            'stealth': False,
+            'verbosity': "INFO",
+            })
+
+
+    def parser(self):
+        """
+            Returns a parent parser for common bot arguments
+        """
+
+        parser = argparse.ArgumentParser(add_help=False)
+
+        # Bootstrap options
+        parser.add_argument("--config-file", "-c", "--config", dest="config_file", default=self.config_file, help="YAML configuration file.")
+        parser.add_argument("--config-dir", "-C", dest="config_dir", default=self.config_dir, help="Directory where to find configuration files by default.")
+        parser.add_argument('--verbosity', '-V', dest='verbosity', default=self.verbosity, help="Log level")
+        # Chatter-generic arguments
+        parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','signal'], default=self.backend, help="Chat backend to use")
+        parser.add_argument("--input-file", "-i", dest="input_file", default=self.input_file, help="File to read messages from (one per line)")
+        parser.add_argument('--username', '-U', dest='username', help="Sender's ID (a phone number for Signal, a Jabber Identifier (JID) aka. username for Jabber/XMPP")
+        parser.add_argument('--recipient', '-r', '--receiver', dest='recipients', default=[], action='append', help="Recipient's ID (e.g. '+12345678901' for Signal / JabberID (Receiver address) to send the message to)")
+        parser.add_argument('--stealth', dest='stealth', action="store_true", default=self.stealth, help="Activate stealth mode on any chosen chatter")
+        # Misc. options
+        parser.add_argument("--debug", "-d", action="store_true", dest='debug', default=False, help="Activate debug logs (overrides --verbosity)")
+
+        return parser
+
+
+    def jabber_chatter( args ):
+        """
+            Builds a JabberChatter from Namespace argument 'args'
+        """
+
+        username = args.jabber_username if args.jabber_username else args.username
+        if not username:
+            raise ValueError("Missing --jabber-username")
+        if not args.jabber_password:
+            raise ValueError("Missing --jabber-password")
+        recipients = args.jabber_recipients + args.recipients
+        if len(recipients)==0:
+            raise ValueError("Missing --jabber-recipient")
+        # TODO allow multiple recipients
+        return JabberChatter(
+            jid=username,
+            password=args.jabber_password,
+            recipient=recipients[0]
+            )
+
+
+    def signal_chatter( args ):
+        """
+            Builds a SignalChatter from Namespace argument 'args'
+        """
+
+        if not args.signal_cli:
+            raise ValueError("Could not find the 'signal-cli' command in PATH and no --signal-cli given")
+        username = args.signal_username if args.signal_username else args.username
+        if not username:
+            raise ValueError("Missing --signal-username")
+        recipients = args.signal_recipients + args.recipients
+        if len(recipients)==0 and not args.signal_group:
+            raise ValueError("Either --signal-recipient or --signal-group must be provided")
+        # TODO allow multiple recipients
+        return SignalChatter(
+            username=username,
+            recipient=recipients[0],
+            group=args.signal_group,
+            signal_cli=args.signal_cli,
+            stealth=args.signal_stealth
+            )
+        # TODO  :timeout=args.timeout
+
+
+    def chatter( args ):
+        """
+            Builds the Chatter corresponding to the given parsed command-line arguments
+            args: command-line arguments as a Namespace (see argparse)
+        """
+
+        if args.backend == 'jabber':
+            logging.debug("Jabber/XMPP backend selected")
+            chatter = ArgsHelper.jabber_chatter(args)
+
+        elif args.backend == 'signal':
+            logging.debug("Signal backend selected")
+            chatter = ArgsHelper.signal_chatter(args)
+
+        # By default (or if backend == "console"), will read from stdin or a given file and output to console
+        else:
+            logging.debug("Console backend selected")
+            chatter = ConsoleChatter(args.input_file,sys.stdout)
+
+        if args.stealth:
+            chatter = StealthChatter(chatter)
+
+        return chatter

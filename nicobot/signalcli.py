@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import logging
-import sys
-import os
-import shutil
-import subprocess
 import atexit
-import signal
-import json
 import i18n
-import re
+import json
 import locale
+import logging
+import os
+import re
+import shutil
+import signal
+import subprocess
+import sys
 import time
 
 from chatter import Chatter
@@ -159,3 +159,35 @@ class SignalChatter(Chatter):
                     logging.debug("Discarding message without data")
             else:
                 logging.debug("Discarding message that was sent before I started")
+
+
+
+class ArgsHelper:
+
+    """
+        Command-line parsing helper for Signal-specific options
+    """
+
+    def __init__(self):
+
+        # Default configuration (some defaults still need to be set up after command line has been parsed)
+        self.__dict__.update({
+            'signal_cli': shutil.which("signal-cli"),
+            'signal_stealth': False,
+            })
+
+    def parser(self):
+        """
+            Returns a parent parser for Signal-specific arguments
+        """
+
+        parser = argparse.ArgumentParser(add_help=False)
+
+        # Signal-specific arguments
+        parser.add_argument('--signal-cli', dest='signal_cli', default=self.signal_cli, help="Path to `signal-cli` if not in PATH")
+        parser.add_argument('--signal-username', dest='signal_username', help="Username when using the Signal backend (overrides --username)")
+        parser.add_argument('--signal-group', dest='signal_group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
+        parser.add_argument('--signal-recipient', dest='signal_recipients', action='append', default=[], help="Recipient when using the Signal backend (overrides --recipient)")
+        parser.add_argument('--signal-stealth', dest='signal_stealth', action="store_true", default=self.signal_stealth, help="Activate Signal chatter's specific stealth mode")
+
+        return parser

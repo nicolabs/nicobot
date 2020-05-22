@@ -2,9 +2,10 @@
 
 import logging
 import sys
+from chatter import Chatter
 
 
-class ConsoleChatter:
+class ConsoleChatter(Chatter):
     """
         Bot engine that reads from a stream and outputs to another
     """

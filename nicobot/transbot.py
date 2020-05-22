@@ -24,8 +24,12 @@ import urllib.request
 # Own classes
 from helpers import *
 from bot import Bot
+from bot import ArgsHelper as BotArgsHelper
 from console import ConsoleChatter
+from jabber import JabberChatter
+from jabber import arg_parser as jabber_arg_parser
 from signalcli import SignalChatter
+from signalcli import ArgsHelper as SignalArgsHelper
 from stealth import StealthChatter
 
 
@@ -509,6 +513,8 @@ class TransBot(Bot):
             2. Waits for messages to translate
         """
 
+        self.chatter.connect()
+
         # TODO Better using gettext, in the end
         try:
             hello = i18n.t('Hello')
@@ -519,6 +525,7 @@ class TransBot(Bot):
         except KeyError:
             logging.debug("No 'Hello' text : nothing was sent")
             pass
+
         self.registerExitHandler()
         self.chatter.start(self)
         logging.debug("Chatter loop ended")
@@ -531,18 +538,13 @@ if __name__ == '__main__':
         A convenient CLI to play with this bot
     """
 
-    #
-    # Two-pass arguments parsing
-    #
-
     config = Config()
 
-    parser = argparse.ArgumentParser( description="A bot that reacts to messages with given keywords by responding with a random translation" )
-    # Bootstrap options
-    parser.add_argument("--config-file", "-c", dest="config_file", help="YAML configuration file.")
-    parser.add_argument("--config-dir", "-C", dest="config_dir", default=config.config_dir, help="Directory where to find configuration, cache and translation files by default.")
-    parser.add_argument('--verbosity', '-V', dest='verbosity', default=config.verbosity, help="Log level")
-    # Core arguments
+    parser = argparse.ArgumentParser(
+        parents=[ BotArgsHelper().parser(), jabber_arg_parser(), SignalArgsHelper().parser() ],
+        description="A bot that reacts to messages with given keywords by responding with a random translation"
+        )
+    # Core arguments for this bot
     parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="Keyword bot should react to (will write them into the file specified with --keywords-file)")
     parser.add_argument("--keywords-file", dest="keywords_files", action="append", help="File to load from and write keywords to")
     parser.add_argument('--locale', '-l', dest='locale', default=config.locale, help="Change default locale (e.g. 'fr_FR')")
@@ -551,62 +553,11 @@ if __name__ == '__main__':
     parser.add_argument("--shutdown", dest="shutdown", help="Shutdown keyword regular expression pattern")
     parser.add_argument("--ibmcloud-url", dest="ibmcloud_url", help="IBM Cloud API base URL (get it from your resource https://cloud.ibm.com/resources)")
     parser.add_argument("--ibmcloud-apikey", dest="ibmcloud_apikey", help="IBM Cloud API key (get it from your resource : https://cloud.ibm.com/resources)")
-    # Chatter-generic arguments
-    parser.add_argument("--backend", "-b", dest="backend", choices=["signal","console"], default=config.backend, help="Chat backend to use")
-    parser.add_argument("--input-file", "-i", dest="input_file", default=config.input_file, help="File to read messages from (one per line)")
-    parser.add_argument('--username', '-U', dest='username', help="Sender's number (e.g. +12345678901 for the 'signal' backend)")
-    parser.add_argument('--group', '-g', dest='group', help="Group's ID in base64 (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==' for the 'signal' backend)")
-    parser.add_argument('--recipient', '-r', dest='recipient', help="Recipient's number (e.g. +12345678901)")
-    parser.add_argument('--stealth', dest='stealth', action="store_true", default=config.stealth, help="Activate stealth mode on any chosen chatter")
-    # Signal-specific arguments
-    parser.add_argument('--signal-cli', dest='signal_cli', default=config.signal_cli, help="Path to `signal-cli` if not in PATH")
-    parser.add_argument('--signal-stealth', dest='signal_stealth', action="store_true", default=config.signal_stealth, help="Activate Signal chatter's specific stealth mode")
 
     #
-    # 1st pass only matters for 'bootstrap' options : configuration file and logging
+    # Two-pass arguments parsing
     #
-    parser.parse_args(namespace=config)
-
-    # Logging configuration
-    try:
-        # Before Python 3.4 and back since 3.4.2 we can simply pass a level name rather than a numeric value (Yes !)
-        # Otherwise manually parsing textual log levels was not clean IMHO anyway : https://docs.python.org/2/howto/logging.html#logging-to-a-file
-        logLevel = logging.getLevelName(config.verbosity.upper())
-        # Logs are output to stderr ; stdout is reserved to print the answer(s)
-        logging.basicConfig(level=logLevel, stream=sys.stderr, format='%(asctime)s\t%(levelname)s\t%(message)s')
-    except ValueError:
-    	raise ValueError('Invalid log level: %s' % config.verbosity)
-    logging.debug( "Configuration for bootstrap : %s", repr(vars(config)) )
-
-    # Loads the config file that will be used to lookup some missing parameters
-    if not config.config_file:
-        config.config_file = os.path.join(config.config_dir,"config.yml")
-        logging.debug("Using default config file : %s "%config.config_file)
-    try:
-        with open(config.config_file,'r') as file:
-            # The FullLoader parameter handles the conversion from YAML
-            # scalar values to Python the dictionary format
-            try:
-                # This is the required syntax in newer pyyaml distributions
-                dictConfig = yaml.load(file, Loader=yaml.FullLoader)
-            except:
-                # Some systems (e.g. raspbian) ship with an older version of pyyaml
-                dictConfig = yaml.load(file)
-            logging.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
-            config.__dict__.update(dictConfig)
-    except Exception as e:
-        logging.debug(e, exc_info=True)
-        pass
-    # From here the config object has only the default values for all configuration options
-    #logging.debug( "Configuration after bootstrap : %s", repr(vars(config)) )
-
-    #
-    # 2nd pass parses all options
-    #
-    # Updates the existing config object with all parsed options
-    parser.parse_args(namespace=config)
-    logging.debug( "Final configuration : %s", repr(vars(config)) )
-
+    config = parse_args_2pass( parser, config )
     #
     # From here the config object has default options from:
     #   1. hard-coded default values
@@ -680,25 +631,7 @@ if __name__ == '__main__':
         fallback_to=1 )[0]
 
     # Creates the chat engine depending on the 'backend' parameter
-    if config.backend == "signal":
-        if not config.signal_cli:
-            raise ValueError("Could not find the 'signal-cli' command in PATH and no --signal-cli given")
-        if not config.username:
-            raise ValueError("Missing a username")
-        if not config.recipient and not config.group:
-            raise ValueError("Either --recipient or --group must be provided")
-        chatter = SignalChatter(
-            username=config.username,
-            recipient=config.recipient,
-            group=config.group,
-            signal_cli=config.signal_cli,
-            stealth=config.signal_stealth)
-    # By default (or if backend == "console"), will read from stdin or a given file and output to console
-    else:
-        chatter = ConsoleChatter(config.input_file,sys.stdout)
-
-    if config.stealth:
-        chatter = StealthChatter(chatter)
+    chatter = BotArgsHelper.chatter(config)
 
     #
     # Real start
