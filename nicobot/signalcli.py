@@ -162,7 +162,7 @@ class SignalChatter(Chatter):
 
 
 
-class ArgHelper:
+class ArgsHelper:
 
     """
         Command-line parsing helper for Signal-specific options
@@ -176,7 +176,7 @@ class ArgHelper:
             'signal_stealth': False,
             })
 
-    def arg_parser(self):
+    def parser(self):
         """
             Returns a parent parser for Signal-specific arguments
         """
