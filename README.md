@@ -1,5 +1,7 @@
 # nicobot
 
+[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)
+
 A collection of 🤟 *cool* 🤟 chat bots :
 
 - *Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service
