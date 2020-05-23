@@ -22,15 +22,15 @@ import yaml
 import urllib.request
 
 # Own classes
-from helpers import *
-from bot import Bot
-from bot import ArgsHelper as BotArgsHelper
-from console import ConsoleChatter
-from jabber import JabberChatter
-from jabber import arg_parser as jabber_arg_parser
-from signalcli import SignalChatter
-from signalcli import ArgsHelper as SignalArgsHelper
-from stealth import StealthChatter
+from .helpers import *
+from .bot import Bot
+from .bot import ArgsHelper as BotArgsHelper
+from .console import ConsoleChatter
+from .jabber import JabberChatter
+from .jabber import arg_parser as jabber_arg_parser
+from .signalcli import SignalChatter
+from .signalcli import ArgsHelper as SignalArgsHelper
+from .stealth import StealthChatter
 
 
 

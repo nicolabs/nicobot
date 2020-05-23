@@ -2,7 +2,8 @@
 
 import logging
 import sys
-from chatter import Chatter
+
+from .chatter import Chatter
 
 
 class StealthChatter(Chatter):

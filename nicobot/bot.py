@@ -8,10 +8,10 @@ import signal
 import sys
 
 
-from console import ConsoleChatter
-from jabber import JabberChatter
-from signalcli import SignalChatter
-from stealth import StealthChatter
+from .console import ConsoleChatter
+from .jabber import JabberChatter
+from .signalcli import SignalChatter
+from .stealth import StealthChatter
 
 
 class Bot:
@@ -162,7 +162,7 @@ class ArgsHelper:
         # By default (or if backend == "console"), will read from stdin or a given file and output to console
         else:
             logging.debug("Console backend selected")
-            chatter = ConsoleChatter(args.input_file,sys.stdout)
+            chatter = ConsoleChatter(args.input_file)
 
         if args.stealth:
             chatter = StealthChatter(chatter)

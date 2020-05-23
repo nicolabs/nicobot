@@ -18,15 +18,15 @@ import yaml
 import urllib.request
 
 # Own classes
-from helpers import *
-from bot import Bot
-from bot import ArgsHelper as BotArgsHelper
-from console import ConsoleChatter
-from jabber import JabberChatter
-from jabber import arg_parser as jabber_arg_parser
-from signalcli import SignalChatter
-from signalcli import ArgsHelper as SignalArgsHelper
-from stealth import StealthChatter
+from .helpers import *
+from .bot import Bot
+from .bot import ArgsHelper as BotArgsHelper
+from .console import ConsoleChatter
+from .jabber import JabberChatter
+from .jabber import arg_parser as jabber_arg_parser
+from .signalcli import SignalChatter
+from .signalcli import ArgsHelper as SignalArgsHelper
+from .stealth import StealthChatter
 
 
 # Default configuration (some defaults still need to be set up after command line has been parsed)
@@ -55,7 +55,7 @@ class AskBot(Bot):
         patterns : a list of 2-element list/tuple as [name,pattern]
     """
 
-    def __init__( self, chatter, message, output=sys.stdout, err=sys.stderr, patterns=[], max_count=-1 ):
+    def __init__( self, chatter, message, patterns=[], max_count=-1 ):
 
         # TODO Implement a global session timeout after which the bot exits
         self.status = {
@@ -66,8 +66,6 @@ class AskBot(Bot):
 
         self.chatter = chatter
         self.message = message
-        self.output = output
-        self.err = err
         self.max_count = max_count
         self.patterns = []
         for pattern in patterns:

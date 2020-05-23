@@ -15,8 +15,8 @@ from slixmpp_omemo import UndecidedException, UntrustedException, NoAvailableSes
 from omemo.exceptions import MissingBundleException
 
 # Own classes
-from chatter import Chatter
-from helpers import *
+from .chatter import Chatter
+from .helpers import *
 
 
 
@@ -311,8 +311,9 @@ class JabberChatter(Chatter):
             Sends the given message using the underlying implemented chat protocol
         """
         logging.debug(">>> %s",message)
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.xmpp.encrypted_send( body=message, recipient=self.recipient ))
+        #loop = asyncio.get_event_loop()
+        # loop.run_until_complete(self.xmpp.encrypted_send( body=message, recipient=self.recipient ))
+        asyncio.ensure_future( self.xmpp.encrypted_send( body=message, recipient=self.recipient ) )
 
     def stop( self ):
         """

@@ -2,17 +2,17 @@
 
 import logging
 import sys
-from chatter import Chatter
+
+from .chatter import Chatter
 
 
 class ConsoleChatter(Chatter):
     """
-        Bot engine that reads from a stream and outputs to another
+        Bot engine that reads messages from a stream (stdin by default)
     """
 
-    def __init__( self, input=sys.stdin, output=sys.stdout ):
+    def __init__( self, input=sys.stdin ):
         self.input = input
-        self.output = output
         self.exit = False
 
     def start( self, bot ):

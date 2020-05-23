@@ -15,8 +15,8 @@ import subprocess
 import sys
 import time
 
-from chatter import Chatter
-from helpers import *
+from .chatter import Chatter
+from .helpers import *
 
 
 # Generic timeout for signal-cli commands to return (actually only 'send' because 'receive' uses its own timeout)
