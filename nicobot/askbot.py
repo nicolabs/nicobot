@@ -46,14 +46,6 @@ class Config:
             })
 
 
-class Status:
-
-    def __init__(self):
-        self.__dict__.update({
-            'max_count': False,
-            'messages': [],
-            })
-
 
 class AskBot(Bot):
     """
@@ -66,7 +58,10 @@ class AskBot(Bot):
     def __init__( self, chatter, message, output=sys.stdout, err=sys.stderr, patterns=[], max_count=-1 ):
 
         # TODO Implement a global session timeout after which the bot exits
-        self.status = Status()
+        self.status = {
+            'max_count': False,
+            'events': [],
+        }
         self.responses_count = 0
 
         self.chatter = chatter
@@ -87,8 +82,8 @@ class AskBot(Bot):
             Returns the full status with exit conditions
         """
 
-        status_message = { 'message':message, 'patterns':[] }
-        self.status.messages.append(status_message)
+        status_message = { 'message':message, 'matched_patterns':[] }
+        self.status['events'].append(status_message)
 
         self.responses_count = self.responses_count + 1
         logging.info("<<< %s", message)
@@ -96,21 +91,19 @@ class AskBot(Bot):
         # If we reached the last message or if we exceeded it (possible if we received several answers in a batch)
         if self.max_count>0 and self.responses_count >= self.max_count:
             logging.debug("Max amount of messages reached")
-            self.status.max_count = True
+            self.status['max_count'] = True
 
         # Another way to quit : pattern matching
+        matched = status_message['matched_patterns']
         for p in self.patterns:
             name = p['name']
             pattern = p['pattern']
-            status_pattern = { 'name':name, 'pattern':pattern.pattern, 'matched':False }
-            status_message['patterns'].append(status_pattern)
             if pattern.search(message):
                 logging.debug("Pattern '%s' matched",name)
-                status_pattern['matched'] = True
-        matched = [ p for p in status_message['patterns'] if p['matched'] ]
+                matched.append(name)
 
         # Check if any exit condition is met to notify the underlying chatter engine
-        if self.status.max_count or len(matched) > 0:
+        if self.status['max_count'] or len(matched) > 0:
             logging.debug("At least one pattern matched : exiting...")
             self.chatter.stop()
 
@@ -191,8 +184,15 @@ def run( args=sys.argv[1:] ):
         patterns=config.patterns,
         max_count=config.max_count
         )
-    status = bot.run()
-    print( json.dumps(vars(status)), file=sys.stdout, flush=True )
+    status_args = vars(config)
+    # TODO Add an option to list the fields to obfuscate (nor not)
+    for k in [ 'jabber_password' ]:
+        status_args[k] = '(obfuscated)'
+    status_result = bot.run()
+    status = { 'args':vars(config), 'result':status_result }
+    # NOTE ensure_ascii=False + encode('utf-8').decode() is not mandatory but allows printing plain UTF-8 strings rather than \u... or \x...
+    # NOTE default=repr is mandatory because some objects in the args are not serializable
+    print( json.dumps(status,skipkeys=True,ensure_ascii=False,default=repr).encode('utf-8').decode(), file=sys.stdout, flush=True )
 
 
 if __name__ == '__main__':

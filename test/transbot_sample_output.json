@@ -1,0 +1,83 @@
+{
+    "args": {
+        "backend": "console",
+        "config_file": "/home/nicobo/nicobot/test/transbot-sample-conf/config.yml",
+        "config_dir": "/home/nicobo/nicobot/test/transbot-sample-conf/",
+        "group": null,
+        "ibmcloud_url": "https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/f93001df-abcd-afgh-ijkl-d9c534aeba42",
+        "ibmcloud_apikey": "(obfuscated)",
+        "input_file": "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='UTF-8'>",
+        "keywords": [],
+        "keywords_files": ["/home/nicobo/nicobot/test/transbot-sample-conf/hello.keywords.json", "/home/nicobo/nicobot/test/transbot-sample-conf/goodbye.keywords.json"],
+        "languages": [],
+        "languages_file": "/home/nicobo/nicobot/test/transbot-sample-conf/languages.fr.json",
+        "languages_likely": "/home/nicobo/nicobot/test/transbot-sample-conf/likelySubtags.json",
+        "locale": "fr",
+        "recipient": null,
+        "shutdown": "couché nicobot",
+        "signal_cli": "/opt/signal-cli/bin/signal-cli",
+        "signal_stealth": false,
+        "stealth": false,
+        "username": null,
+        "verbosity": "debug",
+        "signal_username": "+33123456789",
+        "signal_recipients": ["+33987654321"],
+        "jabber_username": "bot9cd51f1a@conversations.im",
+        "jabber_password": "(obfuscated)",
+        "jabber_recipients": ["bot649ad4ad@conversations.im"],
+        "recipients": [],
+        "debug": false,
+        "signal_group": null
+    },
+    "result": {
+        "events": [{
+            "type": "startup",
+            "answer": "🤖 nicobot paré 🤟",
+            "timestamp": null
+        }, {
+            "type": "keyword",
+            "message": "Bonjour !",
+            "translations": [{
+                "target_language": "nn",
+                "translation": null,
+                "error": "no_translation"
+            }, {
+                "target_language": "ne",
+                "translation": {
+                    "translations": [{
+                        "translation": "हेलो!"
+                    }],
+                    "word_count": 2,
+                    "character_count": 9,
+                    "detected_language": "fr",
+                    "detected_language_confidence": 0.5904432605699131
+                },
+                "answer": "🤖 हेलो! 🇳🇵"
+            }]
+        }, {
+            "type": "translate",
+            "message": "nicobot toto en anglais",
+            "target_lang": "en",
+            "translation": null,
+            "error": "no_translation",
+            "answer": "🤖 Je ne sais pas"
+        }, {
+            "type": "translate",
+            "message": "nicobot traduit toto en anglais",
+            "target_lang": "en",
+            "translation": {
+                "translations": [{
+                    "translation": "Toto translated"
+                }],
+                "word_count": 2,
+                "character_count": 13,
+                "detected_language": "fr",
+                "detected_language_confidence": 0.5973206507749139
+            },
+            "answer": "🤖 Toto translated 🇺🇸"
+        }, {
+            "type": "shutdown",
+            "message": "couché nicobot"
+        }]
+    }
+}

@@ -95,6 +95,7 @@ def sanitizeNotPattern( string ):
     return re.sub( r'([^\w])', '\\\\\\1', string )
 
 
+
 class TransBot(Bot):
     """
         Sample bot that translates text.
@@ -124,6 +125,8 @@ class TransBot(Bot):
             store_path: Base directory where to cache files
         """
 
+        self.status = {'events':[]}
+
         self.ibmcloud_url = ibmcloud_url
         self.ibmcloud_apikey = ibmcloud_apikey
         self.chatter = chatter
@@ -148,6 +151,11 @@ class TransBot(Bot):
         self.re_keywords = pattern
         # Regular expression pattern of messages that stop the bot
         self.re_shutdown = shutdown_pattern
+
+
+    def _logEvent( self, event ):
+
+        self.status['events'].append(event)
 
 
     def loadLanguages( self, force=False, file=None, locale='en' ):
@@ -439,6 +447,7 @@ class TransBot(Bot):
         # as expected so we use re.search(...)
         if re.search( self.re_shutdown, message, re.IGNORECASE ):
             logging.debug("Shutdown asked")
+            self._logEvent({ 'type':'shutdown', 'message':message })
             self.chatter.stop()
 
         ###
@@ -446,19 +455,29 @@ class TransBot(Bot):
         # Case 'translate a message'
         #
         elif matched_translate:
+            status_event = { 'type':'translate', 'message':message, 'target_lang':to_lang }
+            self._logEvent(status_event)
             if to_lang:
                 translation = self.translate( [matched_translate.group('message')],target=to_lang )
                 logging.debug("Got translation : %s",repr(translation))
+                status_event['translation'] = translation
                 if translation and len(translation['translations'])>0:
                     answer = self.formatTranslation(translation,target=to_lang)
                     logging.debug(">> %s" % answer)
+                    status_event['answer'] = answer
                     self.chatter.send(answer)
                 else:
                     # TODO Make translate throw an error with details
                     logging.warning("Did not get a translation in %s for %s",to_lang,message)
-                    self.chatter.send( i18n.t('all_messages',message=i18n.t('IDontKnow')) )
+                    answer = i18n.t('all_messages',message=i18n.t('IDontKnow'))
+                    status_event['error'] = 'no_translation'
+                    status_event['answer'] = answer
+                    self.chatter.send(answer)
             else:
                 logging.warning("Could not identify target language in %s",message)
+                answer = i18n.t('all_messages',message=i18n.t('IDontKnow'))
+                status_event['error'] = 'unknown_target_language'
+                status_event['answer'] = answer
                 self.chatter.send( i18n.t('all_messages',message=i18n.t('IDontKnow')) )
 
         ###
@@ -467,6 +486,10 @@ class TransBot(Bot):
         #
         elif re.search( self.re_keywords, message, flags=re.IGNORECASE ):
 
+            status_translations = []
+            status_event = { 'type':'keyword', 'message':message, 'translations':status_translations }
+            self._logEvent( status_event )
+
             # Selects a few random target languages each time
             langs = random.choices( self.languages, k=self.tries )
 
@@ -474,30 +497,41 @@ class TransBot(Bot):
                 # Gets a translation in this random language
                 translation = self.translate( [message], target=lang['language'] )
                 logging.debug("Got translation : %s",repr(translation))
+                status_translation = { 'target_language':lang['language'], 'translation':translation }
+                status_translations.append(status_translation)
                 if translation and len(translation['translations'])>0:
                     answer = self.formatTranslation(translation,target=lang['language'])
                     logging.debug(">> %s" % answer)
+                    status_translation['answer'] = answer
                     self.chatter.send(answer)
                     # Returns as soon as one translation was done
                     return
                 else:
+                    logging.debug("No translation for %s in %r",message,langs)
+                    status_translation['error'] = 'no_translation'
                     pass
 
             logging.warning("Could not find a translation in %s for %s",repr(langs),message)
 
         else:
             logging.debug("Message did not match any known pattern")
+            self._logEvent({ 'type':'ignored', 'message':message })
 
 
     def onExit( self ):
 
         logging.debug("Exiting...")
+        status_shutdown = { 'type':'shutdown' }
+        self._logEvent(status_shutdown)
 
         # TODO Better use gettext in the end
         try:
             goodbye = i18n.t('Goodbye')
             if goodbye and goodbye.strip():
-                sent = self.chatter.send( i18n.t('all_messages',message=goodbye) )
+                text = i18n.t('all_messages',message=goodbye)
+                sent = self.chatter.send(text)
+                status_shutdown['answer'] = text
+                status_shutdown['timestamp'] = sent
             else:
                 logging.debug("Empty 'Goodbye' text : nothing was sent")
         except KeyError:
@@ -511,6 +545,9 @@ class TransBot(Bot):
 
             1. Sends a hello message
             2. Waits for messages to translate
+
+            Returns the execution status of the run, as a dict : { 'events':[list_of_events] }
+            with list_of_events the list of input / outputs that happened, for audit purposes
         """
 
         self.chatter.connect()
@@ -519,7 +556,9 @@ class TransBot(Bot):
         try:
             hello = i18n.t('Hello')
             if hello and hello.strip():
-                self.chatter.send( i18n.t('all_messages',message=hello) )
+                text = i18n.t('all_messages',message=hello)
+                sent = self.chatter.send(text)
+                self._logEvent({ 'type':'startup', 'answer':text, 'timestamp':sent })
             else:
                 logging.debug("Empty 'Hello' text : nothing was sent")
         except KeyError:
@@ -529,6 +568,7 @@ class TransBot(Bot):
         self.registerExitHandler()
         self.chatter.start(self)
         logging.debug("Chatter loop ended")
+        return self.status
 
 
 
@@ -637,15 +677,23 @@ def run( args=sys.argv[1:] ):
     # Real start
     #
 
-    TransBot(
+    bot = TransBot(
         keywords=config.keywords, keywords_files=config.keywords_files,
         languages_file=config.languages_file, languages_likely=config.languages_likely,
         locale=lang,
         ibmcloud_url=config.ibmcloud_url, ibmcloud_apikey=config.ibmcloud_apikey,
         shutdown_pattern=config.shutdown,
         chatter=chatter
-        ).run()
-
+        )
+    status_args = vars(config)
+    # TODO Add an option to list the fields to obfuscate (nor not)
+    for k in [ 'ibmcloud_apikey', 'jabber_password' ]:
+        status_args[k] = '(obfuscated)'
+    status_result = bot.run()
+    status = { 'args':vars(config), 'result':status_result }
+    # NOTE ensure_ascii=False + encode('utf-8').decode() is not mandatory but allows printing plain UTF-8 strings rather than \u... or \x...
+    # NOTE default=repr is mandatory because some objects in the args are not serializable
+    print( json.dumps(status,skipkeys=True,ensure_ascii=False,default=repr).encode('utf-8').decode(), file=sys.stdout, flush=True )
 
 
 if __name__ == '__main__':

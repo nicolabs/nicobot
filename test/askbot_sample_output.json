@@ -1,0 +1,40 @@
+{
+    "args": {
+        "backend": "console",
+        "config_file": "/home/nicobo/nicobot/test/askbot-sample-conf/config.yml",
+        "config_dir": "/home/nicobo/nicobot/test/askbot-sample-conf/",
+        "input_file": "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='UTF-8'>",
+        "max_count": -1,
+        "patterns": [
+            ["yes", "(?i)\\b(yes|ok)\\b"],
+            ["no", "(?i)\\bno\\b"],
+            ["cancel", "(?i)\\b(cancel|abort)\\b"]
+        ],
+        "stealth": false,
+        "timeout": null,
+        "verbosity": "debug",
+        "signal_username": "+33123456789",
+        "signal_recipients": ["+33987654321"],
+        "jabber_username": "bot9cd51f1a@conversations.im",
+        "jabber_password": "(obfuscated)",
+        "jabber_recipients": ["bot649ad4ad@conversations.im"],
+        "username": null,
+        "recipients": [],
+        "debug": false,
+        "signal_cli": "/opt/signal-cli/bin/signal-cli",
+        "signal_group": null,
+        "signal_stealth": false,
+        "message": null,
+        "message_file": "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='UTF-8'>"
+    },
+    "result": {
+        "max_count": false,
+        "events": [{
+            "message": "Coucou",
+            "matched_patterns": []
+        }, {
+            "message": "Yes !",
+            "matched_patterns": ["yes"]
+        }]
+    }
+}
