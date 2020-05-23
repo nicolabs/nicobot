@@ -60,28 +60,36 @@ def filter_files( files, should_exist=False, fallback_to=None ):
     return found
 
 
-def parse_args_2pass( parser, config ):
+def parse_args_2pass( parser, args, config ):
+    """
+        Wrapper around argparse's ArgumentParser.parse_args that makes two passes :
+
+        1. the first one to identify a configuration file and load defaults from it
+        2. the second one to parse other command-line parameters falling back to defaults from the config file for missing parameters
+
+        It also takes care of logging configuration, which is considered part of the "bootstrap" sequence.
+    """
 
     #
     # 1st pass only matters for 'bootstrap' options : configuration file and logging
     #
-    # Note : we don't let the parse_args method merge the 'args' into config yet,
+    # Note : we don't let the parse_args method merge the Namespace into config yet,
     # because it would not be possible to make the difference between the default values
     # and the ones explictely given by the user
     # This is usefull for instance to throw an exception if a file given by the user doesn't exist, which is different than the default filename
-    # 'config' is therefore the defaults overriden by user options while 'args' has only user options
-    args = parser.parse_args()
+    # 'config' is therefore the defaults overriden by user options while 'ns' has only user options
+    ns = parser.parse_args(args=args)
 
     # Logging configuration
-    configure_logging(args.verbosity,debug=args.debug)
-    logging.debug( "Configuration for bootstrap : %s", repr(vars(args)) )
+    configure_logging(ns.verbosity,debug=ns.debug)
+    logging.debug( "Configuration for bootstrap : %s", repr(vars(ns)) )
 
     # Fills the config with user-defined default options from a config file
     try:
         # Allows config_file to be relative to the config_dir
         config.config_file = filter_files(
-            [args.config_file,
-            os.path.join(args.config_dir,"config.yml")],
+            [ns.config_file,
+            os.path.join(ns.config_dir,"config.yml")],
             should_exist=True,
             fallback_to=1 )[0]
         logging.debug("Using config file %s",config.config_file)
@@ -98,7 +106,7 @@ def parse_args_2pass( parser, config ):
             config.__dict__.update(dictConfig)
     except OSError as e:
         # If it was a user-set option, stop here
-        if args.config_file == config.config_file:
+        if ns.config_file == config.config_file:
             raise e
         else:
             logging.debug("Could not open %s ; no config file will be used",config.config_file)
@@ -110,7 +118,7 @@ def parse_args_2pass( parser, config ):
     # 2nd pass parses all options
     #
     # Updates again the existing config object with all parsed options
-    config = parser.parse_args(namespace=config)
+    config = parser.parse_args(args=args,namespace=config)
     # From the bootstrap parameters, only logging level may need to be read again
     configure_logging(config.verbosity,debug=config.debug)
     logging.debug( "Final configuration : %s", repr(vars(config)) )

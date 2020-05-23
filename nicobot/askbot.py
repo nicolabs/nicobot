@@ -141,7 +141,8 @@ class AskBot(Bot):
         return self.status
 
 
-if __name__ == '__main__':
+
+def run( args=sys.argv[1:] ):
 
     """
         A convenient CLI to play with this bot.
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     #
     # Two-pass arguments parsing
     #
-    config = parse_args_2pass( parser, config )
+    config = parse_args_2pass( parser, args, config )
     #
     # From here the config object has default options from:
     #   1. hard-coded default values
@@ -192,3 +193,8 @@ if __name__ == '__main__':
         )
     status = bot.run()
     print( json.dumps(vars(status)), file=sys.stdout, flush=True )
+
+
+if __name__ == '__main__':
+
+    run()
