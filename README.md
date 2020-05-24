@@ -37,7 +37,7 @@ See below for *Signal* requirements.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-The included sample configuration in `test/transbot-sample-conf`, demoes how to make it translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
+The included sample configuration in `tests/transbot-sample-conf`, demoes how to make it translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
 
 It can also automatically translate messages containing keywords into a random language.
 The sample configuration shows how to make it translate any message containing "Hello" or "Goodbye" in many languages.
@@ -52,15 +52,15 @@ The sample configuration shows how to make it translate any message containing "
     pip3 install -r requirements.txt
     ```
 2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
-3. Fill them into `test/transbot-sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
-4. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf`
+3. Fill them into `tests/transbot-sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
+4. Run `python3 nicobot/transbot.py -C tests/transbot-sample-conf`
 5. Input `Hello world` in the console : the bot will print a random translation of "Hello World"
 6. Input `Bye nicobot` : the bot will terminate
 
 If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
 
 1. Install and configure `signal-cli` (see below for details)
-2. Run `python3 nicobot/transbot.py -C test/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
+2. Run `python3 nicobot/transbot.py -C tests/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
 
 See dedicated chapters below for more options...
 
@@ -80,7 +80,7 @@ The **i18n.\<locale>.yml** file contains localization strings for your locale an
 - *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
 - It also defines the pattern that terminates the bot.
 
-A sample configuration is available in the `test/transbot-sample-conf/` directory.
+A sample configuration is available in the `tests/transbot-sample-conf/` directory.
 
 
 
@@ -103,7 +103,7 @@ Below are the most important configuration options for this bot (please also che
 - **--max-count <integer>** will define how many messages to read at maximum before exiting. This allows the recipient to send several messages in answer. However currently all of those messages are returned at once after they all have been read by the bot so they cannot be parsed on the fly. To give _x_ tries to the recipient, run _x_ times this bot instead.
 - **--pattern <name> <pattern>** defines a pattern that will end the bot when matched. It takes 2 arguments : a symbolic name and a [regular expression pattern](https://docs.python.org/3/howto/regex.html#regex-howto) that will be tested against each message. It can be passed several times in the same command line, hence the `<name>` argument, which will allow identifying which pattern(s) matched.
 
-Sample configuration can be found in `test/askbot-sample-conf`.
+Sample configuration can be found in `tests/askbot-sample-conf`.
 
 ### Example
 
@@ -195,7 +195,7 @@ keywords_files:
     - 2.json
 ```
 
-See also sample configurations in the `test/` directory.
+See also sample configurations in the `tests/` directory.
 
 Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you don't know about YAML.
 
@@ -236,6 +236,12 @@ Sample command line to run the bot with Signal :
 
     python3 nicobot/transbot.py -b signal -U +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
 
+
+## Development
+
+To run unit tests :
+
+    python -m unittest discover -v -s tests
 
 
 ## Resources
