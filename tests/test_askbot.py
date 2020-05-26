@@ -9,6 +9,24 @@ from nicobot.console import ConsoleChatter
 
 class TestAskbot(unittest.TestCase):
 
+    def test_end_on_max_count(self):
+        bot = AskBot(
+            chatter = ConsoleChatter( input=["One","Two","Three"] ),
+            message = "Let's count !",
+            patterns=[
+                [ "four", r'(?i)\bfour\b' ],
+            ],
+            max_count=3
+            )
+        result = bot.run()
+        expected = {'max_count': True, 'events': [
+            {'message': 'One', 'matched_patterns': []},
+            {'message': 'Two', 'matched_patterns': []},
+            {'message': 'Three', 'matched_patterns': []}]
+            }
+        self.assertEqual(expected,result)
+
+
     def test_end_on_yes(self):
         bot = AskBot(
             chatter = ConsoleChatter( input=["Yes !"] ),
