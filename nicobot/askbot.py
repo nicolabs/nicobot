@@ -191,6 +191,8 @@ def run( args=sys.argv[1:] ):
     # NOTE ensure_ascii=False + encode('utf-8').decode() is not mandatory but allows printing plain UTF-8 strings rather than \u... or \x...
     # NOTE default=repr is mandatory because some objects in the args are not serializable
     print( json.dumps(status,skipkeys=True,ensure_ascii=False,default=repr).encode('utf-8').decode(), file=sys.stdout, flush=True )
+    # Still returns the full status for simpler handling in Python
+    return status
 
 
 if __name__ == '__main__':
