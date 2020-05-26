@@ -291,6 +291,7 @@ class JabberChatter(Chatter):
         callback = lambda _: self.xmpp.connected_event.set()
         self.xmpp.add_event_handler('session_start', callback)
         self.xmpp.connect()
+        # TODO use asyncio.run() in latest python
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.xmpp.connected_event.wait())
         logging.debug("Connected.")
@@ -311,8 +312,7 @@ class JabberChatter(Chatter):
             Sends the given message using the underlying implemented chat protocol
         """
         logging.debug(">>> %s",message)
-        #loop = asyncio.get_event_loop()
-        # loop.run_until_complete(self.xmpp.encrypted_send( body=message, recipient=self.recipient ))
+        # TODO use asyncio.make_task() in latest python
         asyncio.ensure_future( self.xmpp.encrypted_send( body=message, recipient=self.recipient ) )
 
     def stop( self ):
