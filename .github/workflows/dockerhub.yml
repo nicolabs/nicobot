@@ -36,7 +36,7 @@ jobs:
           context: ./
           file: ./Dockerfile-alpine
           push: true
-          tags: nicobot:dev
+          tags: nicolabs/nicobot:dev
 
     # Push the image to IBM Container Registry
     - name: Image digest
