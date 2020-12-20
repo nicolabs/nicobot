@@ -1,0 +1,10 @@
+##### Requirements for building only #####
+setuptools
+wheel
+twine
+setuptools_scm
+
+# XEdDSA dependency does not seem to have a wheel and requires the following two
+# modules to build (see https://github.com/Syndace/python-xeddsa)
+cmake
+make

@@ -1,6 +1,3 @@
-##### Requirements for all features #####
-# (None yet)
-
 ##### Requirements for signalcli #####
 python-i18n
 
