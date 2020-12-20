@@ -21,7 +21,7 @@ This project features :
 
 A classic (virtual) machine installation requires :
 
-- Python 3 (>= 3.4.2)
+- Python 3 (>= 3.5)
 - [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend] below for requirements)
 - For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
@@ -39,7 +39,7 @@ Those images should be able to run on all CPU architectures supported by [the ba
 
 Sample command to run :
 
-    docker run --rm -it -v "myconfdir:/etc/nicobot" nicobot:alpine transbot -C /etc/nicobot
+    docker run --rm -it -v "myconfdir:/etc/nicobot" nicolabs/nicobot:alpine transbot -C /etc/nicobot
 
 ### Installation from source
 
@@ -302,7 +302,9 @@ The result is a far smaller image.
 There is no special requirement to build those images ; sample build & run commands :
 
     docker build -t nicobot:alpine -f Dockerfile-alpine .
-    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
+    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
+
+Github actions are actually configured (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
 
 The _multiarch_ compatibility is simply supported by [the base images](https://hub.docker.com/_/python) (no need to run `docker buildx`).
 
