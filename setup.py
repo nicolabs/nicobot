@@ -25,7 +25,8 @@ setuptools.setup(
         'Development Status :: 3 - Alpha',
         'Topic :: Communications :: Chat'
     ],
-    python_requires='>=3.4.2',
+    # PyYAML requires Python 3.5+
+    python_requires='>=3.5',
     # TODO This duplicates requirements-build.txt ?
     setup_requires=['setuptools-scm'],
     # TODO This duplicates requirements-runtime.txt
