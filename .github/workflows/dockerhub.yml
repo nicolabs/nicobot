@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Checkout
+      uses: actions/checkout@v2
+
     # Download and Install IBM Cloud CLI
     - name: Login to Docker Hub
       uses: docker/login-action@v1
