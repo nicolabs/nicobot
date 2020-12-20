@@ -17,17 +17,41 @@ This project features :
 
 ## Requirements & installation
 
-Requires :
+### Classic installation
+
+A classic (virtual) machine installation requires :
 
 - Python 3 (>= 3.4.2)
-- [signal-cli](https://github.com/AsamK/signal-cli) (for the *Signal* backend)
+- [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend] below for requirements)
 - For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
-Install Python dependencies with :
+### Docker usage
 
-    pip3 install -r requirements.txt
+There are several [Docker](https://docker.com) images available, with the following tags :
 
-See below for *Signal* requirements.
+- **debian** : if you have several images with the debian base, this may be the most efficient (as base layers will be shared with other images)
+- **debian-slim** : if you want a smaller-sized image and you don't run other images based on debian (as it will not share as much layers as with the above `debian` tag)
+- **alpine** : this is the smallest image (<100MB) but it may have more bugs than debian ones because it's more complex to maintain
+
+Since those bots are probably not going be enterprise-level critical at any point, I suggest you use the _alpine_ image and switch to _debian_ or _debian-slim_ if you encounter performance issues or other problems.
+
+Those images should be able to run on all CPU architectures supported by [the base images](https://hub.docker.com/_/python).
+
+Sample command to run :
+
+    docker run --rm -it -v "myconfdir:/etc/nicobot" nicobot:alpine transbot -C /etc/nicobot
+
+### Installation from source
+
+You can also install from source (you need _python3_ & _pip_) :
+
+    # Sample command to install python3 & pip3 on Debian ; update it according to your OS
+    sudo apt install python3 python3-pip
+    git clone https://github.com/nicolabs/nicobot.git
+    cd nicobot
+    pip3 install -r requirements-runtime.txt
+
+Then simply follow the instructions below to configure & run it.
 
 
 
@@ -44,34 +68,32 @@ The sample configuration shows how to make it translate any message containing "
 
 ### Quick start
 
-1. Install prerequisites ; for Debian systems this will look like :
+1. Install the package for systems this will look like :
     ```
     sudo apt install python3 python3-pip
-    git clone https://github.com/nicolabs/nicobot.git
-    cd nicobot
-    pip3 install -r requirements.txt
+    pip3 install nicobot
     ```
 2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
 3. Fill them into `tests/transbot-sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
-4. Run `python3 nicobot/transbot.py -C tests/transbot-sample-conf`
+4. Run `transbot -C tests/transbot-sample-conf`
 5. Input `Hello world` in the console : the bot will print a random translation of "Hello World"
 6. Input `Bye nicobot` : the bot will terminate
 
 If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
 
 1. Install and configure `signal-cli` (see below for details)
-2. Run `python3 nicobot/transbot.py -C tests/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
+2. Run `transbot -C tests/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
 
 See dedicated chapters below for more options...
 
 
 ### Main configuration options and files
 
-Run `transbot.py -h` to get a description of all options.
+Run `transbot -h` to get a description of all options.
 
 Below are the most important configuration options for this bot (please also check the generic options below) :
 
-- **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot.py --keyword <a_keyword> --keyword <another_keyword> ...` a **first time with** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the default name.
+- **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot --keyword <a_keyword> --keyword <another_keyword> ...` a **first time with** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the default name.
 - **--languages-file** : The first time the bot runs, it will download the list of supported languages into `languages.<locale>.json` and reuse it afterwards but you can give it a specific file with the set of languages you want. You can use `--locale` to set the desired locale.
 - **--locale** will select the locale to use for default translations (with no target language specified) and as the default parsing language for keywords.
 - **--ibmcloud-url** and **--ibmcloud-apikey** can be obtained from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
@@ -96,7 +118,7 @@ This JSON structure will have to be parsed in order to retrieve the answer and d
 
 ### Main configuration options
 
-Run `askbot.py -h` to get a description of all options.
+Run `askbot -h` to get a description of all options.
 
 Below are the most important configuration options for this bot (please also check the generic options below) :
 
@@ -113,7 +135,7 @@ The following command will :
 - Wait for a maximum of 3 messages in answer and return
 - Or return immediately if one message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
 
-    python3 askbot.py -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
+    askbot -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
 
 If the user *+34987654321* would reply "I don't know" then "Ok then : NO !", the output would be :
 
@@ -226,7 +248,6 @@ Then you must [*register* or *link*](https://github.com/AsamK/signal-cli/blob/ma
 
 Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) for more details.
 
-
 ### Signal-specific options
 
 - `--signal-username` selects the account to use to send and read message : it is a phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign). If missing, `--username` will be used.
@@ -234,14 +255,74 @@ Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/si
 
 Sample command line to run the bot with Signal :
 
-    python3 nicobot/transbot.py -b signal -U +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
+    transbot -b signal -U +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
+
 
 
 ## Development
 
+Install Python dependencies with :
+
+    pip3 install -r requirements-build.txt -r requirements-runtime.txt
+
 To run unit tests :
 
-    python -m unittest discover -v -s tests
+    python3 -m unittest discover -v -s tests
+
+To run directly from source (without packaging, e.g. for development) :
+
+    python3 -m nicobot.askbot
+
+To build locally (more at [pypi.org](https://packaging.python.org/tutorials/packaging-projects/)) :
+
+    python3 setup.py sdist bdist_wheel
+
+To upload to test.pypi.org :
+
+    # Defines username and password (or '__token__' and API key) ; alternatively CLI `-u` and `-p` options or user input may be used (or even certificates, see `python3 -m twine upload --help`)
+    TWINE_USERNAME=__token__
+    TWINE_PASSWORD=`pass pypi/test.pypi.org/api_token | head -1`
+    python3 -m twine upload --repository testpypi dist/*
+
+To upload to PROD pypi.org :
+
+Otherwise, it is automatically tested, built and uploaded to pypi.org using Travis CI on each push to GitHub.
+
+
+### Docker build
+
+There are several Dockerfile, each made for specific use cases (see [Docker-usage](#Docker-usage) above) :
+
+`Dockerfile-debian` and `Dockerfile-debian-slim` are quite straight and very similar.
+
+`Dockerfile-alpine` is a multi-stage build because most of the Python dependencies need to be compiled first.
+The first stage builds the libraries and the second stage just imports them without all the build tools.
+The result is a far smaller image.
+
+There is no special requirement to build those images ; sample build & run commands :
+
+    docker build -t nicobot:alpine -f Dockerfile-alpine .
+    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
+
+The _multiarch_ compatibility is simply supported by [the base images](https://hub.docker.com/_/python) (no need to run `docker buildx`).
+
+The images have all the bots inside, as they only differ from each other by one script.
+The `entrypoint.sh` script takes as arguments : first the name of the bot to invoke, then the bot's arguments.
+
+
+### Versioning
+
+The command-line option to display the scripts' version relies on _setuptools_scm_, which extracts it from the underlying git metadata.
+This is convenient because one does not have to manually update the version (or forget to do it prior a release).
+
+There are several options from which the following one has been retained :
+- Running `setup.py` creates / updates the version inside the `version.py` file
+- The scripts simply load this module at runtime
+
+This requires `setup.py` to be run before the version can be extracted but :
+- it does not require _setuptools_ nor _git_ at runtime
+- it frees us from having the `.git` directory around at runtime ; this is especially useful to make the docker images smaller
+
 
 
 ## Resources

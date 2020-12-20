@@ -1,0 +1,29 @@
+# Python version > 3.4.2
+FROM python:3-slim
+
+RUN apt-get update && \
+    apt install -y cmake g++ make && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src/app
+
+# TODO How to do it with one COPY ?
+# Or it could be COPY . . with a proper .dockerignore
+# Or build the context as a preliminary step
+COPY nicobot nicobot/
+COPY requirements-runtime.txt .
+
+RUN pip install --no-cache-dir -r requirements-runtime.txt
+# It could be packaged (RUN python setup.py sdist bdist_wheel) to possibly
+# improve size and speed ; probably as a multistage build
+# And update the version from git using setuptools-scm
+# But it requires a bit of work
+#RUN python setup.py sdist bdist_wheel
+
+# This script allows packaging several bots in the same image
+# (to be clean they could be in separate images but they're so close that it's a lot easier to package and does not waste space by duplicating images)
+# Otherwise the ENTRYPOINT should simply be [ "python"]
+# Made a a separate COPY because it's a docker-specific layer
+# (other layers don't need to be re-built if this one changes)
+COPY docker-entrypoint.sh .
+ENTRYPOINT [ "./docker-entrypoint.sh" ]
