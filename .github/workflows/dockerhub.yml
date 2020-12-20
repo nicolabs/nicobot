@@ -10,6 +10,7 @@ on:
 jobs:
   build-publish:
     name: Build, Publish
+    environment: prod
     runs-on: ubuntu-latest
     steps:
 
