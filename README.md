@@ -302,7 +302,7 @@ The result is a far smaller image.
 There is no special requirement to build those images ; sample build & run commands :
 
     docker build -t nicobot:alpine -f Dockerfile-alpine .
-    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
+    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:alpine askbot -c /etc/nicobot/askbot-sample-conf/config.yml
 
 Github actions are actually configured (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
 
