@@ -41,3 +41,11 @@ jobs:
     # Push the image to IBM Container Registry
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
+
+    # https://github.com/marketplace/actions/build-and-push-docker-images#update-dockerhub-repo-description
+    - name: Update repo description
+      uses: peter-evans/dockerhub-description@v2
+      with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          repository: nicolabs/nicobot
