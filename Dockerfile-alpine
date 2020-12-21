@@ -1,9 +1,12 @@
 # This image is based on Alpine linux to get a minimum memory footprint
 # Some say that alpine should not be used for Python (https://pythonspeed.com/articles/alpine-docker-python/),
 # however given some additional work, overall it may be better in the end (https://nickjanetakis.com/blog/the-3-biggest-wins-when-using-alpine-as-a-base-docker-image)
-# Currently this Dockerfile is not thoroughfully tested...
-# Finally, a better option may probably be to just run the python scripts without any setup/install
-# Also : Python version > 3.4.2
+
+
+#################
+# STAGE 1
+#################
+
 FROM python:3-alpine AS builder
 
 # python:3-alpine misses gcc, ffi.h, ...
@@ -22,13 +25,25 @@ RUN apk add --no-cache build-base gcc abuild binutils cmake \
 
 COPY requirements-runtime.txt .
 RUN pip install --no-cache-dir --user -r requirements-runtime.txt
+# The 'qr' command is used in the process to link the machine with a Signal account
+RUN pip install --no-cache-dir --user qrcode
 # It could be packaged (RUN python setup.py sdist bdist_wheel) to possibly
 # improve size and speed ; probably as a multistage build
 # And update the version from git using setuptools-scm
 # But it requires a bit of work
 #RUN python setup.py sdist bdist_wheel
 
+# Signal installation
+ENV SIGNAL_VERSION=0.6.7
+RUN wget "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_VERSION}/signal-cli-${SIGNAL_VERSION}.tar.gz"
+RUN tar xf "signal-cli-${SIGNAL_VERSION}.tar.gz" -C /opt
+RUN mv "/opt/signal-cli-${SIGNAL_VERSION}" /opt/signal-cli
 
+
+
+#################
+# STAGE 2
+#################
 
 FROM python:3-alpine
 
@@ -36,17 +51,26 @@ WORKDIR /usr/src/app
 
 # Required at runtime
 # libressl-dev : seems required for python to locate modules, or for omemo ?
+# openjdk : requirement for signal-cli
+# A Java 8+ runtime seems to be required for 0.6, 0.7 requires JRE 11 (which is 50MB bigger...)
+# For an even smaller JRE image, see maybe https://github.com/rhuss/docker-java-jolokia/blob/master/base/alpine/jre/8/Dockerfile
+# or https://hub.docker.com/r/azul/zulu-openjdk-alpine/dockerfile
+# bash is to use extended syntax in entrypoint.sh (in particular tee >(...))
 RUN apk add --no-cache libressl-dev
+RUN apk add --no-cache bash openjdk8-jre
 
+# All Python files, including nicobot's
 COPY --from=builder /root/.local /root/.local/
+# https://www.docker.com/blog/containerized-python-development-part-1/
+ENV PATH=/root/.local/bin:$PATH
 #COPY --from=builder /root/.cache /root/.cache/
 #COPY --from=builder /usr/local/lib /usr/local/lib/
-# https://www.docker.com/blog/containerized-python-development-part-1/
-# update PATH environment variable
-#ENV PATH=/root/.local/bin:$PATH
+
+# signal-cli files
+COPY --from=builder /opt/signal-cli /opt/signal-cli
+ENV PATH=/opt/signal-cli/bin:$PATH
 
 # TODO How to do it with one COPY ?
-
 # Or it could be COPY . . with a proper .dockerignore
 # Or build the context as a preliminary step
 COPY nicobot nicobot/
