@@ -46,7 +46,7 @@ jobs:
           context: ./
           file: ./Dockerfile-debian
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
+          platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
           push: true
           tags: |
             nicolabs/nicobot:debian
@@ -63,7 +63,7 @@ jobs:
           context: ./
           file: ./Dockerfile-debian-slim
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
+          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
           push: true
           tags: |
             nicolabs/nicobot:debian-slim
@@ -80,7 +80,7 @@ jobs:
           context: ./
           file: ./Dockerfile-alpine
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
+          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
           push: true
           tags: |
             nicolabs/nicobot:alpine

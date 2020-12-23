@@ -14,7 +14,6 @@ RUN mv "/opt/signal-cli-${SIGNAL_VERSION}" /opt/signal-cli
 # - Python version > 3.4.2
 # - bash
 # - glibc
-# Python version > 3.4.2
 FROM python:3
 
 WORKDIR /usr/src/app

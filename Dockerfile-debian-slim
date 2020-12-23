@@ -20,7 +20,7 @@ WORKDIR /usr/src/app
 
 # Or else we get the following error installing the jre :
 # update-alternatives: error: error creating symbolic link '/usr/share/man/man1/rmid.1.gz.dpkg-tmp': No such file or directory
-RUN mkdir /usr/share/man/man1 /usr/share/man/man7
+RUN mkdir -p /usr/share/man/man1 /usr/share/man/man7
 
 RUN apt-get update && \
     apt install -y cmake g++ make \
