@@ -40,7 +40,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - name: Build and push debian
-      id: docker_build
+      id: docker_build_debian
       uses: docker/build-push-action@v2
       with:
           context: ./
@@ -53,8 +53,11 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+    - name: Image digest
+      run: echo ${{ steps.docker_build_debian.outputs.digest }}
+
     - name: Build and push debian-slim
-      id: docker_build
+      id: docker_build_debian_slim
       uses: docker/build-push-action@v2
       with:
           context: ./
@@ -67,8 +70,11 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+    - name: Image digest
+      run: echo ${{ steps.docker_build_debian_slim.outputs.digest }}
+
     - name: Build and push alpine
-      id: docker_build
+      id: docker_build_alpine
       uses: docker/build-push-action@v2
       with:
           context: ./
@@ -81,9 +87,8 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-    # Push the image to IBM Container Registry
     - name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+      run: echo ${{ steps.docker_build_alpine.outputs.digest }}
 
     # https://github.com/marketplace/actions/build-and-push-docker-images#update-dockerhub-repo-description
     - name: Update repo description
