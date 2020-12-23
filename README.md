@@ -31,15 +31,15 @@ There are several [Docker](https://docker.com) images available, with the follow
 
 - **debian** : if you have several images with the debian base, this may be the most efficient (as base layers will be shared with other images)
 - **debian-slim** : if you want a smaller-sized image and you don't run other images based on debian (as it will not share as much layers as with the above `debian` tag)
-- **alpine** : this is the smallest image (<100MB) but it may have more bugs than debian ones because it's more complex to maintain
+- **alpine** : this should be the smallest image in theory, but it's more complex to maintain and thereore might not meet this expectation ; please check/test before use
 
-Since those bots are probably not going be enterprise-level critical at any point, I suggest you use the _alpine_ image and switch to _debian_ or _debian-slim_ if you encounter performance issues or other problems.
+**NOTE** that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This approximately doubles the size of the images...
 
-Those images should be able to run on all CPU architectures supported by [the base images](https://hub.docker.com/_/python).
+The current state of those images is such that I suggest you try the _debian-slim_ image first and switch to another one if you encounter issues or have a specific use case to solve.
 
-Sample command to run :
+Sample run command :
 
-    docker run --rm -it -v "myconfdir:/etc/nicobot" nicolabs/nicobot:alpine transbot -C /etc/nicobot
+    docker run --rm -it -v "myconfdir:/etc/nicobot" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot
 
 ### Installation from source
 
@@ -295,14 +295,25 @@ There are several Dockerfile, each made for specific use cases (see [Docker-usag
 
 `Dockerfile-debian` and `Dockerfile-debian-slim` are quite straight and very similar.
 
-`Dockerfile-alpine` is a multi-stage build because most of the Python dependencies need to be compiled first.
-The first stage builds the libraries and the second stage just imports them without all the build tools.
-The result is a far smaller image.
+`Dockerfile-alpine` requires a [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/) because most of the Python dependencies need to be compiled first.
+The result is a far smaller image than if we had all the compiling/building tools embedded.
 
-There is no special requirement to build those images ; sample build & run commands :
+Those images are limited to CPU architectures :
+- supported by [the base images](https://hub.docker.com/_/python)
+- for which the Python dependencies are built or able to build
+- for which the native dependencies of signal (libzkgroup) can be built (alpine only)
 
-    docker build -t nicobot:alpine -f Dockerfile-alpine .
-    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:alpine askbot -c /etc/nicobot/askbot-sample-conf/config.yml
+Simple build command (single architecture) :
+
+    docker build -t nicolabs/nicobot:debian-slim -f Dockerfile-debian-slim .
+
+Sample buildx command (multi-arch) :
+
+    docker buildx build --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x -t nicolabs/nicobot:debian-slim -f Dockerfile-debian-slim .
+
+Then run with the provided sample configuration :
+
+    docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
 
 Github actions are actually configured (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
 

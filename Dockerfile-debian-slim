@@ -1,11 +1,36 @@
-# Python version > 3.4.2
+FROM python:3 as builder
+
+# Signal installation
+WORKDIR /root
+# TODO Allow this to be a build variable
+ENV SIGNAL_VERSION=0.7.1
+RUN wget "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_VERSION}/signal-cli-${SIGNAL_VERSION}.tar.gz"
+RUN tar xf "signal-cli-${SIGNAL_VERSION}.tar.gz" -C /opt
+RUN mv "/opt/signal-cli-${SIGNAL_VERSION}" /opt/signal-cli
+
+
+
+# Provides :
+# - Python version > 3.4.2
+# - bash
+# - glibc
 FROM python:3-slim
 
+WORKDIR /usr/src/app
+
+# Or else we get the following error installing the jre :
+# update-alternatives: error: error creating symbolic link '/usr/share/man/man1/rmid.1.gz.dpkg-tmp': No such file or directory
+RUN mkdir /usr/share/man/man1 /usr/share/man/man7
+
 RUN apt-get update && \
-    apt install -y cmake g++ make && \
+    apt install -y cmake g++ make \
+        default-jre-headless \
+        && \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR /usr/src/app
+# signal-cli files
+COPY --from=builder /opt/signal-cli /opt/signal-cli
+ENV PATH=/opt/signal-cli/bin:$PATH
 
 # TODO How to do it with one COPY ?
 # Or it could be COPY . . with a proper .dockerignore
@@ -25,5 +50,5 @@ RUN pip install --no-cache-dir -r requirements-runtime.txt
 # Otherwise the ENTRYPOINT should simply be [ "python"]
 # Made a a separate COPY because it's a docker-specific layer
 # (other layers don't need to be re-built if this one changes)
-COPY docker-entrypoint.sh .
+COPY docker/docker-entrypoint.sh .
 ENTRYPOINT [ "./docker-entrypoint.sh" ]

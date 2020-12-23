@@ -9,6 +9,8 @@
 
 FROM python:3-alpine AS builder
 
+WORKDIR /root
+
 # python:3-alpine misses gcc, ffi.h, ...
 #
 # GCC part :
@@ -19,10 +21,42 @@ FROM python:3-alpine AS builder
 # https://stackoverflow.com/questions/35736598/cannot-pip-install-cryptography-in-docker-alpine-linux-3-3-with-openssl-1-0-2g
 # https://github.com/pyca/cryptography/blob/1340c00/docs/installation.rst#building-cryptography-on-linux
 
-# Required to build
+# build-base gcc ... : required to build Python dependencies
+# openjdk : javac to compile GetSystemProperty.java (to check the value of java.library.path)
+# git zip cargo make : to compile libzkgroup
 RUN apk add --no-cache build-base gcc abuild binutils cmake \
-            libressl-dev musl-dev libffi-dev
+            libressl-dev musl-dev libffi-dev \
+            openjdk11 \
+            git zip cargo make
 
+WORKDIR /root
+RUN git clone https://github.com/signalapp/zkgroup.git
+WORKDIR /root/zkgroup
+RUN make libzkgroup
+
+# A helper tool to get Java's library path (not automated, just or manual checks)
+WORKDIR /root
+ENV PATH=/usr/lib/jvm/java-11-openjdk/bin:$PATH
+COPY docker/GetSystemProperty.java .
+RUN javac -cp . GetSystemProperty.java
+RUN java GetSystemProperty java.library.path > /root/java.library.path.txt
+
+# Signal installation
+WORKDIR /root
+# TODO Allow this to be a build variable
+ENV SIGNAL_VERSION=0.7.1
+RUN wget "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_VERSION}/signal-cli-${SIGNAL_VERSION}.tar.gz"
+RUN tar xf "signal-cli-${SIGNAL_VERSION}.tar.gz" -C /opt
+RUN mv "/opt/signal-cli-${SIGNAL_VERSION}" /opt/signal-cli
+# Compiles the native libzkgroup depency for alpine/musl libc
+# See https://github.com/AsamK/signal-cli/wiki/Provide-native-lib-for-libsignal
+# Option a : Removes the classic library from the JAR (the alpine-compatible one has to be put somewhere in java.library.path)
+#RUN zip -d /opt/signal-cli/lib/zkgroup-java-*.jar libzkgroup.so
+# Option b : Replaces the classic library directly inside the JAR with the compiled one
+# Maybe less clean but also simpler in the second build stage
+RUN jar -uf /opt/signal-cli/lib/zkgroup-java-*.jar -C /root/zkgroup/target/release libzkgroup.so
+
+WORKDIR /usr/src/app
 COPY requirements-runtime.txt .
 RUN pip install --no-cache-dir --user -r requirements-runtime.txt
 # The 'qr' command is used in the process to link the machine with a Signal account
@@ -32,12 +66,6 @@ RUN pip install --no-cache-dir --user qrcode
 # And update the version from git using setuptools-scm
 # But it requires a bit of work
 #RUN python setup.py sdist bdist_wheel
-
-# Signal installation
-ENV SIGNAL_VERSION=0.6.7
-RUN wget "https://github.com/AsamK/signal-cli/releases/download/v${SIGNAL_VERSION}/signal-cli-${SIGNAL_VERSION}.tar.gz"
-RUN tar xf "signal-cli-${SIGNAL_VERSION}.tar.gz" -C /opt
-RUN mv "/opt/signal-cli-${SIGNAL_VERSION}" /opt/signal-cli
 
 
 
@@ -49,28 +77,35 @@ FROM python:3-alpine
 
 WORKDIR /usr/src/app
 
-# Required at runtime
+
+# Runtime packages requirements
+#
 # libressl-dev : seems required for python to locate modules, or for omemo ?
+#
 # openjdk : requirement for signal-cli
 # A Java 8+ runtime seems to be required for 0.6, 0.7 requires JRE 11 (which is 50MB bigger...)
 # For an even smaller JRE image, see maybe https://github.com/rhuss/docker-java-jolokia/blob/master/base/alpine/jre/8/Dockerfile
 # or https://hub.docker.com/r/azul/zulu-openjdk-alpine/dockerfile
+#
 # bash is to use extended syntax in entrypoint.sh (in particular tee >(...))
-RUN apk add --no-cache libressl-dev
-RUN apk add --no-cache bash openjdk8-jre
+#
+# rust brings the runtime requirements for the zkgroup library (for signal-cli)
+# TODO rust (or cargo) highly increase the size of the image : identify the minimal requirements
+# See https://blog.logrocket.com/packaging-a-rust-web-service-using-docker/
+RUN apk add --no-cache libressl-dev bash openjdk11-jre rust
+
+# NOTE The above requirements of JRE and rust totally ruins the point
+# of using alpine to build small images...
 
 # All Python files, including nicobot's
 COPY --from=builder /root/.local /root/.local/
 # https://www.docker.com/blog/containerized-python-development-part-1/
 ENV PATH=/root/.local/bin:$PATH
-#COPY --from=builder /root/.cache /root/.cache/
-#COPY --from=builder /usr/local/lib /usr/local/lib/
 
 # signal-cli files
 COPY --from=builder /opt/signal-cli /opt/signal-cli
 ENV PATH=/opt/signal-cli/bin:$PATH
 
-# TODO How to do it with one COPY ?
 # Or it could be COPY . . with a proper .dockerignore
 # Or build the context as a preliminary step
 COPY nicobot nicobot/
@@ -80,5 +115,5 @@ COPY nicobot nicobot/
 # Otherwise the ENTRYPOINT should simply be [ "python"]
 # Made a a separate COPY because it's a docker-specific layer
 # (other layers don't need to be re-built if this one changes)
-COPY docker-entrypoint.sh .
+COPY docker/docker-entrypoint.sh .
 ENTRYPOINT [ "./docker-entrypoint.sh" ]
