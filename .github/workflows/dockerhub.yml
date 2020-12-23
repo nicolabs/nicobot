@@ -1,4 +1,5 @@
 # Just followed https://docs.docker.com/ci-cd/github-actions/
+# Also, more details here : https://github.com/marketplace/actions/build-and-push-docker-images#update-dockerhub-repo-description
 #
 
 name: Build and publish to Docker Hub
@@ -21,12 +22,20 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
     # Build the Docker image
     - name: Build and push
@@ -35,8 +44,11 @@ jobs:
       with:
           context: ./
           file: ./Dockerfile-alpine
+          builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: nicolabs/nicobot:dev
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
 
     # Push the image to IBM Container Registry
     - name: Image digest
