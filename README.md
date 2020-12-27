@@ -1,7 +1,7 @@
 # nicobot
 
 Python package :
-[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)
+- [![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)
 - [![PyPi status](https://img.shields.io/pypi/status/nicobot)](https://pypi.org/project/nicobot)
 
 Docker :
