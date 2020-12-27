@@ -2,38 +2,45 @@
 
 Python package :
 
-[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot) [![PyPi](https://img.shields.io/pypi/v/nicobot?label=pypi)](https://pypi.org/project/nicobot)
+[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)   [![PyPi](https://img.shields.io/pypi/v/nicobot?label=pypi)](https://pypi.org/project/nicobot)
 
 Docker :
 
-![Build and publish to Docker Hub](https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg)
+![Build and publish to Docker Hub](https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg)  
 ![Docker debian-slim](https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-slim.svg?label=debian-slim)
-![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian-slim.svg)
+![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian-slim.svg)  
 ![Docker debian](https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian)
-![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian.svg)
+![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian.svg)  
 ![Docker alpine](https://img.shields.io/docker/image-size/nicolabs/nicobot/alpine.svg?label=alpine)
-![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/alpine.svg)
+![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/alpine.svg)  
 
 ---
 
 A collection of 🤟 *cool* 🤟 chat bots :
 
 - *Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service
-- *Askbot* is a one-shot chatbot that will throw a question and wait for an answer
+- *Askbot* is a one-shot chatbot that will send a message and wait for an answer
 
-> My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk !
+⚠️ My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk ⚠️
 
 This project features :
 
 - Participating in [Signal](https://www.signal.org/fr/) conversations
+- Participating in XMPP / Jabber conversations
 - Using [IBM Watson™ Language Translator](https://cloud.ibm.com/apidocs/language-translator) cloud API
 
 
 ## Requirements & installation
 
-### Classic installation
+The bots can be installed and run from :
 
-A classic (virtual) machine installation requires :
+- a Python package
+- Docker images
+- the source code
+
+### Python package installation
+
+A classic (Python package) installation requires :
 
 - Python 3 (>= 3.5)
 - [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend] below for requirements)
@@ -57,15 +64,17 @@ Sample run command :
 
 ### Installation from source
 
-You can also install from source (you need _python3_ & _pip_) :
+To install from source you need _python3_ & _pip_ :
 
-    # Sample command to install python3 & pip3 on Debian ; update it according to your OS
+    # Sample command to install python3 & pip3 on Debian ; change it according to your OS
     sudo apt install python3 python3-pip
+    # Then download the code
     git clone https://github.com/nicolabs/nicobot.git
+    # Finally build it
     cd nicobot
     pip3 install -r requirements-runtime.txt
 
-Then simply follow the instructions below to configure & run it.
+Follow the instructions below to configure & run it.
 
 
 
