@@ -2,7 +2,7 @@
 
 Python package :
 [![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)
-- ![PyPi status](https://img.shields.io/pypi/status/nicobot)
+- [![PyPi status](https://img.shields.io/pypi/status/nicobot)](https://pypi.org/project/nicobot)
 
 Docker :
 - ![Build and publish to Docker Hub](https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg)
