@@ -1,6 +1,8 @@
 # nicobot
 
-[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)
+[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot) [![](https://images.microbadger.com/badges/version/nicolabs/nicobot:debian-slim.svg)](https://microbadger.com/images/nicolabs/nicobot:debian-slim "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/nicolabs/nicobot:debian-slim.svg)](https://microbadger.com/images/nicolabs/nicobot:debian-slim "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/nicolabs/nicobot:debian.svg)](https://microbadger.com/images/nicolabs/nicobot:debian "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/nicolabs/nicobot:debian.svg)](https://microbadger.com/images/nicolabs/nicobot:debian "Get your own image badge on microbadger.com")
+[![](https://images.microbadger.com/badges/version/nicolabs/nicobot:alpine.svg)](https://microbadger.com/images/nicolabs/nicobot:alpine "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/nicolabs/nicobot:alpine.svg)](https://microbadger.com/images/nicolabs/nicobot:alpine "Get your own image badge on microbadger.com")
 
 A collection of 🤟 *cool* 🤟 chat bots :
 
