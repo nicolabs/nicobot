@@ -1,7 +1,7 @@
 # nicobot
 
 - [![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)
-- debian-slim : ![debian-slim](https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-slim.svg)
+- debian-slim : ![debian-slim](https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-slim.svg?label=debian-slim)
 ![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian-slim.svg)
 - [![](https://images.microbadger.com/badges/version/nicolabs/nicobot:debian.svg)](https://microbadger.com/images/nicolabs/nicobot:debian "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/nicolabs/nicobot:debian.svg)](https://microbadger.com/images/nicolabs/nicobot:debian "Get your own image badge on microbadger.com")
 - [![](https://images.microbadger.com/badges/version/nicolabs/nicobot:alpine.svg)](https://microbadger.com/images/nicolabs/nicobot:alpine "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/image/nicolabs/nicobot:alpine.svg)](https://microbadger.com/images/nicolabs/nicobot:alpine "Get your own image badge on microbadger.com")
