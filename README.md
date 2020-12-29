@@ -26,7 +26,7 @@ A collection of 🤟 *cool* 🤟 chat bots :
 This project features :
 
 - Participating in [Signal](https://www.signal.org/fr/) conversations
-- Participating in XMPP / Jabber conversations
+- Participating in [XMPP / Jabber](https://xmpp.org) conversations
 - Using [IBM Watson™ Language Translator](https://cloud.ibm.com/apidocs/language-translator) cloud API
 
 
@@ -34,47 +34,57 @@ This project features :
 
 The bots can be installed and run from :
 
-- a Python package
-- Docker images
+- the Python package
+- the Docker images
 - the source code
 
 ### Python package installation
 
 A classic (Python package) installation requires :
 
-- Python 3 (>= 3.5)
+- Python 3 (>= 3.5) and pip ([should be bundled with Python](https://pip.pypa.io/en/stable/installing)) ; e.g. on Debian : `sudo apt install python3 python3-pip`
 - [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend] below for requirements)
 - For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
-### Docker usage
+To install,  simply do :
 
-There are several [Docker](https://docker.com) images available, with the following tags :
+    pip3 install nicobot
 
-- **debian** : if you have several images with the debian base, this may be the most efficient (as base layers will be shared with other images)
-- **debian-slim** : if you want a smaller-sized image and you don't run other images based on debian (as it will not share as much layers as with the above `debian` tag)
-- **alpine** : this should be the smallest image in theory, but it's more complex to maintain and thereore might not meet this expectation ; please check/test before use
 
-**NOTE** that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This approximately doubles the size of the images...
-
-The current state of those images is such that I suggest you try the _debian-slim_ image first and switch to another one if you encounter issues or have a specific use case to solve.
-
-Sample run command :
-
-    docker run --rm -it -v "myconfdir:/etc/nicobot" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot
 
 ### Installation from source
 
-To install from source you need _python3_ & _pip_ :
+To install from source you need to fulfill the same requirements as for a package installation (see above), then download the code and build it :
 
-    # Sample command to install python3 & pip3 on Debian ; change it according to your OS
-    sudo apt install python3 python3-pip
-    # Then download the code
     git clone https://github.com/nicolabs/nicobot.git
-    # Finally build it
     cd nicobot
     pip3 install -r requirements-runtime.txt
 
-Follow the instructions below to configure & run it.
+Follow the instructions later in this document to configure & run it.
+
+
+
+### Docker usage
+
+There are [several Docker images available](https://hub.docker.com/repository/docker/nicolabs/nicobot), with the following tags :
+
+- **debian** : if you have several images with the _debian_ base, this may be the most space-efficient (as base layers will be shared with other images)
+- **debian-slim** : if you want a smaller-sized image and you don't run other images based on the  _debian_ image (as it will not share as much layers as with the above `debian` tag)
+- **alpine** : this should be the smallest image in theory, but it's more complex to maintain and thereore might not meet this expectation ; please check/test before use
+
+The current state of those images is such that I suggest you try the _debian-slim_ image first and switch to another one if you encounter issues or have a specific use case to solve.
+
+Sample command to start a container :
+
+    docker run --rm -it -v "myconfdir:/etc/nicobot" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot
+
+In this example `myconfdir` is a local directory with configuration files for the bot (`-C` option), but you can set all arguments in the command line.
+
+You can also use _volumes_ to persist _signal_ and _IBM Cloud_ credentials and configuration :
+
+    docker run --rm -it -v "myconfdir:/etc/nicobot" -v "$HOME/.local/share/signal-cli:/root/.local/share/signal-cli" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot
+
+See below for a detailed description of the options.
 
 
 
@@ -84,22 +94,19 @@ Follow the instructions below to configure & run it.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-The included sample configuration in `tests/transbot-sample-conf`, demoes how to make it translate any message like `nicobot <message> in chinese` or simply `nicobot  <message>` (into the current language).
+It detects configured patterns or keywords in messages (either received directly or from a group chat) and answers with a translation of the given text. 
 
-It can also automatically translate messages containing keywords into a random language.
-The sample configuration shows how to make it translate any message containing "Hello" or "Goodbye" in many languages.
+The sample configuration in `tests/transbot-sample-conf`, demoes how to make the bot answer messages given in the form `nicobot <text_to_translate> in chinese` (or simply `nicobot  <text_to_translate>` into the current language) with a translation of _<text_to_translate>_.
+
+Transbot can also pick a random language to translate to ; the sample configuration file shows how to make it translate messages containing "Hello" or "Goodbye" into many languages.
 
 ### Quick start
 
-1. Install the package for systems this will look like :
-    ```
-    sudo apt install python3 python3-pip
-    pip3 install nicobot
-    ```
+1. Install **nicobot** (see above)
 2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
 3. Fill them into `tests/transbot-sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
-4. Run `transbot -C tests/transbot-sample-conf`
-5. Input `Hello world` in the console : the bot will print a random translation of "Hello World"
+4. Run `transbot -C tests/transbot-sample-conf` (with docker it will be something like `docker run -it "tests/transbot-sample-conf:/etc/nicobot" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot`)
+5. Type `Hello world` in the console : the bot will print a random translation of "Hello World"
 6. Input `Bye nicobot` : the bot will terminate
 
 If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
@@ -114,14 +121,16 @@ See dedicated chapters below for more options...
 
 Run `transbot -h` to get a description of all options.
 
+The bot needs several configuration files that will be generated / downloaded the first time if not provided.
+
 Below are the most important configuration options for this bot (please also check the generic options below) :
 
-- **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot --keyword <a_keyword> --keyword <another_keyword> ...` a **first time with** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the default name.
-- **--languages-file** : The first time the bot runs, it will download the list of supported languages into `languages.<locale>.json` and reuse it afterwards but you can give it a specific file with the set of languages you want. You can use `--locale` to set the desired locale.
+- **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot --keyword <a_keyword> --keyword <another_keyword> ...` **a first time** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the file name.
+- **--languages-file** : The first time the bot runs it will download the list of supported languages into `languages.<locale>.json` and reuse it afterwards. You can edit it, to keep just the set of languages you want for instance. You can also use the `--locale` option to indicate the desired locale.
 - **--locale** will select the locale to use for default translations (with no target language specified) and as the default parsing language for keywords.
-- **--ibmcloud-url** and **--ibmcloud-apikey** can be obtained from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
+- **--ibmcloud-url** and **--ibmcloud-apikey** take arguments you can obtain from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
 
-The **i18n.\<locale>.yml** file contains localization strings for your locale and fun :
+The **i18n.\<locale>.yml** file contains localization strings for your locale :
 - *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
 - It also defines the pattern that terminates the bot.
 
@@ -131,12 +140,12 @@ A sample configuration is available in the `tests/transbot-sample-conf/` directo
 
 ## Askbot
 
-*Askbot* is a one-shot chatbot that will throw a question and wait for an answer.
+*Askbot* is a one-shot chatbot that will send a message and wait for an answer.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-When run, it will send a message (if provided) and wait for an answer, in different ways (see options below).
-Once the conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
+When run, it will send a message and wait for an answer, in different ways (see options below).
+Once the configured conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
 This JSON structure will have to be parsed in order to retrieve the answer and determine what were the exit(s) condition(s).
 
 ### Main configuration options
@@ -145,8 +154,8 @@ Run `askbot -h` to get a description of all options.
 
 Below are the most important configuration options for this bot (please also check the generic options below) :
 
-- **--max-count <integer>** will define how many messages to read at maximum before exiting. This allows the recipient to send several messages in answer. However currently all of those messages are returned at once after they all have been read by the bot so they cannot be parsed on the fly. To give _x_ tries to the recipient, run _x_ times this bot instead.
-- **--pattern <name> <pattern>** defines a pattern that will end the bot when matched. It takes 2 arguments : a symbolic name and a [regular expression pattern](https://docs.python.org/3/howto/regex.html#regex-howto) that will be tested against each message. It can be passed several times in the same command line, hence the `<name>` argument, which will allow identifying which pattern(s) matched.
+- **--max-count <integer>** will define how many messages to read at maximum before exiting. This allows the recipient to split the answer in several messages for instance. However currently all messages are returned by the bot at once at the end, so they cannot be parsed on the fly by an external program. To give _x_ tries to the recipient, run _x_ times this bot instead.
+- **--pattern <name> <pattern>** defines a pattern that will end the bot when matched. This is the way to detect an answer. It takes 2 arguments : a symbolic name and a [regular expression pattern](https://docs.python.org/3/howto/regex.html#regex-howto) that will be tested against each message. It can be passed several times in the same command line, hence the `<name>` argument, which will allow identifying which pattern(s) matched.
 
 Sample configuration can be found in `tests/askbot-sample-conf`.
 
@@ -160,7 +169,12 @@ The following command will :
 
     askbot -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
 
-If the user *+34987654321* would reply "I don't know" then "Ok then : NO !", the output would be :
+If the user *+34987654321* would reply :
+
+ > I don't know
+ > Ok then : NO !
+ 
+ Then the output would be :
 
 ```json
 {
@@ -202,8 +216,8 @@ If the user *+34987654321* would reply "I don't know" then "Ok then : NO !", the
 A few notes about the example : in `-p yes '(?i)\b(yes|ok)\b'` :
 - `(?i)` enables case-insensitive match
 - `\b` means "edge of a word" ; it is used to make sure the wanted text will not be part of another word (e.g. `tik tok` would match `ok` otherwise)
-- Note that a _search_ is done on the messages (not a _match_) so it is not required to specify a full expression with `^` and `$` (though you may if you want). This makes the pattern more readable.
-- The pattern is labeled 'yes' so it can easily be identified in the JSON output and checked for a positive match
+- Note that a _search_ is done on the messages (not a _match_) so it is not required to specify a full _regular expression_ with `^` and `$` (though you may do, if you want to). This makes the pattern more readable.
+- The pattern is labeled 'yes' so it can be easily identified in the JSON output and counted as a positive match
 
 Also you can notice the importance to define patterns that don't overlap (here the message matched both 'yes' and 'no') or to handle unknow states.
 
@@ -211,11 +225,11 @@ You could parse the output with a script, or with a command-line client like [jq
 For instance, to get the name of the matched patterns in Python :
 
 ```python
+# loads the JSON output
 output = json.loads('{ "max_responses": false, "messages": [...] }')
+# matched is the list of the names of the patterns that matched against the last message, e.g. `['yes','no']`
 matched = [ p['name'] for p in output['messages'][-1]['patterns'] if p['matched'] ]
 ```
-
-It will return the list of the names of the patterns that matched the last message ; e.g. `['yes','no']` in our above example.
 
 
 ## Generic instructions
@@ -226,14 +240,14 @@ It will return the list of the names of the patterns that matched the last messa
 The following options are common to both bots :
 
 - **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
-- **--backend** selects the *chatter* system to use : it currently supports "console" and "signal" (see below)
-- **--stealth** will make the bot connect and listen to messages but print any answer instead of sending it ; useful to observe the bot's behavior in a real chatroom...
+- **--backend** selects the *chatter* system to use : it currently supports "console", "signal" and "jabber" (see below)
+- **--stealth** will make the bot connect and listen to messages but print answers to the console instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 
 ### Config.yml configuration file
 
 Options can also be taken from a configuration file : by default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
-This file is in YAML format with all options at root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (options `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
+This file is in YAML format with all options at root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (option `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
 ```yaml
 keywords_files:
     - 1.json
@@ -242,7 +256,7 @@ keywords_files:
 
 See also sample configurations in the `tests/` directory.
 
-Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) if you don't know about YAML.
+Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) as it has a few traps.
 
 
 
@@ -269,12 +283,14 @@ Then you must [*register* or *link*](https://github.com/AsamK/signal-cli/blob/ma
 
     signal-cli link --name MyComputer
 
+With docker images it is recommended to do this registration on a computer (may be the host but not required), then share the `$HOME/.local/share/signal-cli` as the `/root/.local/share/signal-cli` volume. Otherwise the bot will ask to link again with a device everytime it starts.
+
 Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) for more details.
 
 ### Signal-specific options
 
 - `--signal-username` selects the account to use to send and read message : it is a phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign). If missing, `--username` will be used.
-- `--signal-recipient` and `--signal-group` select the recipient (only one of them should be given). Make sure `--signal-recipient` is in international phone number format and `--signal-group` is a base 64 group ID (e.g. `--signal-group "mABCDNVoEFGz0YeZM1234Q=="`). If `--signal-recipient` is missing, `--recipient` will be used. Once registered with Signal, you can list the IDs of the groups you are in with `signal-cli -U +336123456789 listGroups`
+- `--signal-recipient` and `--signal-group` select the recipient (only one of them should be given). Make sure `--signal-recipient` is in international phone number format and `--signal-group` is a base 64 group ID (e.g. `--signal-group "mABCDNVoEFGz0YeZM1234Q=="`). If `--signal-recipient` is missing, `--recipient` will be used. To get the IDs of the groups you are in, run : `signal-cli -U +336123456789 listGroups`
 
 Sample command line to run the bot with Signal :
 
@@ -284,7 +300,7 @@ Sample command line to run the bot with Signal :
 
 ## Development
 
-Install Python dependencies with :
+Install Python dependencies (both for building and running) with :
 
     pip3 install -r requirements-build.txt -r requirements-runtime.txt
 
@@ -294,7 +310,7 @@ To run unit tests :
 
 To run directly from source (without packaging, e.g. for development) :
 
-    python3 -m nicobot.askbot
+    python3 -m nicobot.askbot [options...]
 
 To build locally (more at [pypi.org](https://packaging.python.org/tutorials/packaging-projects/)) :
 
@@ -309,6 +325,8 @@ To upload to test.pypi.org :
 
 To upload to PROD pypi.org :
 
+    TODO
+
 Otherwise, it is automatically tested, built and uploaded to pypi.org using Travis CI on each push to GitHub.
 
 
@@ -321,16 +339,18 @@ There are several Dockerfile, each made for specific use cases (see [Docker-usag
 `Dockerfile-alpine` requires a [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/) because most of the Python dependencies need to be compiled first.
 The result is a far smaller image than if we had all the compiling/building tools embedded.
 
+> Note that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This approximately doubles the size of the images...
+
 Those images are limited to CPU architectures :
 - supported by [the base images](https://hub.docker.com/_/python)
 - for which the Python dependencies are built or able to build
 - for which the native dependencies of signal (libzkgroup) can be built (alpine only)
 
-Simple build command (single architecture) :
+Simple _build_ command (single architecture) :
 
     docker build -t nicolabs/nicobot:debian-slim -f Dockerfile-debian-slim .
 
-Sample buildx command (multi-arch) :
+Sample _buildx_ command (multi-arch) :
 
     docker buildx build --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x -t nicolabs/nicobot:debian-slim -f Dockerfile-debian-slim .
 
@@ -340,10 +360,10 @@ Then run with the provided sample configuration :
 
 Github actions are actually configured (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
 
-The _multiarch_ compatibility is simply supported by [the base images](https://hub.docker.com/_/python) (no need to run `docker buildx`).
+The _multiarch_ compatibility is supported by [the base images](https://hub.docker.com/_/python) and compilation from source depending on the image.
 
-The images have all the bots inside, as they only differ from each other by one script.
-The `entrypoint.sh` script takes as arguments : first the name of the bot to invoke, then the bot's arguments.
+The images have all the bots inside, as they only differ by one script from each other.
+The `entrypoint.sh` script takes the name of the bot to invoke as its first argument, then the bot's arguments.
 
 
 ### Versioning
