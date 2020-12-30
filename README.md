@@ -14,7 +14,8 @@ Docker :
 ![Docker alpine](https://img.shields.io/docker/image-size/nicolabs/nicobot/alpine.svg?label=alpine)
 ![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/alpine.svg)  
 
----
+
+## About
 
 A collection of 🤟 *cool* 🤟 chat bots :
 
@@ -35,8 +36,8 @@ This project features :
 The bots can be installed and run from :
 
 - the Python package
-- the Docker images
 - the source code
+- the Docker images
 
 ### Python package installation
 
@@ -50,6 +51,13 @@ To install,  simply do :
 
     pip3 install nicobot
 
+Then, you can run the bots by their name, thanks to the provided commands :
+
+    # Runs the 'transbot' bot
+    transbot [options...]
+    # Runs the 'askbot' bot
+    askbot [options...]
+
 
 
 ### Installation from source
@@ -60,7 +68,12 @@ To install from source you need to fulfill the same requirements as for a packag
     cd nicobot
     pip3 install -r requirements-runtime.txt
 
-Follow the instructions later in this document to configure & run it.
+Now you can run the bots by their name as if they were installed via the package :
+
+    # Runs the 'transbot' bot
+    transbot [options...]
+    # Runs the 'askbot' bot
+    askbot [options...]
 
 
 
@@ -78,27 +91,27 @@ Sample command to start a container :
 
     docker run --rm -it -v "myconfdir:/etc/nicobot" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot
 
-In this example `myconfdir` is a local directory with configuration files for the bot (`-C` option), but you can set all arguments in the command line.
+In this example `myconfdir` is a local directory with configuration files for the bot (`-C` option), but you could set all arguments on the command line if you don't want to deal with files.
 
-You can also use _volumes_ to persist _signal_ and _IBM Cloud_ credentials and configuration :
+You can also use _docker volumes_ to persist _signal_ and _IBM Cloud_ credentials and configuration :
 
     docker run --rm -it -v "myconfdir:/etc/nicobot" -v "$HOME/.local/share/signal-cli:/root/.local/share/signal-cli" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot
 
-See below for a detailed description of the options.
+All options that can be passed to the bots' command line can also be passed to the docker command line.
 
 
 
-## Transbot
+## Transbot instructions
 
 *Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-It detects configured patterns or keywords in messages (either received directly or from a group chat) and answers with a translation of the given text. 
+It detects configured patterns or keywords in messages (either received directly or from a group chat) and answers with a translation of the given text.
 
-The sample configuration in `tests/transbot-sample-conf`, demoes how to make the bot answer messages given in the form `nicobot <text_to_translate> in chinese` (or simply `nicobot  <text_to_translate>` into the current language) with a translation of _<text_to_translate>_.
+The sample configuration in `tests/transbot-sample-conf`, demoes how to make the bot answer messages given in the form `nicobot <text_to_translate> in <language>` (or simply `nicobot  <text_to_translate>`, into the current language) with a translation of _<text_to_translate>_.
 
-Transbot can also pick a random language to translate to ; the sample configuration file shows how to make it translate messages containing "Hello" or "Goodbye" into many languages.
+Transbot can also pick a random language to translate into ; the sample configuration file shows how to make it translate messages containing "Hello" or "Goodbye" into a random language.
 
 ### Quick start
 
@@ -107,23 +120,17 @@ Transbot can also pick a random language to translate to ; the sample configurat
 3. Fill them into `tests/transbot-sample-conf/config.yml` (`ibmcloud_url` and `ibmcloud_apikey`)
 4. Run `transbot -C tests/transbot-sample-conf` (with docker it will be something like `docker run -it "tests/transbot-sample-conf:/etc/nicobot" nicolabs/nicobot:debian-slim transbot -C /etc/nicobot`)
 5. Type `Hello world` in the console : the bot will print a random translation of "Hello World"
-6. Input `Bye nicobot` : the bot will terminate
+6. Type `Bye nicobot` : the bot will terminate
 
-If you want to send & receive messages through *Signal* instead of reading from the keyboard & printing to the console :
+You may now explore the dedicated chapters below for more options, including sending & receiving messages through *XMPP* or *Signal* instead of keyboard & console.
 
-1. Install and configure `signal-cli` (see below for details)
-2. Run `transbot -C tests/transbot-sample-conf -b signal -U '+33123456789' -r '+34987654321'` with `-U +33123456789` your *Signal* number and `-r +33987654321` the one of the person you want to make the bot chat with
-
-See dedicated chapters below for more options...
 
 
 ### Main configuration options and files
 
-Run `transbot -h` to get a description of all options.
+This paragraph introduces the most important options to make this bot work. Please also check the generic options below, and finally run `transbot -h` to get an exact list of all options.
 
-The bot needs several configuration files that will be generated / downloaded the first time if not provided.
-
-Below are the most important configuration options for this bot (please also check the generic options below) :
+The bot needs several configuration files that will be generated / downloaded the first time if not provided :
 
 - **--keyword** and **--keywords-file** will help you generate the list of keywords that will trigger the bot. To do this, run `transbot --keyword <a_keyword> --keyword <another_keyword> ...` **a first time** : this will download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the file name.
 - **--languages-file** : The first time the bot runs it will download the list of supported languages into `languages.<locale>.json` and reuse it afterwards. You can edit it, to keep just the set of languages you want for instance. You can also use the `--locale` option to indicate the desired locale.
@@ -138,7 +145,7 @@ A sample configuration is available in the `tests/transbot-sample-conf/` directo
 
 
 
-## Askbot
+## Askbot instructions
 
 *Askbot* is a one-shot chatbot that will send a message and wait for an answer.
 
@@ -163,15 +170,15 @@ Sample configuration can be found in `tests/askbot-sample-conf`.
 
 The following command will :
 
-- Send the message "Do you like me" to +34987654321 on Signal
-- Wait for a maximum of 3 messages in answer and return
-- Or return immediately if one message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
+1. Send the message "Do you like me" to +34987654321 on Signal
+2. Wait for a maximum of 3 messages in answer and return
+3. Or return immediately if a message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
 
     askbot -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
 
 If the user *+34987654321* would reply :
 
- > I don't know
+ > I don't know    
  > Ok then : NO !
  
  Then the output would be :
@@ -219,7 +226,7 @@ A few notes about the example : in `-p yes '(?i)\b(yes|ok)\b'` :
 - Note that a _search_ is done on the messages (not a _match_) so it is not required to specify a full _regular expression_ with `^` and `$` (though you may do, if you want to). This makes the pattern more readable.
 - The pattern is labeled 'yes' so it can be easily identified in the JSON output and counted as a positive match
 
-Also you can notice the importance to define patterns that don't overlap (here the message matched both 'yes' and 'no') or to handle unknow states.
+Also you may have noticed the importance of defining patterns that don't overlap (here the message matched both 'yes' and 'no') or being ready to handle unknow states.
 
 You could parse the output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/).
 For instance, to get the name of the matched patterns in Python :
@@ -227,7 +234,7 @@ For instance, to get the name of the matched patterns in Python :
 ```python
 # loads the JSON output
 output = json.loads('{ "max_responses": false, "messages": [...] }')
-# matched is the list of the names of the patterns that matched against the last message, e.g. `['yes','no']`
+# 'matched' is the list of the names of the patterns that matched against the last message, e.g. `['yes','no']`
 matched = [ p['name'] for p in output['messages'][-1]['patterns'] if p['matched'] ]
 ```
 
@@ -235,7 +242,7 @@ matched = [ p['name'] for p in output['messages'][-1]['patterns'] if p['matched'
 ## Generic instructions
 
 
-### Main generic options
+### Common options
 
 The following options are common to both bots :
 
@@ -244,10 +251,13 @@ The following options are common to both bots :
 - **--stealth** will make the bot connect and listen to messages but print answers to the console instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 
 
-### Config.yml configuration file
+### Configuration file : config.yml
 
-Options can also be taken from a configuration file : by default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
-This file is in YAML format with all options at root level. Keys have the same name as command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (option `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
+Options can also be taken from a configuration file.
+By default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
+
+This file is in YAML format with all options at root level.
+Keys are named after the command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (option `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :
 ```yaml
 keywords_files:
     - 1.json
@@ -256,26 +266,36 @@ keywords_files:
 
 See also sample configurations in the `tests/` directory.
 
-Please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) as it has a few traps.
+If unsure,  please first review [YAML syntax](https://yaml.org/spec/1.1/#id857168) as it has a few traps.
 
 
 
-## Using the Jabber/XMPP backend
+### Using the Jabber/XMPP backend
 
 By using `--backend jabber` you can make the bot chat with XMPP (a.k.a. Jabber) users.
 
-### Jabber-specific options
+#### Jabber-specific options
 
 - `--jabber-username` and `--jabber-password` are the JabberID (e.g. *myusername@myserver.im*) and password of the bot's account used to send and read messages. If `--jabber-username` missing, `--username` will be used.
 - `--jabber-recipient` is the JabberID of the person to send the message to. If missing, `--recipient` will be used.
 
+#### Example
+
+    transbot -C tests/transbot-sample-conf -b jabber -U mybot@myserver.im -r me@myserver.im`
+
+With :
+
+- `-b jabber` to select the XMPP/Jabber backend
+- `-U mybot@myserver.im` the *JabberID* of the bot
+- `-r me@myserver.im` the *JabberID* of the correspondent
 
 
-## Using the Signal backend
+
+### Using the Signal backend
 
 By using `--backend signal` you can make the bot chat with Signal users.
 
-### Prerequistes
+#### Prerequistes
 
 You must first [install and configure *signal-cli*](https://github.com/AsamK/signal-cli#installation).
 
@@ -283,16 +303,16 @@ Then you must [*register* or *link*](https://github.com/AsamK/signal-cli/blob/ma
 
     signal-cli link --name MyComputer
 
-With docker images it is recommended to do this registration on a computer (may be the host but not required), then share the `$HOME/.local/share/signal-cli` as the `/root/.local/share/signal-cli` volume. Otherwise the bot will ask to link again with a device everytime it starts.
+With docker images it is recommended to do this registration on a computer (may be the host but not required), then share the `$HOME/.local/share/signal-cli` as the `/root/.local/share/signal-cli` volume. Otherwise the bot will ask to link again everytime it starts.
 
 Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) for more details.
 
-### Signal-specific options
+#### Signal-specific options
 
 - `--signal-username` selects the account to use to send and read message : it is a phone number in international format (e.g. `+33123456789`). In `config.yml`, make sure to put quotes around it to prevent YAML thinking it's an integer (because of the 'plus' sign). If missing, `--username` will be used.
 - `--signal-recipient` and `--signal-group` select the recipient (only one of them should be given). Make sure `--signal-recipient` is in international phone number format and `--signal-group` is a base 64 group ID (e.g. `--signal-group "mABCDNVoEFGz0YeZM1234Q=="`). If `--signal-recipient` is missing, `--recipient` will be used. To get the IDs of the groups you are in, run : `signal-cli -U +336123456789 listGroups`
 
-Sample command line to run the bot with Signal :
+Example :
 
     transbot -b signal -U +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
 
@@ -308,7 +328,7 @@ To run unit tests :
 
     python3 -m unittest discover -v -s tests
 
-To run directly from source (without packaging, e.g. for development) :
+To run directly from source (without packaging) :
 
     python3 -m nicobot.askbot [options...]
 
@@ -327,19 +347,19 @@ To upload to PROD pypi.org :
 
     TODO
 
-Otherwise, it is automatically tested, built and uploaded to pypi.org using Travis CI on each push to GitHub.
+Otherwise, it is automatically tested, built and uploaded to pypi.org using _Travis CI_ on each push to GitHub.
 
 
 ### Docker build
 
-There are several Dockerfile, each made for specific use cases (see [Docker-usage](#Docker-usage) above) :
+There are several Dockerfiles, each made for specific use cases (see [Docker-usage](#Docker-usage) above) :
 
-`Dockerfile-debian` and `Dockerfile-debian-slim` are quite straight and very similar.
+`Dockerfile-debian` and `Dockerfile-debian-slim` are quite straight and very similar. They still require multi-stage build to address enough platforms. 
 
-`Dockerfile-alpine` requires a [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/) because most of the Python dependencies need to be compiled first.
-The result is a far smaller image than if we had all the compiling/building tools embedded.
+`Dockerfile-alpine` requires a [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/) anyway because most of the Python dependencies need to be compiled first.
+The result however should be a far smaller image than with a Debian base. 
 
-> Note that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This approximately doubles the size of the images...
+> Note that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This currently doubles the size of the images and ruins the advantage of alpine over debian...
 
 Those images are limited to CPU architectures :
 - supported by [the base images](https://hub.docker.com/_/python)
@@ -358,24 +378,22 @@ Then run with the provided sample configuration :
 
     docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
 
-Github actions are actually configured (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
-
-The _multiarch_ compatibility is supported by [the base images](https://hub.docker.com/_/python) and compilation from source depending on the image.
+_Github actions_ are currently used (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
 
 The images have all the bots inside, as they only differ by one script from each other.
-The `entrypoint.sh` script takes the name of the bot to invoke as its first argument, then the bot's arguments.
+The `entrypoint.sh` script takes the name of the bot to invoke as its first argument, then its own options and finally the bot's arguments.
 
 
 ### Versioning
 
 The command-line option to display the scripts' version relies on _setuptools_scm_, which extracts it from the underlying git metadata.
-This is convenient because one does not have to manually update the version (or forget to do it prior a release).
+This is convenient because the developer does not have to manually update the version (or forget to do it prior a release), however it either requires the version to be fixed inside a package or the `.git` directory to be present.
 
-There are several options from which the following one has been retained :
+There were several options among which the following one has been retained :
 - Running `setup.py` creates / updates the version inside the `version.py` file
-- The scripts simply load this module at runtime
+- The scripts then load this module at runtime
 
-This requires `setup.py` to be run before the version can be extracted but :
+The remaining requirement is that `setup.py` must be run before the version can be extracted. In exchange :
 - it does not require _setuptools_ nor _git_ at runtime
 - it frees us from having the `.git` directory around at runtime ; this is especially useful to make the docker images smaller
 
