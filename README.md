@@ -2,27 +2,24 @@
 
 Python package :
 
-[![Build Status on 'master' branch](https://travis-ci.com/nicolabs/nicobot.svg?branch=master)](https://travis-ci.com/nicolabs/nicobot)   [![PyPi](https://img.shields.io/pypi/v/nicobot?label=pypi)](https://pypi.org/project/nicobot)
+[![Build Status on 'master' branch][travisci-shield]][travisci-link] [![PyPi][pypi-shield]][pypi-link]
 
 Docker :
 
-![Build and publish to Docker Hub](https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg)  
-![Docker debian-slim](https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-slim.svg?label=debian-slim)
-![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian-slim.svg)  
-![Docker debian](https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian)
-![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian.svg)  
-![Docker alpine](https://img.shields.io/docker/image-size/nicolabs/nicobot/alpine.svg?label=alpine)
-![layers](https://img.shields.io/microbadger/layers/nicolabs/nicobot/alpine.svg)  
+[![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
+![Docker debian-slim][docker-debian-slim-size] ![layers][docker-debian-slim-layers]  
+![Docker debian][docker-debian-size] ![layers][docker-debian-layers]  
+![Docker alpine][docker-alpine-size] ![layers][docker-alpine-layers]  
 
 
 ## About
 
 A collection of 🤟 *cool* 🤟 chat bots :
 
-- *Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service
-- *Askbot* is a one-shot chatbot that will send a message and wait for an answer
+- **_Transbot_** is a demo chatbot interface to IBM Watson™ Language Translator service
+- **_Askbot_** is a one-shot chatbot that will send a message and wait for an answer
 
-⚠️ My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk ⚠️
+**⚠️** My bots are cool, but they are absolutely **EXPERIMENTAL** use them at your own risk !
 
 This project features :
 
@@ -33,7 +30,7 @@ This project features :
 
 ## Requirements & installation
 
-The bots can be installed and run from :
+The bots can be installed and run at your choice from :
 
 - the Python package
 - the source code
@@ -79,13 +76,21 @@ Now you can run the bots by their name as if they were installed via the package
 
 ### Docker usage
 
-There are [several Docker images available](https://hub.docker.com/repository/docker/nicolabs/nicobot), with the following tags :
+At the present time there are [several Docker images available](https://hub.docker.com/repository/docker/nicolabs/nicobot), with the following tags :
 
 - **debian** : if you have several images with the _debian_ base, this may be the most space-efficient (as base layers will be shared with other images)
 - **debian-slim** : if you want a smaller-sized image and you don't run other images based on the  _debian_ image (as it will not share as much layers as with the above `debian` tag)
 - **alpine** : this should be the smallest image in theory, but it's more complex to maintain and thereore might not meet this expectation ; please check/test before use
 
-The current state of those images is such that I suggest you try the _debian-slim_ image first and switch to another one if you encounter issues or have a specific use case to solve.
+> The current state of those images is such that I suggest you try the **debian-slim** image first and switch to another one if you encounter issues or have a specific use case to solve.
+
+The container is invoked this way :
+
+    docker ... [--signal-register] <bot name> <bot arguments>
+
+- `--signal-register` will display a QR code in the console : scan it with the Signal app on the device to link the bot with (it will simply do the *link* command inside the container ; read more about this later in this document). If this option is not given and the _signal_ backend is used, it will use the `.local/share/signal-cli` directory from the container or fail.
+- `<bot name>` is either `transbot` or `askbot`
+- `<bot arguments>` is the list of arguments to pass to the bot
 
 Sample command to start a container :
 
@@ -168,19 +173,19 @@ Sample configuration can be found in `tests/askbot-sample-conf`.
 
 ### Example
 
-The following command will :
+    askbot -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
+
+The previous command will :
 
 1. Send the message "Do you like me" to +34987654321 on Signal
 2. Wait for a maximum of 3 messages in answer and return
 3. Or return immediately if a message matches one of the given patterns labeled 'yes', 'no' or 'cancel'
 
-    askbot -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
-
-If the user *+34987654321* would reply :
+If the user *+34987654321* was to reply :
 
  > I don't know    
  > Ok then : NO !
- 
+
  Then the output would be :
 
 ```json
@@ -220,16 +225,17 @@ If the user *+34987654321* would reply :
 }
 ```
 
-A few notes about the example : in `-p yes '(?i)\b(yes|ok)\b'` :
+A few notes about the _regex_ usage in this example : in `-p yes '(?i)\b(yes|ok)\b'` :
 - `(?i)` enables case-insensitive match
 - `\b` means "edge of a word" ; it is used to make sure the wanted text will not be part of another word (e.g. `tik tok` would match `ok` otherwise)
 - Note that a _search_ is done on the messages (not a _match_) so it is not required to specify a full _regular expression_ with `^` and `$` (though you may do, if you want to). This makes the pattern more readable.
 - The pattern is labeled 'yes' so it can be easily identified in the JSON output and counted as a positive match
 
-Also you may have noticed the importance of defining patterns that don't overlap (here the message matched both 'yes' and 'no') or being ready to handle unknow states.
+You may also have noticed the importance of defining patterns that don't overlap (here the message matched both 'yes' and 'no') or being ready to handle unknow states.
 
-You could parse the output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/).
-For instance, to get the name of the matched patterns in Python :
+To make use of the bot, you could parse its output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/).
+
+This sample Python snippet will get the name of the matched patterns :
 
 ```python
 # loads the JSON output
@@ -297,15 +303,15 @@ By using `--backend signal` you can make the bot chat with Signal users.
 
 #### Prerequistes
 
-You must first [install and configure *signal-cli*](https://github.com/AsamK/signal-cli#installation).
+For package or source installations, you must first [install and configure *signal-cli*](https://github.com/AsamK/signal-cli#installation).
 
-Then you must [*register* or *link*](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) the computer when the bot will run ; e.g. :
+For all installations, you must [*register* or *link*](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) the computer where the bot will run ; e.g. :
 
     signal-cli link --name MyComputer
 
-With docker images it is recommended to do this registration on a computer (may be the host but not required), then share the `$HOME/.local/share/signal-cli` as the `/root/.local/share/signal-cli` volume. Otherwise the bot will ask to link again everytime it starts.
+With docker images you can do this registration by using the `--signal-register` option. This will save the registration files into `/root/.local/share/signal-cli/` inside the container. If this location links to a persisted volume, it will be reused on each launch.
 
-Please see the [man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) for more details.
+Please see [signal-cli's man page](https://github.com/AsamK/signal-cli/blob/master/man/signal-cli.1.adoc) for more details on the registration process.
 
 #### Signal-specific options
 
@@ -354,10 +360,10 @@ Otherwise, it is automatically tested, built and uploaded to pypi.org using _Tra
 
 There are several Dockerfiles, each made for specific use cases (see [Docker-usage](#Docker-usage) above) :
 
-`Dockerfile-debian` and `Dockerfile-debian-slim` are quite straight and very similar. They still require multi-stage build to address enough platforms. 
+`Dockerfile-debian` and `Dockerfile-debian-slim` are quite straight and very similar. They still require multi-stage build to address enough platforms.
 
 `Dockerfile-alpine` requires a [multi-stage build](https://docs.docker.com/develop/develop-images/multistage-build/) anyway because most of the Python dependencies need to be compiled first.
-The result however should be a far smaller image than with a Debian base. 
+The result however should be a far smaller image than with a Debian base.
 
 > Note that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This currently doubles the size of the images and ruins the advantage of alpine over debian...
 
@@ -378,10 +384,10 @@ Then run with the provided sample configuration :
 
     docker run --rm -it -v "$(pwd)/tests:/etc/nicobot" nicolabs/nicobot:debian-slim askbot -c /etc/nicobot/askbot-sample-conf/config.yml
 
-_Github actions_ are currently used (see [dockerhub.yml](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
+_Github actions_ are currently used (see [`dockerhub.yml`](.github/workflows/dockerhub.yml) to automatically build and push the images to Docker Hub so they are available whenever commits are pushed to the _master_ branch.
 
 The images have all the bots inside, as they only differ by one script from each other.
-The `entrypoint.sh` script takes the name of the bot to invoke as its first argument, then its own options and finally the bot's arguments.
+The [`docker-entrypoint.sh`](docker/docker-entrypoint.sh) script takes the name of the bot to invoke as its first argument, then its own options and finally the bot's arguments.
 
 
 ### Versioning
@@ -424,3 +430,20 @@ Python libraries :
 - [xmpppy](https://github.com/xmpppy/xmpppy) : this library is very easy to use but it does allow easy access to thread or timestamp, and no OMEMO...
 - [github.com/horazont/aioxmpp](https://github.com/horazont/aioxmpp) : officially referenced library from xmpp.org, seems the most complete but misses practical introduction and [does not provide OMEMO OOTB](https://github.com/horazont/aioxmpp/issues/338).
 - [slixmpp](https://lab.louiz.org/poezio/slixmpp) : seems like a cool library too and pretends to require minimal dependencies ; plus it [supports OMEMO](https://lab.louiz.org/poezio/slixmpp-omemo/) so it's the winner. [API doc](https://slixmpp.readthedocs.io/).
+
+
+<!-- MARKDOWN LINKS & IMAGES ; thks to https://github.com/othneildrew/Best-README-Template -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+[travisci-shield]: https://travis-ci.com/nicolabs/nicobot.svg?branch=master
+[travisci-link]: https://travis-ci.com/nicolabs/nicobot
+[pypi-shield]: https://img.shields.io/pypi/v/nicobot?label=pypi
+[pypi-link]: https://pypi.org/project/nicobot
+[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg
+[dockerhub-link]: https://hub.docker.com/r/nicolabs/nicobot
+[docker-debian-slim-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-slim.svg?label=debian-slim
+[docker-debian-slim-layers]: https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian-slim.svg
+[docker-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian
+[docker-debian-layers]: https://img.shields.io/microbadger/layers/nicolabs/nicobot/debian.svg
+[docker-alpine-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/alpine.svg?label=alpine
+[docker-alpine-layers]: https://img.shields.io/microbadger/layers/nicolabs/nicobot/alpine.svg
