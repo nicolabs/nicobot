@@ -87,7 +87,7 @@ jobs:
           context: ./
           file: ./Dockerfile-alpine
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             nicolabs/nicobot:alpine
