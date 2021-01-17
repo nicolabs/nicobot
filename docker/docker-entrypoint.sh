@@ -1,29 +1,34 @@
 #!/bin/bash
 
-usage()
-{
+usage() {
 cat << EOF
-Usage : $0 [bot's name] [bot's arguments]
+Usage : $0 <bot's name> [--signal-register <device name>]
+                        [--qrcode-options <qr options>]
+                        [bot's regular arguments]
 
-Available bots :
-- askbot
-- transbot
+Arguments :
+
+<bot's name>                      One of 'askbot' or 'transbot'.
+--signal-register <device name>   Will display a QR Code to scan & register with
+                                  an existing Signal account. <device name> is a
+                                  string to identify the docker container as a
+                                  signal device.
+--qrcode-options <qr options>     Additional options (in one string) to the 'qr'
+                                  command. The QR Code can be printed directly
+                                  to the console without using this argument but
+                                  make sure to pass '-it' to 'docker run'.
+                                  See github.com/lincolnloop/python-qrcode.
+[bot's regular arguments]         All arguments that can be passed to the bot.
+                                  See github.com/nicolabs/nicobot.
 
 E.g. '$0 transbot -h' to get a more specific help for 'transbot'
 EOF
 }
 
 
-# Displays an URL and a QRCode in the console to link the current container
-# with whichever Signal client will scan it
-signal_link() {
-    device_name=$1
-    # WARNING This command works on alpine with bash installed, not tested otherwise
-    signal-cli link --name "${device_name}" | tee >(head -1 | qr)
-}
-
 # Default values
 opt_signal_register=
+opt_qrcode_options=
 opt_bot=
 
 # Parses the command line for options to execute before running the bot
@@ -34,6 +39,9 @@ while true; do
     case $1 in
       (--signal-register)
             opt_signal_register=$2
+            shift 2;;
+      (--qrcode-options)
+            opt_qrcode_options=$2
             shift 2;;
       (askbot|transbot)
             opt_bot=$1
@@ -46,15 +54,22 @@ done
 
 # Registers the device with signal
 if [ -n "${opt_signal_register}" ]; then
-    signal_link "${opt_signal_register}"
+    # Displays an URL and a QRCode in the console to link the current container
+    # with whichever Signal client will scan it.
+    # NOTES :
+    # - This syntax requires bash.
+    # - It seems this command does not return a 0 status even when the operation succeeded
+    signal-cli link --name "${opt_signal_register}" | tee >(head -1 | qr ${opt_qrcode_options})
 fi
 
 # Runs the right bot with the remaining args
 case "${opt_bot}" in
     askbot|transbot)
-        exec python3 -m "nicobot.${opt_bot}" "$@"
+        #exec python3 -m "nicobot.${opt_bot}" "$@"
+        exec "${opt_bot}" "$@"
         ;;
     *)
+        echo "Unknown bot : '*{opt_bot}'" >2
         usage
         exit 1
         ;;

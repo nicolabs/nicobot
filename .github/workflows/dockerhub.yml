@@ -46,14 +46,31 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
+    - name: Build and push alpine
+      id: docker_build_alpine
+      uses: docker/build-push-action@v2
+      with:
+          context: ./
+          file: ./alpine.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: linux/arm/v7,linux/arm/v5,linux/arm64,linux/386,linux/amd64
+          push: true
+          tags: |
+            nicolabs/nicobot:alpine
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+    - name: Image digest
+      run: echo ${{ steps.docker_build_alpine.outputs.digest }}
+
     - name: Build and push debian
       id: docker_build_debian
       uses: docker/build-push-action@v2
       with:
           context: ./
-          file: ./Dockerfile-debian
+          file: ./debian.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/386,linux/amd64
+          platforms: linux/arm/v7,linux/arm/v5,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
             nicolabs/nicobot:debian
@@ -63,39 +80,22 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker_build_debian.outputs.digest }}
 
-    - name: Build and push debian-slim
-      id: docker_build_debian_slim
+    - name: Build and push debian-signal
+      id: docker_build_debian_signal
       uses: docker/build-push-action@v2
       with:
           context: ./
-          file: ./Dockerfile-debian-slim
+          file: ./debian-signal.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/amd64
+          platforms: linux/arm/v7,linux/arm/v5,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
-            nicolabs/nicobot:debian-slim
+            nicolabs/nicobot:debian-signal
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
     - name: Image digest
-      run: echo ${{ steps.docker_build_debian_slim.outputs.digest }}
-
-    - name: Build and push alpine
-      id: docker_build_alpine
-      uses: docker/build-push-action@v2
-      with:
-          context: ./
-          file: ./Dockerfile-alpine
-          builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            nicolabs/nicobot:alpine
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-
-    - name: Image digest
-      run: echo ${{ steps.docker_build_alpine.outputs.digest }}
+      run: echo ${{ steps.docker_build_debian_signal.outputs.digest }}
 
     # https://github.com/marketplace/actions/build-and-push-docker-images#update-dockerhub-repo-description
     - name: Update repo description
