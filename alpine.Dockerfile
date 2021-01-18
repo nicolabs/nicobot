@@ -32,14 +32,13 @@ RUN apk add --no-cache build-base gcc abuild binutils cmake \
     # See https://cryptography.io/en/latest/installation.html#alpine for cryptography dependencies
     gcc musl-dev python3-dev libffi-dev libressl-dev \
     zip make \
-    # cargo rust \
+    # Rust is a requirement to build the 'cryptography' Python module
+    # At the time of writing this only exists for aarch64 (arm64) and x86_64
+    # => using the alpine package rather than the "universal" rustup script
+    # https://forge.rust-lang.org/infra/other-installation-methods.html
+    cargo rust \
     # git required by setuptools-scm during 'pip install'
     git
-
-# Rust is a requirement to build the 'cryptography' Python module
-# Installs rust using the recommended 'rustup' method (vs apt-get,
-# which seems to be less portable / outdated)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 WORKDIR /usr/src/app
 
