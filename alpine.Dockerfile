@@ -23,7 +23,7 @@ FROM python:3-alpine as builder
 # Python cryptography part :
 # https://stackoverflow.com/questions/35736598/cannot-pip-install-cryptography-in-docker-alpine-linux-3-3-with-openssl-1-0-2g
 # https://github.com/pyca/cryptography/blob/1340c00/docs/installation.rst#building-cryptography-on-linux
-
+#
 # build-base gcc ... : required to build Python dependencies
 # openjdk : javac to compile GetSystemProperty.java (to check the value of java.library.path)
 # git zip cargo make : to compile libzkgroup
@@ -33,9 +33,13 @@ RUN apk add --no-cache build-base gcc abuild binutils cmake \
     gcc musl-dev python3-dev libffi-dev libressl-dev \
     zip make \
     # Rust is a requirement to build the 'cryptography' Python module
-    # At the time of writing this only exists for aarch64 (arm64) and x86_64
-    # => using the alpine package rather than the "universal" rustup script
+    # The recommended procedure is to use 'rustup' but Alpine ships with packages
+    # for more CPU architectures so we use the OS' packages.
+    # At the time of writing rustup only provides installers for x86_64 and
+    # aarch64 (arm64) with *musl* (i.e. Alpine).
     # https://forge.rust-lang.org/infra/other-installation-methods.html
+    # Alpine packages : https://pkgs.alpinelinux.org/packages?name=rust
+    #RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     cargo rust \
     # git required by setuptools-scm during 'pip install'
     git
