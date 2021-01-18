@@ -5,20 +5,26 @@
 FROM python:3 as builder
 
 RUN apt-get update
+# The following fails on arm : https://github.com/docker/buildx/issues/495
 RUN apt-get install -y \
         # "make" tools required to compile the Python modules
         # not all may be required on all platforms...
         cmake g++ make \
+        # Rust is a requirement to build the 'cryptography' Python module
+        # The recommended procedure is to use 'rustup but the both Debian &
+        # Alpine ship with more CPU architectures so we use the OS' packages.
+        # At the time of writing rustup only provides installers for x86_64 and
+        # aarch64 (arm64).
+        # https://forge.rust-lang.org/infra/other-installation-methods.html
+        # Alpine packages : https://pkgs.alpinelinux.org/packages?name=rust
+        # Debian packages : https://packages.debian.org/buster/rustc
+        #RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        rustc \
         # More dependencies for the 'cryptography' module
         # See https://cryptography.io/en/latest/installation.html#debian-ubuntu
         build-essential libssl-dev libffi-dev python3-dev \
         # git required by setuptools-scm during 'pip install'
         git
-
-# Rust is a requirement to build the 'cryptography' Python module
-# Installs rust using the recommended 'rustup' method (vs apt-get,
-# which seems to be less portable / outdated)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 WORKDIR /usr/src/app
 
