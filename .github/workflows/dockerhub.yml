@@ -53,7 +53,7 @@ jobs:
           context: ./
           file: ./alpine.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/arm/v7,linux/arm/v6,linux/arm64,linux/386,linux/amd64
+          platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
             nicolabs/nicobot:alpine
@@ -70,7 +70,7 @@ jobs:
           context: ./
           file: ./debian.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/arm/v7,linux/arm/v5,linux/arm64,linux/386,linux/amd64
+          platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
             nicolabs/nicobot:debian
@@ -87,7 +87,7 @@ jobs:
           context: ./
           file: ./debian-signal.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          platforms: linux/arm/v7,linux/arm/v5,linux/arm64,linux/386,linux/amd64
+          platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
             nicolabs/nicobot:debian-signal
