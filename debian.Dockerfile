@@ -4,9 +4,9 @@
 
 FROM python:3 as builder
 
-RUN apt-get update
-# The following fails on arm : https://github.com/docker/buildx/issues/495
-RUN apt-get install -y \
+RUN apt-get update && \
+    # The following fails on arm : https://github.com/docker/buildx/issues/495
+    apt-get install -y \
         # "make" tools required to compile the Python modules
         # not all may be required on all platforms...
         cmake g++ make \
