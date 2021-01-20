@@ -74,6 +74,7 @@ jobs:
           push: true
           tags: |
             nicolabs/nicobot:debian
+            nicolabs/nicobot:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
