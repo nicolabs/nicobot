@@ -1,0 +1,81 @@
+@startuml
+
+' Basic style
+!$dockercontext = "#lightblue"
+!$baseimage = "#lightgray"
+!$finalimage = "#yellow"
+!$tempimage = ""
+
+left to right direction
+
+
+''''''''''''''''''''''''
+' debian.Dockerfile
+''''''''''''''''''''''''
+
+object "Docker context" as docker_context $dockercontext
+object "<i>python:3</i>" as python3 $baseimage
+object "<i>python:3-slim</i>" as python3_slim $baseimage
+object "debian builder" as nicobot_debian_builder <<temp>> $tempimage {
+    Builds nicobot & dependencies
+}
+object "nicolabs/nicobot:debian" as nicobot_debian $finalimage {
+    Installs nicobot & dependencies
+}
+
+python3 --> nicobot_debian_builder : FROM
+docker_context ...> nicobot_debian_builder : COPY
+
+python3_slim --> nicobot_debian : FROM
+nicobot_debian_builder ..> nicobot_debian : COPY
+docker_context ...> nicobot_debian : COPY
+
+
+''''''''''''''''''''''''
+' debian-signal.Dockerfile
+''''''''''''''''''''''''
+
+object "<i>rust:1.49-buster</i>" as rust $baseimage
+object "<i>openjdk:11-jre-slim-stretch</i>" as openjdk_slim $baseimage
+object "rust fix" as nicobot_rust_fix <<temp>> $tempimage {
+    Downloads rust files to bypass a bug
+}
+object "signal-cli builder" as nicobot_signal_builder <<temp>> $tempimage {
+    Builds signal-cli & libzkgroup
+}
+object "nicolabs/nicobot:debian-signal" as nicobot_debian_signal $finalimage {
+    Installs signal-cli & dependencies
+}
+
+rust --> nicobot_rust_fix : FROM
+
+python3 --> nicobot_signal_builder : FROM
+docker_context ...> nicobot_signal_builder : COPY
+nicobot_rust_fix ..> nicobot_signal_builder : COPY
+
+nicobot_debian --> nicobot_debian_signal : FROM
+openjdk_slim ..> nicobot_debian_signal : COPY
+nicobot_signal_builder ..> nicobot_debian_signal : COPY
+
+
+''''''''''''''''''''''''
+' alpine.Dockerfile
+''''''''''''''''''''''''
+
+object "<i>python:3-alpine</i>" as python3_alpine $baseimage
+object "alpine builder" as nicobot_alpine_builder <<temp>> $tempimage {
+    Builds nicobot & dependencies
+}
+object "nicolabs/nicobot:alpine" as nicobot_alpine $finalimage {
+    Installs nicobot & dependencies
+}
+
+python3_alpine --> nicobot_alpine_builder : FROM
+docker_context ...> nicobot_alpine_builder : COPY
+
+python3_alpine --> nicobot_alpine : FROM
+nicobot_alpine_builder ..> nicobot_alpine : COPY
+docker_context ...> nicobot_alpine : COPY
+
+
+@enduml
