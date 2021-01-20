@@ -63,8 +63,8 @@ RUN ./build.sh
 
 # The 'qr' command is used in the process of linking the machine with a Signal account
 # --> Built files are put in /root/.local
-RUN python3 -m pip install --no-cache-dir --user --upgrade pip
-RUN python3 -m pip install --no-cache-dir --user qrcode[pil]
+RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
+    python3 -m pip install --no-cache-dir --user qrcode[pil]
 
 # Signal unpacking
 WORKDIR /root
