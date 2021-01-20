@@ -2,22 +2,26 @@
 
 usage() {
 cat << EOF
-Usage : $0 <bot's name> [--signal-register <device name>]
-                        [--qrcode-options <qr options>]
-                        [bot's regular arguments]
+Usage : docker run [...] nicolabs/nicobot:<tag> <bot's name>
+              [--signal-register <device name>]
+              [--qrcode-options <qr options>]
+              [bot's regular arguments]
 
 Arguments :
 
 <bot's name>                      One of 'askbot' or 'transbot'.
+
 --signal-register <device name>   Will display a QR Code to scan & register with
                                   an existing Signal account. <device name> is a
                                   string to identify the docker container as a
                                   signal device.
+
 --qrcode-options <qr options>     Additional options (in one string) to the 'qr'
                                   command. The QR Code can be printed directly
                                   to the console without using this argument but
                                   make sure to pass '-it' to 'docker run'.
                                   See github.com/lincolnloop/python-qrcode.
+
 [bot's regular arguments]         All arguments that can be passed to the bot.
                                   See github.com/nicolabs/nicobot.
 

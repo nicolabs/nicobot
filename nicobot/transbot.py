@@ -585,7 +585,7 @@ def run( args=sys.argv[1:] ):
         description="A bot that reacts to messages with given keywords by responding with a random translation"
         )
     # Core arguments for this bot
-    parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="Keyword bot should react to (will write them into the file specified with --keywords-file)")
+    parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="A keyword a bot should react to (will write them into the file specified with --keywords-file)")
     parser.add_argument("--keywords-file", dest="keywords_files", action="append", help="File to load from and write keywords to")
     parser.add_argument('--locale', '-l', dest='locale', default=config.locale, help="Change default locale (e.g. 'fr_FR')")
     parser.add_argument("--languages-file", dest="languages_file", help="File to load from and write languages to")

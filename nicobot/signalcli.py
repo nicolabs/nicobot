@@ -135,6 +135,8 @@ class SignalChatter(Chatter):
             logging.debug("Filtering message : %s" % repr(event))
             envelope = event['envelope']
             if envelope['timestamp'] > self.startTime:
+                # TODO This test prevents sending and receiving with the same number
+                # See https://github.com/nicolabs/nicobot/issues/34
                 if envelope['dataMessage']:
                     dataMessage = envelope['dataMessage']
                     if dataMessage['message']:
