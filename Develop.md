@@ -8,8 +8,9 @@
 
 ## Basic development
 
-Install Python dependencies (for both building and running) with :
+Generate `nicobot/version.py` & install Python dependencies (for both building and running) with :
 
+    python3 setup.py build
     pip3 install -r requirements-build.txt -r requirements-runtime.txt
 
 To run unit tests :
