@@ -27,7 +27,7 @@ deploy:
   provider: pypi
   username: "__token__"
   password:
-    secure: "Your PyPI API token, including the pypi- prefix"
+    secure: "Sdw8LiV8N/VIgLkYixNIWHVu4YjaOzQAOyWYt8Fohedrpwz48UoghjFaaEIp7PTjH6jbg5ah3rksyfRj+fC4zpiM/kz9gC8JnuWSBe90BQGtSjF6MF+6DpwUjjQjKlCGyistCiHu8syF6HDbhH7LmHkNEUBfGo1GZ9peAqPCSQHaAnWwgIJJd8PAJBAMJYt0xKHyz06IQf8iZnQIfG3FBFzgM1+ELkAtfMWbySPDWpkjMfUW1ABUS0k4gfctGddY5PDABmwyGcMtCYDmSaNfjKinKbQPQjCr08UMd7qiieD6xwIl7HgVidIuzHRANA6ROxO9FN5R4e2K6sEin2IEz0cbLn2yP0P+t5ZRytvROIMYwO/7R1qPj6KnjOFqSJpkOCAMWiPe8PPzJsg2bJOpVUAMWyeCYFLwfy6LwCa+u4kOvI7KUz+Xb13gpELP9UyOzOyBFjwCCokLSWAt6quomsSN2fN/Rs5Fg3ihAqsqnQDpnCj84eC2FZ2ZzvXfgzGzdX1gcU1Ryktjas+gb09OcF5amOTWj0M/obIlRNYMjr9RG2andQT01o7ETgh5w4Yxham96eNc4ZDYRHLtX3vdUOCPqmxPVf52tBI8l3HStCzCXEXMWPrDhYHxtYG4nW8pa8LDliAEyUdRg8baLpzdxirencYsJvKHg6d3tZiQFHg="
   on:
     tags: true
   skip_existing: true
