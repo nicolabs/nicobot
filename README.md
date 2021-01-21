@@ -7,7 +7,7 @@ Python package :
 Docker images :
 
 [![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
-![Docker debian][docker-debian-size] ![Docker debian-signal][docker-debian-signal-size] ![Docker alpine][docker-alpine-size]  
+[![Docker debian][docker-debian-size] ![Docker debian-signal][docker-debian-signal-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
 
 
@@ -88,7 +88,7 @@ Now you can run the bots by their name as if they were installed via the package
 
 ### Docker usage
 
-At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot), with the following tags :
+At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot/tags, with the following tags :
 
 - **debian** : this is the most portable image ; in order to keep it relatively small it does not include support for *Signal* messaging (will throw an error if you try --> use XMPP instead)
 - **debian-signal** : this is the most complete image ; it is also the largest one, but includes everything needed to use the *Signal* backend
@@ -382,7 +382,7 @@ Example :
 [travisci-link]: https://travis-ci.com/nicolabs/nicobot
 [pypi-shield]: https://img.shields.io/pypi/v/nicobot?label=pypi
 [pypi-link]: https://pypi.org/project/nicobot
-[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg
+[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub%20(master%20branch)/badge.svg
 [dockerhub-link]: https://hub.docker.com/r/nicolabs/nicobot
 [docker-debian-signal-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-signal.svg?label=debian-signal
 [docker-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian

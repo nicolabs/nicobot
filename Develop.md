@@ -1,8 +1,8 @@
 # Devops notes for nicobot
 
-[![Build Status on 'master' branch][travisci-shield]][travisci-link] [![PyPi][pypi-shield]][pypi-link]
+[![Build Status on 'master' branch][travisci-shield]][travisci-link] [![PyPi][pypi-shield]][pypi-link]  
 [![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
-![Docker debian][docker-debian-size] ![Docker debian-signal][docker-debian-signal-size] ![Docker alpine][docker-alpine-size]  
+[![Docker debian][docker-debian-size] ![Docker debian-signal][docker-debian-signal-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
 
 
@@ -23,18 +23,57 @@ To run directly from source (without packaging) :
 
 To build locally (more at [pypi.org](https://packaging.python.org/tutorials/packaging-projects/)) :
 
-    python3 setup.py sdist bdist_wheel
+    rm -rf ./dist ; python3 setup.py build sdist bdist_wheel
+
+### PyPi upload
 
 To upload to test.pypi.org :
 
-    # Defines username and password (or '__token__' and API key) ; alternatively CLI `-u` and `-p` options or user input may be used (or even certificates, see `python3 -m twine upload --help`)
-    TWINE_USERNAME=__token__
-    TWINE_PASSWORD=`pass pypi/test.pypi.org/api_token | head -1`
     python3 -m twine upload --repository testpypi dist/*
+
+To install the test package from test.pypi.org and check that it works :
+
+    # First create a virtual environment not to mess with the host system
+    python3 -m venv venv/pypi_test && source venv/pypi_test/bin/activate
+
+    # Then install dependencies using the regular pypi repo
+    pip3 install -r requirements-runtime.txt
+
+    # Finally install this package from the test repo
+    pip3 install -i https://test.pypi.org/simple/ --no-deps nicobot
+
+    # Do some test
+    python -m nicobot.askbot -V
+    ...
+
+    # Exit the virtual environment
+    deactivate
 
 To upload to PROD pypi.org :
 
-    TODO
+    python3 -m twine upload dist/*
+
+Both above *twine upload* commands will ask for a username and a password.
+To prevent this, you could set variables :
+
+    # Defines username and password (or '__token__' and API key)
+    export TWINE_USERNAME=__token__
+    # Example reading the token from a local 'passwordstore'
+    export TWINE_PASSWORD=`pass pypi/test.pypi.org/api_token`
+
+Or store them in `~/.pypirc` ([see doc](https://packaging.python.org/specifications/pypirc/)) :
+
+    [pypi]
+    username = __token__
+    password = <PyPI token>
+
+    [testpypi]
+    username = __token__
+    password = <TestPyPI token>
+
+Or even use CLI options `-u` and `-p`, or certificates...
+See `python3 -m twine upload --help` for details.
+
 
 
 ### Automation for PyPi
@@ -212,7 +251,7 @@ This led to build separate images (same _repo_ but different _tags_), to allow u
 [travisci-link]: https://travis-ci.com/nicolabs/nicobot
 [pypi-shield]: https://img.shields.io/pypi/v/nicobot?label=pypi
 [pypi-link]: https://pypi.org/project/nicobot
-[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub/badge.svg
+[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub%20(master%20branch)/badge.svg
 [dockerhub-link]: https://hub.docker.com/r/nicolabs/nicobot
 [docker-debian-signal-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-signal.svg?label=debian-signal
 [docker-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian
