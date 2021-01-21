@@ -10,7 +10,8 @@ def local_scheme(version):
     return ""
 
 setuptools.setup(
-    name="nicobot", # Replace with your own username
+    # See https://packaging.python.org/tutorials/packaging-projects/
+    name="nicobot",
     author="nicobo",
     author_email="nicobo@users.noreply.github.com",
     description="A collection of 🤟 cool 🤟 chat bots",
@@ -23,7 +24,10 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Development Status :: 3 - Alpha',
-        'Topic :: Communications :: Chat'
+        'Topic :: Communications :: Chat',
+        'Topic :: Internet :: XMPP',
+        'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
+        'Topic :: Software Development :: Internationalization'
     ],
     # PyYAML requires Python 3.5+
     python_requires='>=3.5',
@@ -57,6 +61,6 @@ setuptools.setup(
         # Only enable to upload local versions to test repo
         # See https://mixstersite.wordpress.com/2019/12/31/setuptools-with-testpypi-error-invalid-version-pep-440/
         # and https://github.com/pypa/setuptools_scm#user-content-version-number-construction
-        #"local_scheme": local_scheme,
+        "local_scheme": 'no-local-version',
     },
 )
