@@ -2,7 +2,7 @@
 # Also, more details here : https://github.com/marketplace/actions/build-and-push-docker-images#update-dockerhub-repo-description
 #
 
-name: Build and publish to Docker Hub
+name: Build and publish to Docker Hub (master branch)
 
 on:
   push:
@@ -56,7 +56,7 @@ jobs:
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
-            nicolabs/nicobot:alpine
+            nicolabs/nicobot:alpine-dev
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -73,7 +73,7 @@ jobs:
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
-            nicolabs/nicobot:debian
+            nicolabs/nicobot:debian-dev
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -90,8 +90,7 @@ jobs:
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
           tags: |
-            nicolabs/nicobot:debian-signal
-            nicolabs/nicobot:latest
+            nicolabs/nicobot:debian-signal-dev
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
