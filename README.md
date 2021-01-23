@@ -27,7 +27,7 @@ This project features :
 - Using [IBM Watson™ Language Translator](https://cloud.ibm.com/apidocs/language-translator) cloud API
 
 This document is about how to **use** the bots.
-To get more details on how to build / develop with this project, see [Develop.md](Develop.md).
+To get more details on how to **build / develop** with this project, see [Develop.md](Develop.md).
 
 
 
@@ -45,7 +45,7 @@ The bots can be installed and run at your choice from :
 
 A classic (Python package) installation requires :
 
-- Python 3 (>= 3.5) and pip ([should be bundled with Python](https://pip.pypa.io/en/stable/installing)) ; e.g. on Debian : `sudo apt install python3 python3-pip`
+- Python 3 (>= 3.5) and pip ([should already be bundled with Python](https://pip.pypa.io/en/stable/installing)) ; e.g. on Debian : `sudo apt install python3 python3-pip`
 - [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend](#using-the-signal-backend) below for requirements)
 - For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
@@ -53,7 +53,7 @@ To install,  simply do :
 
     pip3 install nicobot
 
-Then, you can run the bots by their name, thanks to the installed shortcuts :
+Then, you can run the bots by their name :
 
     # Runs the 'transbot' bot
     transbot [options...]
@@ -74,7 +74,7 @@ To install from source you need to fulfill the requirements for a package instal
 
 > **NOTE**
 > Depending on your platform, `pip install` may trigger a compilation for some or all of the dependencies (i.e. when *Python wheels* are not available).
-> In this case you may need to install more requirements for the build to succeed : looking at [the Dockerfiles in this project](Develop.md) might help you gather the exact list.
+> In this case you may need to install more requirements for the build to succeed : looking at [the Dockerfiles in this project](Develop.md) may help you gather the exact list.
 
 Now you can run the bots by their name as if they were installed via the package :
 
@@ -88,11 +88,11 @@ Now you can run the bots by their name as if they were installed via the package
 
 ### Docker usage
 
-At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot/tags, with the following tags :
+At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot/tags), with the following tags :
 
-- **debian** : this is the most portable image ; in order to keep it relatively small it does not include support for *Signal* messaging (will throw an error if you try --> use XMPP instead)
-- **debian-signal** : this is the most complete image ; it is also the largest one, but includes everything needed to use the *Signal* backend
-- **alpine** : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, an image may not exist for all platforms and it currently doesn't support the Signal backend (you can use XMPP instead).
+- **debian** : this is the most portable image ; in order to keep it relatively small it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
+- **debian-signal** : this is the most complete image ; it is also the largest one, but allows *Signal* messaging
+- **alpine** : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't provide the Signal backend (you can use XMPP instead).
 
 Please have a look at the status pills at the top of this document to get more details like status and size.
 
@@ -103,10 +103,10 @@ The container is invoked this way :
 
     docker ... [--signal-register <device name>] [--qrcode-options <qr options] <bot name> [<bot arguments>]
 
-- `--signal-register` will display a QR code in the console : scan it with the Signal app on the device to link the bot with (it will simply do the *link* command inside the container ; read more about this later in this document). If this option is not given and the _signal_ backend is used, it will use the `.local/share/signal-cli` directory from the container (you _have_ to mount it) or fail. This option takes a custom device name as its argument.
-- `--qrcode-options` has an argument, which is a string of options to pass to the QR code generation command (see [python-qrcode](https://github.com/lincolnloop/python-qrcode)).
+- `--signal-register` will display a QR code in the console : scan it with the Signal app on the device to link the bot with (it will simply do the *signal-cli link* command inside the container ; read more about this later in this document). If this option is not given and the _signal_ backend is used, it will use the `.local/share/signal-cli` directory from the container (you _have_ to mount it) or fail. This option takes a custom device name as its argument.
+- `--qrcode-options` takes as argument a string of options to pass to the QR code generation command (see [python-qrcode](https://github.com/lincolnloop/python-qrcode)).
 - `<bot name>` is either `transbot` or `askbot`
-- `<bot arguments>` is the list of arguments to pass to the bot
+- `<bot arguments>` is the list of arguments to pass to the bot (see bots' usage) 
 
 If any doubt, just invoke the image without argument to print the inline help statement.
 
@@ -116,9 +116,9 @@ Sample command to start a container :
 
 In this example `myconfdir` is a local directory with configuration files for the bot (`-C` option), but you could also set most parameters on the command line.
 
-You can also use _docker volumes_ to persist _signal_ and _IBM Cloud_ credentials and configuration :
+You can also use _docker volumes_ to persist _signal_, _XMPP_ and other configuration :
 
-    docker run --rm -it -v "$(pwd)/myconfdir:/etc/nicobot" -v "$HOME/.local/share/signal-cli:/root/.local/share/signal-cli" nicolabs/nicobot transbot -C /etc/nicobot
+    docker run --rm -it -v "$(pwd)/myconfdir:/usr/src/app" -v "$HOME/.local/share/signal-cli:/root/.local/share/signal-cli" -v "$HOME/.omemo:/usr/src/app/.omemo" nicolabs/nicobot transbot
 
 All options that can be passed to the bots' command line can also be passed to the docker command line.
 
