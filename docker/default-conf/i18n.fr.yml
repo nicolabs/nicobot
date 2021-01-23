@@ -1,0 +1,21 @@
+fr:
+    # Si présent, ce motif sera utilisé pour formater tous les messages envoyés
+    all_messages: 🤖 %{message}
+
+    # Si un message correspond à ce motif, le bot tentera de le traduire dans la langue locale configurée
+    # Voir https://docs.python.org/3/howto/regex.html#regex-howto pour le format
+    translate_default_locale: ^(?P<message>.+)$
+
+    # Si un message correspond à ce motif, le bot tentera de traduire <message> dans la langue <language>
+    # Voir https://docs.python.org/3/howto/regex.html#regex-howto pour le format
+    translate: ^(?P<message>.+)\s+en\s+(?P<language>.+)$
+
+    # Ce message est envoyé lorsque le bot ne sait pas traduire le message demandé
+    IDontKnow: Je ne sais pas
+
+    # Phrase clé pour éteindre le bot
+    Shutdown: couché nicobot
+
+    # Remplacez ces messages par une chaîne vide "" afin de les désactiver
+    Hello: nicobot paré 🤟
+    Goodbye: A+ 👋

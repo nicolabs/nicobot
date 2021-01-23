@@ -1,0 +1,21 @@
+en:
+    # If present, this is a template to use for all messages
+    all_messages: 🤖 %{message}
+
+    # If a message matches this pattern, bot will try to translate <message> into the configured locale
+    # See https://docs.python.org/3/howto/regex.html#regex-howto for details on the format
+    translate_default_locale: ^(?P<message>.+)$
+
+    # If a message matches this pattern, bot will try to translate <message> into <language>
+    # See https://docs.python.org/3/howto/regex.html#regex-howto for details on the format
+    translate: ^(?P<message>.+)\s+in\s+(?P<language>.+)$
+
+    # Sent when the bot cannot translate a given message
+    IDontKnow: I don't know
+
+    # Key sentence that shuts the bot down
+    Shutdown: bye nicobot
+
+    # Set the following banners explicitely to the empty string "" to disable them
+    Hello: nicobot ready 🤟
+    Goodbye: See you later 👋
