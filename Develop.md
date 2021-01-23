@@ -8,10 +8,10 @@
 
 ## Basic development
 
-Generate `nicobot/version.py` & install Python dependencies (for both building and running) with :
+Install Python dependencies (for both building and running) and generate `nicobot/version.py` with :
 
-    python3 setup.py build
     pip3 install -r requirements-build.txt -r requirements-runtime.txt
+    python3 setup.py build
 
 To run unit tests :
 
@@ -147,6 +147,25 @@ It emphasizes *FROM* and *COPY* relations between the images (base and stages).
 [The open issues labelled with *docker*](https://github.com/nicolabs/nicobot/labels/docker) should reference the reasons for missing arch / configuration.
 
 
+### Docker image structure
+
+Here are the main application files and directories from within the images :
+
+    📦 /
+     ┣ 📂 root/
+     ┃ ┗ 📂 .local/
+     ┃   ┣ 📂 bin/  - - - - - - - - - - - - - -> shortcuts
+     ┃   ┃ ┣ 📜 askbot
+     ┃   ┃ ┣ 📜 transbot
+     ┃   ┃ ┗ 📜 ...
+     ┃   ┣ 📂 lib/pythonX.X/site-packages/  - -> Python packages (nicobot & dependencies)
+     ┃   ┗ 📂 share/signal-cli/ - - - - - - - -> signal-cli configuration files
+     ┗ 📂 usr/src/app/  - - - - - - - - - - - -> app's working directory, default configuration files, ...
+       ┣ 📂 .omemo/ - - - - - - - - - - - - - -> OMEMO keys (XMPP)
+       ┣ 📜 docker-entrypoint.sh
+       ┣ 📜 i18n.en.yml
+       ┗ 📜 ...
+
 
 ## Versioning
 
@@ -157,9 +176,11 @@ There were several options among which the following one has been retained :
 1. Running `setup.py` creates / updates the version inside the `version.py` file
 2. The scripts then load this module at runtime
 
-Since the `version.py` file is not saved into the project, `setup.py` must be run before the version can be queried. In exchange :
+Since the `version.py` file is not saved into the project, `setup.py build` must be run before the version can be queried. In exchange :
 - it does not require _setuptools_ nor _git_ at runtime
 - it frees us from having the `.git` directory around at runtime ; this is especially useful to make the docker images smaller
+
+Tip : `python3 setup.py --version` will print the guessed version.
 
 
 

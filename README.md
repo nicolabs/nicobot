@@ -103,10 +103,10 @@ The container is invoked this way :
 
     docker ... [--signal-register <device name>] [--qrcode-options <qr options] <bot name> [<bot arguments>]
 
-- `--signal-register` will display a QR code in the console : scan it with the Signal app on the device to link the bot with (it will simply do the *signal-cli link* command inside the container ; read more about this later in this document). If this option is not given and the _signal_ backend is used, it will use the `.local/share/signal-cli` directory from the container (you _have_ to mount it) or fail. This option takes a custom device name as its argument.
-- `--qrcode-options` takes as argument a string of options to pass to the QR code generation command (see [python-qrcode](https://github.com/lincolnloop/python-qrcode)).
+- `--signal-register` is Signal-specific. It will display a QR code in the console : scan it with the Signal app on the device to link the bot with (it will simply do the *signal-cli link* command inside the container ; read more about this later in this document). If this option is not given and the _signal_ backend is used, it will use the `.local/share/signal-cli` directory from the container (you _have_ to mount it) or fail. This option takes a custom device name as its argument.
+- `--qrcode-options` is Signal-specific. It takes as argument a string of options to pass to the QR code generation command (see [python-qrcode](https://github.com/lincolnloop/python-qrcode)).
 - `<bot name>` is either `transbot` or `askbot`
-- `<bot arguments>` is the list of arguments to pass to the bot (see bots' usage) 
+- `<bot arguments>` is the list of arguments to pass to the bot (see bots' usage)
 
 If any doubt, just invoke the image without argument to print the inline help statement.
 
@@ -153,7 +153,16 @@ Sample configuration can be found in `tests/askbot-sample-conf`.
 
 
 
-#### Example
+#### Examples
+
+##### Simple example (with Jabber)
+
+    askbot -b jabber -U mybot@myserver.im -r me@myserver.im --jabber-password 'Myb0tp@SSword' -m "Hello You !" -p bye 'bye'
+
+Will say 'Hello You !' to me@myserver.im, and for a message containing 'bye' to quit.
+If the recipient handles it, the communication will be end-to-end encrypted with OMEMO.
+
+##### More complex example (and with Signal)
 
     askbot -m "Do you like me ?" -p yes '(?i)\b(yes|ok)\b' -p no '(?i)\bno\b' -p cancel '(?i)\b(cancel|abort)\b' --max-count 3 -b signal -U '+33123456789' --recipient '+34987654321'
 
