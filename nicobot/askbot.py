@@ -84,7 +84,7 @@ class AskBot(Bot):
         self.status['events'].append(status_message)
 
         self.responses_count = self.responses_count + 1
-        logging.info("<<< %s", message)
+        logging.debug("<<< %s", message)
 
         # If we reached the last message or if we exceeded it (possible if we received several answers in a batch)
         if self.max_count>0 and self.responses_count >= self.max_count:
