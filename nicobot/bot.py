@@ -109,7 +109,8 @@ class ArgsHelper:
 
     def jabber_chatter( args ):
         """
-            Builds a JabberChatter from Namespace argument 'args'
+            Builds a JabberChatter from Namespace argument 'args'.
+            Sets its data directory to <config_dir>/.omemo
         """
 
         username = args.jabber_username if args.jabber_username else args.username
@@ -124,7 +125,8 @@ class ArgsHelper:
         return JabberChatter(
             jid=username,
             password=args.jabber_password,
-            recipient=recipients[0]
+            recipient=recipients[0],
+            data_dir=os.path.join(args.config_dir,".omemo")
             )
 
 

@@ -30,7 +30,7 @@ class SliXmppClient(ClientXMPP):
 
     eme_ns = 'eu.siacs.conversations.axolotl'
 
-    def __init__(self, jid, password, message_handler):
+    def __init__(self, jid, password, message_handler, data_dir):
 
         """
             jid, password : valid account to send and receive messages
@@ -46,16 +46,18 @@ class SliXmppClient(ClientXMPP):
         self.register_plugin('xep_0199') # XMPP Ping
         self.register_plugin('xep_0380') # Explicit Message Encryption
 
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
         try:
             self.register_plugin(
                 'xep_0384',
                 {
-                    'data_dir': '.omemo',
+                    'data_dir': data_dir,
                 },
                 module=slixmpp_omemo,
             ) # OMEMO
         except (PluginCouldNotLoad,):
-            log.exception('And error occured when loading the omemo plugin.')
+            logging.exception('And error occured when loading the omemo plugin.')
             sys.exit(1)
 
         self.message_handler = message_handler
@@ -265,10 +267,10 @@ class JabberChatter(Chatter):
         It implements nicobot.Chatter by wrapping an internal slixmpp.ClientXMPP instance.
     """
 
-    def __init__( self, jid, password, recipient ):
+    def __init__( self, jid, password, recipient, data_dir ):
 
         self.recipient = recipient
-        self.xmpp = SliXmppClient( jid, password, message_handler=self.on_xmpp_message )
+        self.xmpp = SliXmppClient( jid, password, message_handler=self.on_xmpp_message, data_dir=data_dir )
 
     def on_xmpp_message( self, original_message, decrypted_body ):
         """
