@@ -337,6 +337,8 @@ By specifying `--backend jabber` you can make the bot chat with XMPP (a.k.a. Jab
 - `--jabber-username` and `--jabber-password` are the JabberID (e.g. *myusername@myserver.im*) and password of the bot's account used to send and read messages. If `--jabber-username` is missing, `--username` will be used.
 - `--jabber-recipient` is the JabberID of the person to send the message to. If missing, `--recipient` will be used.
 
+A `.omemo` directory inside the configuration directory will be created or reused if existing to store OMEMO authentication data.
+
 
 ##### Example
 
@@ -348,6 +350,16 @@ With :
 - `-U mybot@myserver.im` the *JabberID* of the bot
 - `-r me@myserver.im` the *JabberID* of the correspondent
 
+
+##### Common issues
+
+If you have the following error :
+
+    ERROR	Couldn't load the OMEMO object; ¯\_(ツ)_/¯
+    ERROR	And error occured when loading the omemo plugin.
+    omemo.exceptions.inconsistentinfoexception.InconsistentInfoException: Given storage is only usable for jid mybot@myserver.im on device 1234567890.
+
+This may be because you previously registered another device at the same place : move or delete the `.omemo` directory and retry.
 
 
 #### Using the Signal backend
