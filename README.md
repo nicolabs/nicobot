@@ -128,6 +128,57 @@ All options that can be passed to the bots' command line can also be passed to t
 
 
 
+### Transbot usage
+
+*Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service.
+
+**Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
+
+It is triggered by messages :
+- either matching the configured pattern
+- or containing a keyword from a given list
+
+When triggered, it will answer with a translation of the given text.
+
+It will reply either to direct messages or to a group chat, depending on the given parameters.
+
+The sample configuration in `tests/transbot-sample-conf`, demoes how to make the bot answer messages given in the form `nicobot <text_to_translate> in <language>` (or simply `nicobot  <text_to_translate>`, into the current language) with a translation of _<text_to_translate>_.
+
+Transbot can also pick a random language to translate into ; the sample configuration file shows how to make it translate messages containing "Hello" or "Goodbye" into a random language.
+
+
+### Quick start
+
+1. Install **nicobot** (see above)
+2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
+3. Make a local copy of files in [`tests/transbot-sample-conf/`](tests/transbot-sample-conf/) and fill the `ibmcloud_url` and `ibmcloud_apikey` values into `config.yml`
+4. Run `transbot -C ./transbot-sample-conf` (with docker it will be something like `docker run -it "$(pwd)/transbot-sample-conf:/etc/nicobot" nicolabs/nicobot transbot -C /etc/nicobot`)
+5. Type `Hello world` in the console : the bot will print a random translation of "Hello World"
+6. Type `Bye nicobot` : the bot will terminate
+
+You may now explore the dedicated chapters below for more options, including sending & receiving messages through *XMPP* or *Signal* instead of keyboard & console.
+
+
+
+#### Main configuration options and files
+
+This paragraph introduces the most important parameters to make this bot work. Please also check the generic options below ; finally run `transbot -h` to get an exact list of all options.
+
+The bot needs several configuration files that will be generated / downloaded the first time if not provided :
+
+- **--keyword** and **--keywords-file** will help you generate a list of translations for the given keywords so they will trigger the bot even if written in other languages. To do it, run this **a first time** : `transbot --keyword <a_keyword> --keyword <another_keyword> ...` to download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the file name.
+- **--languages-file** : The first time the bot runs it will download the list of supported languages (to translate into) into `languages.<locale>.json` and reuse it afterwards. You can edit it, to keep just the set of languages you want for instance. You can also use the `--locale` option to indicate the desired locale.
+- **--locale** will select the locale to use for default translations (with no target language specified) and as the default parsing language for keywords.
+- **--ibmcloud-url** and **--ibmcloud-apikey** take arguments you can obtain from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
+
+The patterns and custom texts the bot speaks & recognizes can be defined in the **i18n.\<locale>.yml** file :
+- *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
+- It also defines the pattern that terminates the bot.
+
+A sample configuration is available in the `tests/transbot-sample-conf/` directory.
+
+
+
 ### Askbot usage
 
 *Askbot* is a one-shot chatbot that will send a message and wait for an answer.
@@ -137,6 +188,8 @@ All options that can be passed to the bots' command line can also be passed to t
 When run, it will send a message and wait for an answer, in different ways (see options below).
 Once the configured conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
 This JSON structure will have to be parsed in order to retrieve the answer and determine what were the exit(s) condition(s).
+
+It is primarily meant to integrate with other programs in a more large process, like for instance : asking for a user to authenticate via chat.
 
 
 
@@ -224,7 +277,10 @@ A few notes about the _regex_ usage in this example : in `-p yes '(?i)\b(yes|ok)
 
 You may also have noticed the importance of defining patterns that don't overlap (here the message matched both 'yes' and 'no') or being ready to handle unknown states.
 
-To make use of the bot, you could parse its output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/).
+To make use of the bot, you could parse its output with a script, or with a command-line client like [jq](https://stedolan.github.io/jq/) :
+
+    # tail -1 will skip the messages printed to the console and only pipe the final line to jq
+    askbot -m Hello -p ok ok | tail -1 | jq
 
 Here's an example snippet for a _Python_ program to extract the name of the matched patterns :
 
@@ -235,56 +291,6 @@ output = json.loads('{ "max_responses": false, "messages": [...] }')
 matched = [ p['name'] for p in output['messages'][-1]['patterns'] if p['matched'] ]
 # e.g. matched = `['yes','no']`
 ```
-
-
-### Transbot usage
-
-*Transbot* is a demo chatbot interface to IBM Watson™ Language Translator service.
-
-**Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
-
-It is triggered by messages :
-- either matching the configured pattern
-- or containing a keyword from a given list
-
-When triggered, it will answer with a translation of the given text.
-
-It will reply either to direct messages or to a group chat, depending on the given parameters.
-
-The sample configuration in `tests/transbot-sample-conf`, demoes how to make the bot answer messages given in the form `nicobot <text_to_translate> in <language>` (or simply `nicobot  <text_to_translate>`, into the current language) with a translation of _<text_to_translate>_.
-
-Transbot can also pick a random language to translate into ; the sample configuration file shows how to make it translate messages containing "Hello" or "Goodbye" into a random language.
-
-
-### Quick start
-
-1. Install **nicobot** (see above)
-2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
-3. Make a local copy of files in [`tests/transbot-sample-conf/`](tests/transbot-sample-conf/) and fill the `ibmcloud_url` and `ibmcloud_apikey` values into `config.yml`
-4. Run `transbot -C ./transbot-sample-conf` (with docker it will be something like `docker run -it "$(pwd)/transbot-sample-conf:/etc/nicobot" nicolabs/nicobot transbot -C /etc/nicobot`)
-5. Type `Hello world` in the console : the bot will print a random translation of "Hello World"
-6. Type `Bye nicobot` : the bot will terminate
-
-You may now explore the dedicated chapters below for more options, including sending & receiving messages through *XMPP* or *Signal* instead of keyboard & console.
-
-
-
-#### Main configuration options and files
-
-This paragraph introduces the most important parameters to make this bot work. Please also check the generic options below ; finally run `transbot -h` to get an exact list of all options.
-
-The bot needs several configuration files that will be generated / downloaded the first time if not provided :
-
-- **--keyword** and **--keywords-file** will help you generate a list of translations for the given keywords so they will trigger the bot even if written in other languages. To do it, run this **a first time** : `transbot --keyword <a_keyword> --keyword <another_keyword> ...` to download all known translations for these keywords and save them into a `keywords.json` file. Next time you run the bot, **don't** use the `--keyword` option : it will reuse this saved keywords list. You can use `--keywords-file` to change the file name.
-- **--languages-file** : The first time the bot runs it will download the list of supported languages (to translate into) into `languages.<locale>.json` and reuse it afterwards. You can edit it, to keep just the set of languages you want for instance. You can also use the `--locale` option to indicate the desired locale.
-- **--locale** will select the locale to use for default translations (with no target language specified) and as the default parsing language for keywords.
-- **--ibmcloud-url** and **--ibmcloud-apikey** take arguments you can obtain from your IBM Cloud account ([create a Language Translator instance](https://cloud.ibm.com/apidocs/language-translator) then go to [the resource list](https://cloud.ibm.com/resources?groups=resource-instance))
-
-The patterns and custom texts the bot speaks & recognizes can be defined in the **i18n.\<locale>.yml** file :
-- *Transbot* will say "Hello" when started and "Goodbye" before shutting down : you can configure those banners in this file.
-- It also defines the pattern that terminates the bot.
-
-A sample configuration is available in the `tests/transbot-sample-conf/` directory.
 
 
 
