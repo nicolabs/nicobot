@@ -14,8 +14,8 @@ on:
 
 jobs:
 
-  prepare:
-    name: Build, Publish
+  build-publish-alpine:
+    name: Build, Publish alpine
     environment: prod
     runs-on: ubuntu-latest
     steps:
@@ -67,16 +67,6 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-
-
-  publish-alpine:
-    name: Publish debian
-    needs:
-      - prepare
-    environment: prod
-    runs-on: ubuntu-latest
-    steps:
-
     - name: Build and push alpine
       id: docker_build_alpine
       uses: docker/build-push-action@v2
@@ -89,6 +79,7 @@ jobs:
           tags: ${{ env.ALPINE_TAGS }}
           labels: |
             ${{ env.NICOBOT_VERSION }}
+            ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -97,13 +88,60 @@ jobs:
 
 
 
-  publish-debian:
+  build-publish-debian:
     name: Publish alpine
     needs:
       - prepare
     environment: prod
     runs-on: ubuntu-latest
     steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    ##############
+    # Python is used to get the program's version and generate tags
+    #
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Generate tags
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-build.txt
+        # Stores a variable for each variant
+        echo DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian-signal --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo ALPINE_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant alpine --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        # Also stores the computed version
+        echo NICOBOT_VERSION=$(python3 setup.py --version) >> $GITHUB_ENV
+
+    #
+    ##############
+
+    - name: Set up QEMU for multiarch
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
     - name: Build and push debian
       id: docker_build_debian
@@ -117,6 +155,7 @@ jobs:
           tags: ${{ env.DEBIAN_TAGS }}
           labels: |
             ${{ env.NICOBOT_VERSION }}
+            ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -135,6 +174,7 @@ jobs:
           tags: ${{ env.DEBIAN_SIGNAL_TAGS }}
           labels: |
             ${{ env.NICOBOT_VERSION }}
+            ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -146,8 +186,8 @@ jobs:
   post:
     name: Update repo
     needs:
-      - publish-alpine
-      - publish-debian
+      - build-publish-alpine
+      - build-publish-debian
     environment: prod
     runs-on: ubuntu-latest
     steps:
