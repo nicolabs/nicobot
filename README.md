@@ -70,7 +70,7 @@ To install from source you need to fulfill the requirements for a package instal
     git clone https://github.com/nicolabs/nicobot.git
     cd nicobot
     python3 setup.py build
-    pip3 install -r requirements-runtime.txt
+    pip3 install -r requirements-runtime.txt .
 
 > **NOTE**
 > Depending on your platform, `pip install` may trigger a compilation for some or all of the dependencies (i.e. when *Python wheels* are not available).
@@ -305,6 +305,7 @@ The following options are common to both bots :
 - **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--backend** selects the *chatter* system to use : it currently supports "console", "signal" and "jabber" (see below)
 - **--stealth** will make the bot connect and listen to messages but print answers to the console instead of sending it ; useful to observe the bot's behavior in a real chatroom...
+- **--debug / -d / --verbosity / -v** those options modify the verbosity level : `--debug` is a flag that sets it to *DEBUG* while with `--verbosity` you can define [the exact level](https://docs.python.org/3/library/logging.html#levels) (e.g. `-v TRACE`).
 
 
 
