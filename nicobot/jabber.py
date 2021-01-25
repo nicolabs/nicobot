@@ -18,6 +18,8 @@ from omemo.exceptions import MissingBundleException
 from .chatter import Chatter
 from .helpers import *
 
+log = logging.getLogger(__name__)
+
 
 
 class SliXmppClient(ClientXMPP):
@@ -57,7 +59,7 @@ class SliXmppClient(ClientXMPP):
                 module=slixmpp_omemo,
             ) # OMEMO
         except (PluginCouldNotLoad,):
-            logging.exception('And error occured when loading the omemo plugin.')
+            log.exception('And error occured when loading the omemo plugin.')
             sys.exit(1)
 
         self.message_handler = message_handler
@@ -73,11 +75,11 @@ class SliXmppClient(ClientXMPP):
         # try:
         #     self.get_roster()
         # except IqError as err:
-        #     logging.error('There was an error getting the roster')
-        #     logging.error(err.iq['error']['condition'])
+        #     log.error('There was an error getting the roster')
+        #     log.error(err.iq['error']['condition'])
         #     self.disconnect()
         # except IqTimeout:
-        #     logging.error('Server is taking too long to respond')
+        #     log.error('Server is taking too long to respond')
         #     self.disconnect()
 
 
@@ -113,15 +115,15 @@ class SliXmppClient(ClientXMPP):
         #     <body>My message</body>
         # </message>
 
-        logging.debug("XMPP message received : %r",msg)
+        log.debug("XMPP message received : %r",msg)
 
         # TODO ? with xmppy I used to allow the following types : ["message","chat","normal",None]
         if msg['type'] not in ('chat', 'normal'):
-            logging.debug("Discarding message of type %r",msg['type'])
+            log.debug("Discarding message of type %r",msg['type'])
             return None
 
         if not self['xep_0384'].is_encrypted(msg):
-            logging.debug('This message was not encrypted')
+            log.debug('This message was not encrypted')
             self.message_handler(msg,msg['body'])
             return None
 
@@ -135,7 +137,7 @@ class SliXmppClient(ClientXMPP):
         except (MissingOwnKey,):
             # The message is missing our own key, it was not encrypted for
             # us, and we can't decrypt it.
-            logging.exception('I can\'t decrypt this message as it is not encrypted for me : %r',msg)
+            log.exception('I can\'t decrypt this message as it is not encrypted for me : %r',msg)
             return None
         except (NoAvailableSession,):
             # We received a message from that contained a session that we
@@ -144,7 +146,7 @@ class SliXmppClient(ClientXMPP):
             # Here, as we need to initiate a new encrypted session, it is
             # best if we send an encrypted message directly. XXX: Is it
             # where we talk about self-healing messages?
-            logging.exception('I can\'t decrypt this message as it uses an encrypted session I don\'t know about : %r',msg)
+            log.exception('I can\'t decrypt this message as it uses an encrypted session I don\'t know about : %r',msg)
             return None
         except (UndecidedException, UntrustedException) as exn:
             # We received a message from an untrusted device. We can
@@ -155,7 +157,7 @@ class SliXmppClient(ClientXMPP):
             # or not. Clients _should_ indicate that the message was not
             # trusted, or in undecided state, if they decide to decrypt it
             # anyway.
-            logging.exception("Your device '%s' is not in my trusted devices.", exn.device)
+            log.exception("Your device '%s' is not in my trusted devices.", exn.device)
             # We resend, setting the `allow_untrusted` parameter to True.
             await self.message(msg, allow_untrusted=True)
             return None
@@ -163,10 +165,10 @@ class SliXmppClient(ClientXMPP):
             # Slixmpp tried its best, but there were errors it couldn't
             # resolve. At this point you should have seen other exceptions
             # and given a chance to resolve them already.
-            logging.exception('I was not able to decrypt the message : %r',msg)
+            log.exception('I was not able to decrypt the message : %r',msg)
             return None
         except (Exception,):
-            logging.exception('An error occured while attempting decryption')
+            log.exception('An error occured while attempting decryption')
             raise
 
         return None
@@ -237,15 +239,15 @@ class SliXmppClient(ClientXMPP):
                         # device won't be able to decrypt and should display a
                         # generic message. The receiving end-user at this
                         # point can bring up the issue if it happens.
-                        logging.warning('Could not find keys for device "%d" of recipient "%s". Skipping.', error.device, error.bare_jid)
+                        log.warning('Could not find keys for device "%d" of recipient "%s". Skipping.', error.device, error.bare_jid)
                         jid = JID(error.bare_jid)
                         device_list = expect_problems.setdefault(jid, [])
                         device_list.append(error.device)
             except (IqError, IqTimeout) as exn:
-                logging.exception('An error occured while fetching information on %r', recipient)
+                log.exception('An error occured while fetching information on %r', recipient)
                 return None
             except Exception as exn:
-                logging.exception('An error occured while attempting to encrypt to %r', recipient)
+                log.exception('An error occured while attempting to encrypt to %r', recipient)
                 raise
 
         return None
@@ -254,7 +256,7 @@ class SliXmppClient(ClientXMPP):
     async def encrypted_reply(self, original_msg, body):
         """Helper to reply with encrypted messages"""
 
-        logging.debug("Replying to %r",original_msg)
+        log.debug("Replying to %r",original_msg)
         return self.encrypted_send( body, recipient=original_msg['from'], type=original_msg['type'] )
 
 
@@ -280,13 +282,13 @@ class JabberChatter(Chatter):
             decrypted_body: either the given body if it was plain text or the OMEMO-decrypted one (always a string)
         """
 
-        logging.log(TRACE,"<<< %r",original_message)
-        logging.debug("<<< %r",decrypted_body)
+        log.log(TRACE,"<<< %r",original_message)
+        log.debug("<<< %r",decrypted_body)
         self.bot.onMessage(decrypted_body)
 
     def connect(self):
 
-        logging.debug("Connecting...")
+        log.debug("Connecting...")
         # Connects and waits for the connection to be established
         # See https://slixmpp.readthedocs.io/using_asyncio.html
         self.xmpp.connected_event = asyncio.Event()
@@ -296,7 +298,7 @@ class JabberChatter(Chatter):
         # TODO use asyncio.run() in latest python
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.xmpp.connected_event.wait())
-        logging.debug("Connected.")
+        log.debug("Connected.")
 
     def start( self, bot ):
         """
@@ -313,7 +315,7 @@ class JabberChatter(Chatter):
         """
             Sends the given message using the underlying implemented chat protocol
         """
-        logging.debug(">>> %s",message)
+        log.debug(">>> %s",message)
         # TODO use asyncio.make_task() in latest python
         asyncio.ensure_future( self.xmpp.encrypted_send( body=message, recipient=self.recipient ) )
 
