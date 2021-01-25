@@ -23,7 +23,7 @@ def local_scheme(version):
 """
 class DockerTagsCommand(setuptools.Command):
 
-    description: "Prints a tag list for the given 'base tag'"
+    description = "Prints a tag list for the given 'base tag'"
     user_options = [
           ('image=', 'i', 'Image name (defaults to nicolabs/nicobot)'),
           ('variant=', 'v', 'Image variant / base tag : debian|debian-signal|alpine'),
