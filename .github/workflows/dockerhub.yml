@@ -90,8 +90,6 @@ jobs:
 
   build-publish-debian:
     name: Publish alpine
-    needs:
-      - prepare
     environment: prod
     runs-on: ubuntu-latest
     steps:
