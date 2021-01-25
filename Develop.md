@@ -272,7 +272,7 @@ This led to build separate images (same _repo_ but different _tags_), to allow u
 [travisci-link]: https://travis-ci.com/nicolabs/nicobot
 [pypi-shield]: https://img.shields.io/pypi/v/nicobot?label=pypi
 [pypi-link]: https://pypi.org/project/nicobot
-[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Build%20and%20publish%20to%20Docker%20Hub%20(master%20branch)/badge.svg
+[dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Docker%20Hub/badge.svg
 [dockerhub-link]: https://hub.docker.com/r/nicolabs/nicobot
 [docker-debian-signal-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-signal.svg?label=debian-signal
 [docker-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian
