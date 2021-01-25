@@ -89,7 +89,7 @@ jobs:
 
 
   build-publish-debian:
-    name: Publish alpine
+    name: Build, Publish debian
     environment: prod
     runs-on: ubuntu-latest
     steps:
