@@ -42,7 +42,7 @@ class Config:
             'patterns': [],
             'stealth': False,
             'timeout': None,
-            'verbosity': "INFO",
+            'verbosity': "WARNING",
             })
 
 
@@ -84,7 +84,7 @@ class AskBot(Bot):
         self.status['events'].append(status_message)
 
         self.responses_count = self.responses_count + 1
-        logging.debug("<<< %s", message)
+        logging.info("<<< %s", message)
 
         # If we reached the last message or if we exceeded it (possible if we received several answers in a batch)
         if self.max_count>0 and self.responses_count >= self.max_count:
@@ -137,8 +137,6 @@ def run( args=sys.argv[1:] ):
 
     """
         A convenient CLI to play with this bot.
-
-        TODO Put generic arguments in bot.py and inherit from it (should probably provide a parent ArgumentParser)
     """
 
     # config will be the final, merged configuration
@@ -188,13 +186,15 @@ def run( args=sys.argv[1:] ):
         status_args[k] = '(obfuscated)'
     status_result = bot.run()
     status = { 'args':vars(config), 'result':status_result }
-    # NOTE ensure_ascii=False + encode('utf-8').decode() is not mandatory but allows printing plain UTF-8 strings rather than \u... or \x...
-    # NOTE default=repr is mandatory because some objects in the args are not serializable
-    print( json.dumps(status,skipkeys=True,ensure_ascii=False,default=repr).encode('utf-8').decode(), file=sys.stdout, flush=True )
-    # Still returns the full status for simpler handling in Python
+    # Returns the full status to this module can be called CLI-style
     return status
 
 
+# Like run(), but also prints the final status to stdout
 if __name__ == '__main__':
 
-    run()
+    status = run(sys.argv[1:])
+    # NOTE ensure_ascii=False + encode('utf-8').decode() is not mandatory but allows printing plain UTF-8 strings rather than \u... or \x...
+    # NOTE default=repr is mandatory because some objects in the args are not serializable
+    print( json.dumps(status,skipkeys=True,ensure_ascii=False,default=repr).encode('utf-8').decode(), file=sys.stdout, flush=True )
+    sys.exit(0)

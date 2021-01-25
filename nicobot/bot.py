@@ -77,7 +77,7 @@ class ArgsHelper:
             'config_dir': os.getcwd(),
             'input_file': sys.stdin,
             'stealth': False,
-            'verbosity': "INFO",
+            'verbosity': "WARNING",
             })
 
 
