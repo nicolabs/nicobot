@@ -38,7 +38,7 @@ jobs:
         pip install -r requirements-build.txt
         # Stores a variable for each variant
         echo DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
-        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian-signal --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         echo ALPINE_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant alpine --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         # Also stores the computed version
         echo NICOBOT_VERSION=$(python3 setup.py --version) >> $GITHUB_ENV
@@ -53,11 +53,21 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
 
+    - name: Patch Docker Daemon data-root
+          run: |
+            DOCKER_DATA_ROOT='/mnt/var/lib/docker'
+            DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
+            sudo mkdir -p "${DOCKER_DATA_ROOT}"
+            jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
+            sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
+            sudo systemctl restart docker
+
     - name: Cache Docker layers
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-alpine-${{ github.sha }}
+          # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-alpine-
             ${{ runner.os }}-buildx-
@@ -114,7 +124,7 @@ jobs:
         pip install -r requirements-build.txt
         # Stores a variable for each variant
         echo DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
-        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian-signal --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         echo ALPINE_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant alpine --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         # Also stores the computed version
         echo NICOBOT_VERSION=$(python3 setup.py --version) >> $GITHUB_ENV
@@ -129,11 +139,21 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
 
+    - name: Patch Docker Daemon data-root
+          run: |
+            DOCKER_DATA_ROOT='/mnt/var/lib/docker'
+            DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
+            sudo mkdir -p "${DOCKER_DATA_ROOT}"
+            jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
+            sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
+            sudo systemctl restart docker
+
     - name: Cache Docker layers
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-debian-${{ github.sha }}
+          # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-debian-
             ${{ runner.os }}-buildx-
@@ -164,12 +184,12 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker_build_debian.outputs.digest }}
 
-    - name: Build and push debian-signal
+    - name: Build and push signal-debian
       id: docker_build_debian_signal
       uses: docker/build-push-action@v2
       with:
           context: ./
-          file: ./debian-signal.Dockerfile
+          file: ./signal-debian.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true

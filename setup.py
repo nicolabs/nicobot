@@ -19,14 +19,14 @@ def local_scheme(version):
     with the setup script.
 
     See https://dankeder.com/posts/adding-custom-commands-to-setup-py/
-    What variables are available from Githu Actions : https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
+    What variables are available from Github Actions : https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
 """
 class DockerTagsCommand(setuptools.Command):
 
     description = "Prints a tag list for the given 'base tag'"
     user_options = [
           ('image=', 'i', 'Image name (defaults to nicolabs/nicobot)'),
-          ('variant=', 'v', 'Image variant / base tag : debian|debian-signal|alpine'),
+          ('variant=', 'v', 'Image variant / base tag : debian|signal-debian|alpine'),
           ('branch=', 'b', 'The git ref as <branch name> or refs/heads/<branch name>'),
           ('tag=', 't', 'The git ref as <tag name> or refs/tags/<tag name>'),
           ('ref=', 'r', 'The git ref as refs/tags|heads/<tag or branch name>'),
@@ -72,13 +72,13 @@ class DockerTagsCommand(setuptools.Command):
             # When git-tagged, the variant name alone means : the 'latest' for this variant
             tags = [ "%s:%s" % (self.image,self.variant) ]
             # It is also tagged with the version
-            tags = tags + [ "%s:%s-%s" % (self.image,self.variant,self.tag) ]
-            # Only debian-signal is tagged with 'latest' additionaly
-            if self.variant == "debian-signal":
+            tags = tags + [ "%s:%s-%s" % (self.image,self.tag,self.variant) ]
+            # Only signal-debian is explicitely tagged with 'latest', additionaly
+            if self.variant == "signal-debian":
                 tags = tags + [ "%s:latest" % (self.image) ]
         elif self.branch:
             # All non git-tagged commits overwrite the 'dev' tag (only one is useful currently)
-            tags = tags + [ "%s:%s-dev" % (self.image,self.variant) ]
+            tags = tags + [ "%s:dev-%s" % (self.image,self.variant) ]
         print( self.sep.join(tags) )
 
 

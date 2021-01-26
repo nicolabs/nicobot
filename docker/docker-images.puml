@@ -32,7 +32,7 @@ docker_context ...> nicobot_debian : COPY
 
 
 ''''''''''''''''''''''''
-' debian-signal.Dockerfile
+' signal-debian.Dockerfile
 ''''''''''''''''''''''''
 
 object "<i>rust:1.49-buster</i>" as rust $baseimage
@@ -43,7 +43,7 @@ object "rust fix" as nicobot_rust_fix <<temp>> $tempimage {
 object "signal-cli builder" as nicobot_signal_builder <<temp>> $tempimage {
     Builds signal-cli & libzkgroup
 }
-object "nicolabs/nicobot:debian-signal" as nicobot_debian_signal $finalimage {
+object "nicolabs/nicobot:signal-debian" as nicobot_debian_signal $finalimage {
     Installs signal-cli & dependencies
 }
 

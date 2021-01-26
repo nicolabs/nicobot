@@ -7,7 +7,7 @@ Python package :
 Docker images :
 
 [![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
-[![Docker debian][docker-debian-size] ![Docker debian-signal][docker-debian-signal-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
+[![Docker debian][docker-debian-size] ![Docker signal-debian][docker-signal-debian-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
 
 
@@ -90,11 +90,19 @@ Now you can run the bots by their name as if they were installed via the package
 
 At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot/tags), with the following tags :
 
-- **debian** : this is the most portable image ; in order to keep it relatively small it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
-- **debian-signal** : this is the most complete image ; it is also the largest one, but allows *Signal* messaging
-- **alpine** : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't provide the Signal backend (you can use XMPP instead).
+- **debian** (or **vX.Y.Z-debian**) : this is the most portable image ; in order to keep it relatively small it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
 
-Please have a look at the status pills at the top of this document to get more details like status and size.
+- **signal-debian** (or **vX.Y.Z-signal-debian**) : this is the most complete image ; it is also the largest one, but allows *Signal* messaging
+
+- **alpine** (or **vX.Y.Z-alpine**) : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't provide the Signal backend (you can use XMPP instead).
+
+- **vX.Y.Z-\<image variant\>** tags are simply version *vX.Y.Z* of *\<image variant\>*. E.g. *v1.2.3-alpine* is nicobot version 1.2.3 in the *alpine* variant (not related with alpine's version).
+
+- **latest** points to the latest versioned image of *signal-debian* (which offers all features).
+
+- **dev-\<image variant\>** tags are development versions of the master branch. **Do not use : they are probably broken !** History is currently not preserved : there is only one *dev-* tag of an image variant at a time.
+
+Please have a look at the status shields at the top of this document to get more details like status and size.
 
 > **ADVICE**
 > The current state of those images is such that I suggest you try the **alpine** image first and switch to a **debian\*** one if you need Signal or encounter runtime issues.
@@ -412,6 +420,6 @@ Example :
 [pypi-link]: https://pypi.org/project/nicobot
 [dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Docker%20Hub/badge.svg
 [dockerhub-link]: https://hub.docker.com/r/nicolabs/nicobot
-[docker-debian-signal-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-signal.svg?label=debian-signal
+[docker-signal-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/signal-debian.svg?label=signal-debian
 [docker-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian
 [docker-alpine-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/alpine.svg?label=alpine

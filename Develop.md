@@ -2,7 +2,7 @@
 
 [![Build Status on 'master' branch][travisci-shield]][travisci-link] [![PyPi][pypi-shield]][pypi-link]  
 [![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
-[![Docker debian][docker-debian-size] ![Docker debian-signal][docker-debian-signal-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
+[![Docker debian][docker-debian-size] ![Docker signal-debian][docker-signal-debian-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
 
 
@@ -89,12 +89,12 @@ They all have [multiple stages](https://docs.docker.com/develop/develop-images/m
 
 `debian.Dockerfile` is quite straight. It builds using *pip* in one stage and copies the resulting *wheels* into the final one.
 
-`debian-signal.Dockerfile` is more complex because it needs to address :
+`signal-debian.Dockerfile` is more complex because it needs to address :
 - including both Python and Java while keeping the image size small
 - compiling native dependencies (both for _signal-cli_ and _qr_)
 - circumventing a number of bugs in multiarch building
 
-`debian-alpine.Dockerfile` produces smaller images but may not be as much portable than debian ones and misses Signal support for now.
+`alpine.Dockerfile` produces smaller images but may not be as much portable than debian ones and misses Signal support for now.
 
 Note that the _signal-cli_ backend needs a _Java_ runtime environment, and also _rust_ dependencies to support Signal's group V2. This approximately doubles the size of the images and almost ruins the advantage of alpine over debian...
 
@@ -130,13 +130,20 @@ Then run with the provided sample configuration :
 _Github actions_ are currently used (see [`.github/workflows/dockerhub.yml`](.github/workflows/dockerhub.yml) to automatically build and push the images to [Docker Hub](https://hub.docker.com/r/nicolabs/nicobot) so they are available whenever commits are pushed to the _master_ branch :
 
 1. A *Github Action* is triggered on each push to [the central repo](https://github.com/nicolabs/nicobot)
-2. All images are built in order using caching (see [.github/workflows/dockerhub.yml](.github/workflows/dockerhub.yml))
+2. Alpine images and Debian images are built in parallel to speed up things. Debian-signal is built after Debian. Caching is used for both. See [.github/workflows/dockerhub.yml](.github/workflows/dockerhub.yml).
 3. Images are uploaded to [Docker Hub](https://hub.docker.com/repository/docker/nicolabs/nicobot)
 
+#### Tagging strategy
+
+Since I could not find an easy way to generate exactly the tags I wanted, the `setup.py` script embeds a custom command to generate them from the git context (tag, commit) and the image variant :
+
+- [docker/github-actions](https://github.com/docker/github-actions) tagging strategy does not explicitely allows to tag with *latest* an image of choice (I may be able to force it by tagging the wanted image in the end but it does not look 100% sure)
+- [crazy-max/ghaction-docker-meta](https://github.com/crazy-max/ghaction-docker-meta) is quite complex to understand and I could not figure out a way to implement my strategy
+- See [setup.py#DockerTagsCommand](setup.py#DockerTagsCommand) for the custom solution
 
 ### Docker build process overview
 
-This is the view from the **master** branch on this repository.
+This diagram is the view from the **master** branch on this repository.
 It emphasizes *FROM* and *COPY* relations between the images (base and stages).
 
 ![nicobot docker images build process](http://www.plantuml.com/plantuml/proxy?cache=no&src=https%3A%2F%2Fraw.github.com%2Fnicolabs%2Fnicobot%2Fmaster%2Fdocker%2Fdocker-images.puml)
@@ -274,6 +281,6 @@ This led to build separate images (same _repo_ but different _tags_), to allow u
 [pypi-link]: https://pypi.org/project/nicobot
 [dockerhub-shield]: https://github.com/nicolabs/nicobot/workflows/Docker%20Hub/badge.svg
 [dockerhub-link]: https://hub.docker.com/r/nicolabs/nicobot
-[docker-debian-signal-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian-signal.svg?label=debian-signal
+[docker-signal-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/signal-debian.svg?label=signal-debian
 [docker-debian-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/debian.svg?label=debian
 [docker-alpine-size]: https://img.shields.io/docker/image-size/nicolabs/nicobot/alpine.svg?label=alpine
