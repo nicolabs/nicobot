@@ -81,7 +81,8 @@ jobs:
             ${{ env.NICOBOT_VERSION }}
             ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
     - name: Image digest
       run: echo ${{ steps.docker_build_alpine.outputs.digest }}
@@ -155,7 +156,8 @@ jobs:
             ${{ env.NICOBOT_VERSION }}
             ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
     - name: Image digest
       run: echo ${{ steps.docker_build_debian.outputs.digest }}
@@ -174,7 +176,8 @@ jobs:
             ${{ env.NICOBOT_VERSION }}
             ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
     - name: Image digest
       run: echo ${{ steps.docker_build_debian_signal.outputs.digest }}
