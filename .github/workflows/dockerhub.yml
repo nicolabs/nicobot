@@ -190,7 +190,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    # https://github.com/marketplace/actions/build-and-push-docker-images#update-dockerhub-repo-description
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # https://github.com/peter-evans/dockerhub-description
     - name: Update repo description
       uses: peter-evans/dockerhub-description@v2
       with:
