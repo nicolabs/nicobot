@@ -189,15 +189,15 @@ A sample configuration is available in the `tests/transbot-sample-conf/` directo
 
 ### Askbot usage
 
-*Askbot* is a one-shot chatbot that will send a message and wait for an answer.
+*Askbot* is a one-shot chatbot that will typically ask for something and wait for an answer.
+
+It is primarily meant to integrate with other programs in a more large process, like for instance : asking for a user to authenticate via chat.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-When run, it will send a message and wait for an answer, in different ways (see options below).
-Once the configured conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
+You configure the string to send and the rules that make it exit, depending on the received messages (see options below).
+Once the conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
 This JSON structure will have to be parsed in order to retrieve the answer and determine what were the exit(s) condition(s).
-
-It is primarily meant to integrate with other programs in a more large process, like for instance : asking for a user to authenticate via chat.
 
 
 
