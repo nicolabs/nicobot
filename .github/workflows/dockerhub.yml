@@ -57,9 +57,9 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-alpine-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-alpine-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-alpine-buildx-
+            ${{ runner.os }}-buildx-alpine-
 
     - name: Login to Docker Hub
       uses: docker/login-action@v1
@@ -132,9 +132,9 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-debian-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-debian-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-debian-buildx-
+            ${{ runner.os }}-buildx-debian-
 
     - name: Login to Docker Hub
       uses: docker/login-action@v1
