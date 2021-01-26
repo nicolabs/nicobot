@@ -55,6 +55,7 @@ jobs:
 
     - name: Patch Docker Daemon data-root
       run: |
+        sudo apt clean
         DOCKER_DATA_ROOT='/mnt/var/lib/docker'
         DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
         sudo mkdir -p "${DOCKER_DATA_ROOT}"
@@ -141,6 +142,7 @@ jobs:
 
     - name: Patch Docker Daemon data-root
       run: |
+        sudo apt clean
         DOCKER_DATA_ROOT='/mnt/var/lib/docker'
         DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
         sudo mkdir -p "${DOCKER_DATA_ROOT}"
