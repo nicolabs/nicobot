@@ -90,13 +90,13 @@ Now you can run the bots by their name as if they were installed via the package
 
 At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot/tags), with the following tags :
 
-- **debian** (or **vX.Y.Z-debian**) : this is the most portable image ; in order to keep it relatively small it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
+- **debian** (or **X.Y.Z-debian**) : this is the most portable image ; in order to keep it relatively small it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
 
-- **signal-debian** (or **vX.Y.Z-signal-debian**) : this is the most complete image ; it is also the largest one, but allows *Signal* messaging
+- **signal-debian** (or **X.Y.Z-signal-debian**) : this is the most complete image ; it is also the largest one, but allows *Signal* messaging
 
-- **alpine** (or **vX.Y.Z-alpine**) : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't provide the Signal backend (you can use XMPP instead).
+- **alpine** (or **X.Y.Z-alpine**) : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't provide the Signal backend (you can use XMPP instead).
 
-- **vX.Y.Z-\<image variant\>** tags are simply version *vX.Y.Z* of *\<image variant\>*. E.g. *v1.2.3-alpine* is nicobot version 1.2.3 in the *alpine* variant (not related with alpine's version).
+- **X.Y.Z-\<image variant\>** tags are simply version *X.Y.Z* of *\<image variant\>*. E.g. *1.2.3-alpine* is nicobot version 1.2.3 in the *alpine* variant (not related with alpine's version).
 
 - **latest** points to the latest versioned image of *signal-debian* (which offers all features).
 
@@ -189,15 +189,15 @@ A sample configuration is available in the `tests/transbot-sample-conf/` directo
 
 ### Askbot usage
 
-*Askbot* is a one-shot chatbot that will send a message and wait for an answer.
+*Askbot* is a one-shot chatbot that will typically ask for something and wait for an answer.
+
+It is primarily meant to integrate with other programs in a more large process, like for instance : asking for a user to authenticate via chat.
 
 **Again, this is NOT STABLE code, there is absolutely no warranty it will work or not harm butterflies on the other side of the world... Use it at your own risk !**
 
-When run, it will send a message and wait for an answer, in different ways (see options below).
-Once the configured conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
+You configure the string to send and the rules that make it exit, depending on the received messages (see options below).
+Once the conditions are met, the bot will terminate and print the result in [JSON](https://www.json.org/) format.
 This JSON structure will have to be parsed in order to retrieve the answer and determine what were the exit(s) condition(s).
-
-It is primarily meant to integrate with other programs in a more large process, like for instance : asking for a user to authenticate via chat.
 
 
 
