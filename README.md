@@ -35,9 +35,9 @@ To get more details on how to **build / develop** with this project, see [Develo
 
 The bots can be installed and run at your choice from :
 
-- the Python package
-- the source code
-- the Docker images
+- the Python package ([PyPi](https://pypi.org/project/nicobot/))
+- the source code ([github](https://github.com/nicolabs/nicobot))
+- the Docker images ([Docker Hub](https://hub.docker.com/r/nicolabs/nicobot))
 
 
 
