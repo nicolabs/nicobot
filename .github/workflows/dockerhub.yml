@@ -60,7 +60,7 @@ jobs:
         sudo df -h
         sudo apt clean
 
-    - name: Cache Docker layers
+    - name: Set up cache for Docker layers layers
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
@@ -143,7 +143,7 @@ jobs:
         sudo df -h
         sudo apt clean
 
-    - name: Cache Docker layers
+    - name: Set up cache for Docker layers layers
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
@@ -180,7 +180,7 @@ jobs:
 
 
 
-  build-publish-signal-debian:
+  build-publish-signaldebian:
     name: Build, Publish signal-debian
     needs:
       - build-publish-debian
@@ -228,7 +228,7 @@ jobs:
         sudo df -h
         sudo apt clean
 
-    - name: Cache Docker layers
+    - name: Set up cache for Docker layers layers
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
@@ -270,7 +270,7 @@ jobs:
     needs:
       - build-publish-alpine
       - build-publish-debian
-      - build-publish-signal-debian
+      - build-publish-signaldebian
     environment: prod
     runs-on: ubuntu-latest
     steps:
