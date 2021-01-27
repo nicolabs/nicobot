@@ -147,7 +147,7 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-debian-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-debian-debian-${{ github.sha }}
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-debian-
@@ -232,7 +232,7 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-debian-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-debian-signaldebian-${{ github.sha }}
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-debian-
