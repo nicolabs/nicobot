@@ -38,7 +38,7 @@ jobs:
         pip install -r requirements-build.txt
         # Stores a variable for each variant
         echo DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
-        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo SIGNAL_DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         echo ALPINE_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant alpine --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         # Also stores the computed version
         echo NICOBOT_VERSION=$(python3 setup.py --version) >> $GITHUB_ENV
@@ -127,7 +127,7 @@ jobs:
         pip install -r requirements-build.txt
         # Stores a variable for each variant
         echo DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
-        echo DEBIAN_SIGNAL_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo SIGNAL_DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         echo ALPINE_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant alpine --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
         # Also stores the computed version
         echo NICOBOT_VERSION=$(python3 setup.py --version) >> $GITHUB_ENV
@@ -190,8 +190,79 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker_build_debian.outputs.digest }}
 
+
+
+  build-publish-signal-debian:
+    name: Build, Publish signal-debian
+    needs:
+      - build-publish-debian
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    ##############
+    # Python is used to get the program's version and generate tags
+    #
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Generate tags
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-build.txt
+        # Stores a variable for each variant
+        echo DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo SIGNAL_DEBIAN_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant signal-debian --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        echo ALPINE_TAGS=$(python3 setup.py -q docker_tags --image nicolabs/nicobot --variant alpine --ref ${{ github.ref }} --sep ,) >> $GITHUB_ENV
+        # Also stores the computed version
+        echo NICOBOT_VERSION=$(python3 setup.py --version) >> $GITHUB_ENV
+
+    #
+    ##############
+
+    - name: Set up QEMU for multiarch
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    # https://github.community/t/worker-running-out-of-disk-space/18245
+    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758
+    - name: Patch Docker Daemon data-root
+      run: |
+        sudo apt clean
+        DOCKER_DATA_ROOT='/mnt/var/lib/docker'
+        DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
+        sudo mkdir -p "${DOCKER_DATA_ROOT}"
+        jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
+        sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
+        sudo systemctl restart docker
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-debian-${{ github.sha }}
+          # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
+          restore-keys: |
+            ${{ runner.os }}-buildx-debian-
+            ${{ runner.os }}-buildx-
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
     - name: Build and push signal-debian
-      id: docker_build_debian_signal
+      id: docker_build_signal_debian
       uses: docker/build-push-action@v2
       with:
           context: ./
@@ -199,7 +270,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
-          tags: ${{ env.DEBIAN_SIGNAL_TAGS }}
+          tags: ${{ env.SIGNAL_DEBIAN_TAGS }}
           labels: |
             ${{ env.NICOBOT_VERSION }}
             ${{ github.sha }}
@@ -208,7 +279,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
     - name: Image digest
-      run: echo ${{ steps.docker_build_debian_signal.outputs.digest }}
+      run: echo ${{ steps.docker_build_signal_debian.outputs.digest }}
 
 
 
@@ -217,6 +288,7 @@ jobs:
     needs:
       - build-publish-alpine
       - build-publish-debian
+      - build-publish-signal-debian
     environment: prod
     runs-on: ubuntu-latest
     steps:
