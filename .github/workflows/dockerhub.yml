@@ -53,18 +53,12 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
 
-    # https://github.community/t/worker-running-out-of-disk-space/18245
-    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758
+    # https://github.community/t/worker-running-out-of-disk-space/18245 => not true anymore
+    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758 => apt clean does not hurt
     - name: Patch Docker Daemon data-root
       run: |
         sudo df -h
         sudo apt clean
-        DOCKER_DATA_ROOT='/mnt/var/lib/docker'
-        DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
-        sudo mkdir -p "${DOCKER_DATA_ROOT}"
-        jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
-        sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
-        sudo systemctl restart docker
 
     - name: Cache Docker layers
       uses: actions/cache@v2
@@ -143,18 +137,12 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
 
-    # https://github.community/t/worker-running-out-of-disk-space/18245
-    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758
+    # https://github.community/t/worker-running-out-of-disk-space/18245 => not true anymore
+    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758 => apt clean does not hurt
     - name: Patch Docker Daemon data-root
       run: |
         sudo df -h
         sudo apt clean
-        DOCKER_DATA_ROOT='/mnt/var/lib/docker'
-        DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
-        sudo mkdir -p "${DOCKER_DATA_ROOT}"
-        jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
-        sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
-        sudo systemctl restart docker
 
     - name: Cache Docker layers
       uses: actions/cache@v2
@@ -235,18 +223,12 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v1
 
-    # https://github.community/t/worker-running-out-of-disk-space/18245
-    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758
+    # https://github.community/t/worker-running-out-of-disk-space/18245 => not true anymore
+    # https://github.com/actions/virtual-environments/issues/709#issuecomment-616751758 => apt clean does not hurt
     - name: Patch Docker Daemon data-root
       run: |
         sudo df -h
         sudo apt clean
-        DOCKER_DATA_ROOT='/mnt/var/lib/docker'
-        DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
-        sudo mkdir -p "${DOCKER_DATA_ROOT}"
-        jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
-        sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
-        sudo systemctl restart docker
 
     - name: Cache Docker layers
       uses: actions/cache@v2
