@@ -30,7 +30,7 @@ class SignalChatter(Chatter):
         A signal bot relying on signal-cli
     """
 
-    def __init__( self, username, recipient=None, group=None, signal_cli=shutil.which("signal-cli"), stealth=False, send_timeout=SEND_TIMEOUT, receive_timeout=RECEIVE_TIMEOUT ):
+    def __init__( self, username, recipient=None, group=None, signal_cli=shutil.which("signal-cli"), stealth=False, send_timeout=SEND_TIMEOUT, receive_timeout=RECEIVE_TIMEOUT, config_dir=None ):
 
         """
             stealth: if True, will connect and listen to messages but instead of sending answers, will print them
@@ -47,6 +47,7 @@ class SignalChatter(Chatter):
         self.recipient = recipient
         self.group = group
         self.signal_cli = signal_cli
+        self.config_dir = config_dir
         self.stealth = stealth
         if self.stealth:
             logging.debug("Stealth mode : will not send message")
@@ -75,6 +76,8 @@ class SignalChatter(Chatter):
     def send( self,  message ):
 
         cmd = [ self.signal_cli, "-u", self.username, "send", "-m", message ]
+        if self.config_dir:
+            cmd = cmd + [ "--config", self.config_dir ]
         if self.recipient:
             cmd = cmd + [ self.recipient ]
         elif self.group:
@@ -109,6 +112,8 @@ class SignalChatter(Chatter):
             timeout = self.receive_timeout
 
         cmd = [ self.signal_cli, "-u", self.username, "receive", "--json" ]
+        if self.config_dir:
+            cmd = cmd + [ "--config", self.config_dir ]
         if timeout:
             cmd = cmd + [ "-t", str(timeout) ]
 
@@ -191,5 +196,6 @@ class ArgsHelper:
         parser.add_argument('--signal-group', dest='signal_group', help="Group's ID (for Signal : a base64 string (e.g. 'mPC9JNVoKDGz0YeZMsbL1Q==')")
         parser.add_argument('--signal-recipient', dest='signal_recipients', action='append', default=[], help="Recipient when using the Signal backend (overrides --recipient)")
         parser.add_argument('--signal-stealth', dest='signal_stealth', action="store_true", default=self.signal_stealth, help="Activate Signal chatter's specific stealth mode")
+        parser.add_argument('--signal-config-dir', dest='signal_config_dir', default=None, help="Directory where to store Signal configuration and sensitive data")
 
         return parser

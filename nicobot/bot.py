@@ -121,12 +121,15 @@ class ArgsHelper:
         recipients = args.jabber_recipients + args.recipients
         if len(recipients)==0:
             raise ValueError("Missing --jabber-recipient")
+        data_dir = args.jabber_config_dir
+        if not data_dir:
+            data_dir = os.path.join(args.config_dir,".omemo")
         # TODO allow multiple recipients
         return JabberChatter(
             jid=username,
             password=args.jabber_password,
             recipient=recipients[0],
-            data_dir=os.path.join(args.config_dir,".omemo")
+            data_dir=data_dir
             )
 
 
@@ -143,13 +146,17 @@ class ArgsHelper:
         recipients = args.signal_recipients + args.recipients
         if len(recipients)==0 and not args.signal_group:
             raise ValueError("Either --signal-recipient or --signal-group must be provided")
+        config_dir = args.signal_config_dir
+        if not config_dir:
+            config_dir = os.path.join(args.config_dir,".signal-cli")
         # TODO allow multiple recipients
         return SignalChatter(
             username=username,
             recipient=recipients[0],
             group=args.signal_group,
             signal_cli=args.signal_cli,
-            stealth=args.signal_stealth
+            stealth=args.signal_stealth,
+            config_dir=config_dir
             )
         # TODO  :timeout=args.timeout
 

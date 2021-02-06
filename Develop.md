@@ -163,13 +163,14 @@ Here are the main application files and directories from within the images :
      ┃ ┗ 📂 .local/
      ┃   ┣ 📂 bin/  - - - - - - - - - - - - - -> shortcuts
      ┃   ┃ ┣ 📜 askbot
+     ┃   ┃ ┣ 📜 docker-entrypoint.sh
      ┃   ┃ ┣ 📜 transbot
      ┃   ┃ ┗ 📜 ...
-     ┃   ┣ 📂 lib/pythonX.X/site-packages/  - -> Python packages (nicobot & dependencies)
-     ┃   ┗ 📂 share/signal-cli/ - - - - - - - -> signal-cli configuration files
-     ┗ 📂 usr/src/app/  - - - - - - - - - - - -> app's working directory, default configuration files, ...
+     ┃   ┗ 📂 lib/pythonX.X/site-packages/  - -> Python packages (nicobot & dependencies)
+     ┗ 📂 var/nicobot/  - - - - - - - - - - - -> Configuration files & data (contains secret stuff !)
        ┣ 📂 .omemo/ - - - - - - - - - - - - - -> OMEMO keys (XMPP)
-       ┣ 📜 docker-entrypoint.sh
+       ┣ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
+       ┣ 📜 config.yml
        ┣ 📜 i18n.en.yml
        ┗ 📜 ...
 

@@ -57,10 +57,11 @@ RUN python3 -m pip install --no-cache-dir --user .
 # - glibc
 FROM python:3-slim
 
-WORKDIR /usr/src/app
+WORKDIR /var/nicobot
 
 # Required by slixmpp-omemo plugin
 RUN mkdir -p .omemo
+# Signal-cli also creates .signal-cli/
 
 # Not used currently (we just copy the /root/.local directory which has everyting thanks to the --user option)
 #COPY --from=builder /usr/src/app/wheels ./wheels
@@ -78,5 +79,6 @@ COPY --from=builder /root/.local /root/.local/
 # - also adds extra command line options for Signal device linking
 # Otherwise the ENTRYPOINT would simply be [ "python"]
 # Also copying some default configuration files
-COPY docker/docker-entrypoint.sh docker/default-conf/* .
-ENTRYPOINT [ "./docker-entrypoint.sh" ]
+COPY docker/docker-entrypoint.sh /root/.local/bin/
+COPY docker/default-conf/* .
+ENTRYPOINT [ "docker-entrypoint.sh" ]

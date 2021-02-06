@@ -338,5 +338,6 @@ def arg_parser():
     parser.add_argument('--jabber-username', '--jabberid', '--jid', dest='jabber_username', help="Username when using the Jabber/XMPP backend (overrides --username)")
     parser.add_argument('--jabber-recipient', dest='jabber_recipients', action='append', default=[], help="Recipient when using the Jabber/XMPP backend (overrides --recipient)")
     parser.add_argument('--jabber-password', dest='jabber_password', help="Senders's password")
+    parser.add_argument('--jabber-config-dir', dest='jabber_config_dir', default=None, help='Directory where to store OMEMO keys')
 
     return parser
