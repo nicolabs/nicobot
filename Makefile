@@ -1,6 +1,12 @@
 build:
 	python3 setup.py build sdist bdist_wheel
 
+build-docker-alpine:
+	docker build -t nicolabs/nicobot:alpine -f alpine.Dockerfile .
+
+build-docker-debian-signal:
+	docker build -t nicolabs/nicobot:signal-debian -f signal-debian.Dockerfile .
+
 build-docker-debian:
 	docker build -t nicolabs/nicobot:debian -f debian.Dockerfile .
 

@@ -116,7 +116,14 @@ The container is invoked this way :
 - `<bot name>` is either `transbot` or `askbot`
 - `<bot arguments>` is the list of arguments to pass to the bot (see bots' usage)
 
-If any doubt, just invoke the image without argument to print the inline help statement.
+You can run the image without any argument to print the inline help statement.
+
+Noteworthy directories :
+
+- `/etc/nicobot` contains default, minimalistic configuration files
+- `/var/nicobot` is empty but can be overridden with a volume to put custom files, *including secret ones*
+
+[Develop.md](Develop.md) contains a thorough description of the inner filesystem of the Docker images.
 
 Sample command to start a container :
 

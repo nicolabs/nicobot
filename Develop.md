@@ -165,7 +165,7 @@ Here are the main application files and directories from within the images :
      ┃ ┗ 📜 ...
      ┣ 📂 root/
      ┃ ┗ 📂 .local/
-     ┃   ┣ 📂 bin/  - - - - - - - - - - - - - -> shortcuts
+     ┃   ┣ 📂 bin/  - - - - - - - - - - - - - -> Executable commands
      ┃   ┃ ┣ 📜 askbot
      ┃   ┃ ┣ 📜 docker-entrypoint.sh
      ┃   ┃ ┣ 📜 transbot

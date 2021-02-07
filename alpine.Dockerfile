@@ -84,7 +84,7 @@ WORKDIR /var/nicobot
 RUN apk add --no-cache libressl-dev bash
 
 # Required by slixmpp-omemo plugin
-RUN mkdir -p .omemo
+RUN mkdir -p /var/nicobot/.omemo
 # Signal-cli also creates .signal-cli/
 
 # Not used currently (we just copy the /root/.local directory which has everyting thanks to the --user option)
@@ -104,5 +104,5 @@ COPY --from=builder /root/.local /root/.local/
 # Otherwise the ENTRYPOINT would simply be [ "python"]
 # Also copying some default configuration files
 COPY docker/docker-entrypoint.sh /root/.local/bin/
-COPY docker/default-conf/* .
+COPY docker/default-conf/* /etc/nicobot/
 ENTRYPOINT [ "docker-entrypoint.sh" ]
