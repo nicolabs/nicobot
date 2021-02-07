@@ -2,7 +2,7 @@
     "args": {
         "backend": "console",
         "config_file": "/home/nicobo/nicobot/test/askbot-sample-conf/config.yml",
-        "config_dir": "/home/nicobo/nicobot/test/askbot-sample-conf/",
+        "config_dirs": ["/home/nicobo/nicobot/test/askbot-sample-conf/"],
         "input_file": "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='UTF-8'>",
         "max_count": -1,
         "patterns": [

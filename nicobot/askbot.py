@@ -36,7 +36,7 @@ class Config:
         self.__dict__.update({
             'backend': "console",
             'config_file': "config.yml",
-            'config_dir': os.getcwd(),
+            'config_dirs': [os.getcwd()],
             'input_file': sys.stdin,
             'max_count': -1,
             'patterns': [],

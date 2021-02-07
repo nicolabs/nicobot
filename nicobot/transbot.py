@@ -49,6 +49,9 @@ LIMIT_KEYWORDS = None
 LIKELY_SUBTAGS_URL = "https://raw.githubusercontent.com/unicode-cldr/cldr-core/master/supplemental/likelySubtags.json"
 
 
+log = logging.getLogger(__name__)
+
+
 # Default configuration (some defaults still need to be set up after command line has been parsed)
 class Config:
 
@@ -56,7 +59,7 @@ class Config:
         self.__dict__.update({
             'backend': "console",
             'config_file': None,
-            'config_dir': os.getcwd(),
+            'config_dirs': [os.getcwd()],
             'group': None,
             'ibmcloud_url': None,
             'ibmcloud_apikey': None,
@@ -82,7 +85,7 @@ class Config:
     TODO Find a better way to log requests.Response objects
 """
 def _logResponse( r ):
-    logging.debug("<<< Response : %s\tbody: %s", repr(r), r.content )
+    log.debug("<<< Response : %s\tbody: %s", repr(r), r.content )
 
 
 def sanitizeNotPattern( string ):
@@ -171,13 +174,13 @@ class TransBot(Bot):
 
         # Gets the list from a local file
         if not force and file:
-            logging.debug("Reading from %s..." % file)
+            log.debug("Reading from %s..." % file)
             try:
                 with open(file,'r') as f:
                     j = json.load(f)
                     return j['languages']
             except:
-                logging.info("Could not read languages list from %s" % file)
+                log.info("Could not read languages list from %s" % file)
                 pass
 
         # Else, gets the list from the cloud
@@ -188,7 +191,7 @@ class TransBot(Bot):
             'X-Watson-Learning-Opt-Out': 'true'
             }
         # FIXME Since IBM API doesn't support an Accept-Language header to get the languages name in the locale, we need to query it again
-        logging.debug(">>> GET %s, %s",url,repr(headers))
+        log.debug(">>> GET %s, %s",url,repr(headers))
         r = requests.get(url, headers=headers, auth=('apikey',self.ibmcloud_apikey), timeout=TIMEOUT)
         _logResponse(r)
 
@@ -201,7 +204,7 @@ class TransBot(Bot):
             if locale != 'en':
                 languages_names = [ l['name'] for l in languages ]
                 translations = self.translate(languages_names,source='en',target=locale)
-                logging.debug("Got the following translations for languages names : %s",repr(translations))
+                log.debug("Got the following translations for languages names : %s",repr(translations))
                 # From my tests seems that IBM cloud returns the original text if it could not translate it
                 # so the output list will always be the same size as the input one
                 t = 0
@@ -212,14 +215,14 @@ class TransBot(Bot):
             # Save it for the next time
             if file:
                 try:
-                    logging.debug("Saving languages to %s..." % file)
+                    log.debug("Saving languages to %s..." % file)
                     with open(file,'w') as f:
                         json.dump(languages_root,f)
                 except:
-                    logging.exception("Could not save the languages list to %s" % file)
+                    log.exception("Could not save the languages list to %s" % file)
                     pass
             else:
-                logging.debug("Not saving languages as no file was given")
+                log.debug("Not saving languages as no file was given")
 
             return languages
         else:
@@ -244,16 +247,16 @@ class TransBot(Bot):
         # Gets the list from a local file
         if len(keywords) == 0:
             for file in files:
-                logging.debug("Reading from %s..." % file)
+                log.debug("Reading from %s..." % file)
                 # May throw an error
                 with open(file,'r') as f:
                     kws = kws + json.load(f)
-            logging.debug("Read keyword list : %s",repr(kws))
+            log.debug("Read keyword list : %s",repr(kws))
             return kws
 
         # TODO remove duplicates
         for keyword in keywords:
-            logging.debug("Init %s...",keyword)
+            log.debug("Init %s...",keyword)
             kws = kws + [ keyword ]
 
             for lang in self.languages:
@@ -265,24 +268,24 @@ class TransBot(Bot):
                     if translation:
                         for t in translation['translations']:
                             translated = t['translation'].strip()
-                            logging.debug("Adding translation %s in %s for %s", t, lang, keyword)
+                            log.debug("Adding translation %s in %s for %s", t, lang, keyword)
                             kws = kws + [ translated ]
                 except:
-                    logging.exception("Could not translate %s into %s", keyword, repr(lang))
+                    log.exception("Could not translate %s into %s", keyword, repr(lang))
                     pass
-        logging.debug("Keywords : %s", repr(kws))
+        log.debug("Keywords : %s", repr(kws))
 
         # TODO ? Save the translations for each keyword into a separate file ?
         if files and len(files) == 1:
             try:
-                logging.debug("Saving keywords translations into %s...", files[0])
+                log.debug("Saving keywords translations into %s...", files[0])
                 with open(files[0],'w') as f:
                     json.dump(kws,f)
             except:
-                logging.exception("Could not save keywords translations into %s", files[0])
+                log.exception("Could not save keywords translations into %s", files[0])
                 pass
         else:
-            logging.debug("Not saving keywords as a (single) file was not given")
+            log.debug("Not saving keywords as a (single) file was not given")
 
         return kws
 
@@ -294,21 +297,21 @@ class TransBot(Bot):
         """
 
         try:
-            logging.debug("Loading likely languages from %s",file)
+            log.debug("Loading likely languages from %s",file)
             with open(file,'r') as f:
                 return json.load(f)
         except:
-            logging.debug("Downloading likely subtags from %s",LIKELY_SUBTAGS_URL)
+            log.debug("Downloading likely subtags from %s",LIKELY_SUBTAGS_URL)
             with urllib.request.urlopen(LIKELY_SUBTAGS_URL) as response:
                 likelySubtags = response.read()
-                logging.log(TRACE,"Got likely subtags : %s",repr(likelySubtags))
+                log.log(TRACE,"Got likely subtags : %s",repr(likelySubtags))
                 # Saves it for the next time
                 try:
-                    logging.debug("Saving likely subtags into %s",file)
+                    log.debug("Saving likely subtags into %s",file)
                     with open(file,'w') as f:
                         f.write(likelySubtags.decode())
                 except:
-                    logging.exception("Error saving the likely languages into %s",repr(file))
+                    log.exception("Error saving the likely languages into %s",repr(file))
                 return json.loads(likelySubtags)
 
 
@@ -335,7 +338,7 @@ class TransBot(Bot):
             'Accept': 'application/json',
             'X-Watson-Learning-Opt-Out': 'true'
             }
-        logging.debug(">>> POST %s, %s, %s",url,repr(body),repr(headers))
+        log.debug(">>> POST %s, %s, %s",url,repr(body),repr(headers))
         r = requests.post(url, json=body, headers=headers, auth=('apikey',self.ibmcloud_apikey), timeout=TIMEOUT)
         # TODO Log full response when it's usefull (i.e. when a message is going to be answered)
         _logResponse(r)
@@ -362,11 +365,11 @@ class TransBot(Bot):
         """
         try:
             aa_Bbbb_CC = self.likelyLanguages['supplemental']['likelySubtags'][lang]
-            logging.log(TRACE,"Found likely subtags %s for language %s",aa_Bbbb_CC,lang)
+            log.log(TRACE,"Found likely subtags %s for language %s",aa_Bbbb_CC,lang)
             # The last part is the ISO 3361 country code
             return re.split( r'[_-]', aa_Bbbb_CC )[-1]
         except:
-            logging.warning("Could not find a country code for %s : returning itself",lang, exc_info=True)
+            log.warning("Could not find a country code for %s : returning itself",lang, exc_info=True)
             return lang
 
 
@@ -384,7 +387,7 @@ class TransBot(Bot):
             country = self.languageToCountry(target)
             lang_emoji = flag.flag(country)
         except ValueError:
-            logging.debug("Error looking for flag %s",target,exc_info=True)
+            log.debug("Error looking for flag %s",target,exc_info=True)
             lang_emoji= "🏳️‍🌈"
         answer = "%s %s" % (text,lang_emoji)
         return i18n.t('all_messages',message=answer)
@@ -395,21 +398,21 @@ class TransBot(Bot):
             Finds the language code from its name
         """
         # TODO should be at 'trace' level
-        logging.debug("identifyLanguage(%s)",language_name)
+        log.debug("identifyLanguage(%s)",language_name)
 
         # First checks if this is already the language's code (more accurate)
         if language_name in [ l['language'] for l in self.languages ]:
-            logging.debug("Identified language is already a code : %s",language_name)
+            log.debug("Identified language is already a code : %s",language_name)
             return language_name
         # Else, really try with the language's name
         else:
             matching_names = [ l for l in self.languages if re.search(language_name.strip(),l['name'],re.IGNORECASE) ]
-            logging.debug("Identified languages by name : %s",matching_names)
+            log.debug("Identified languages by name : %s",matching_names)
             if len(matching_names) > 0:
                 # Only take the first one
                 return matching_names[0]['language']
             else:
-                logging.warning("Could not identify language %s",language_name)
+                log.warning("Could not identify language %s",language_name)
                 return None
 
 
@@ -423,21 +426,21 @@ class TransBot(Bot):
             message: A plain text message
             Returns nothing
         """
-        logging.debug("onMessage(%s)",message)
+        log.debug("onMessage(%s)",message)
 
         # Preparing the 'translate a message' case
         to_lang = self.locale[0]
         matched_translate = re.search( i18n.t('translate'), message.strip(), flags=re.IGNORECASE )
         # Case where the target language is given
         if matched_translate:
-            logging.debug("Detected 'translate a message with target' case")
+            log.debug("Detected 'translate a message with target' case")
             to_lang = self.identifyLanguage( matched_translate.group('language') )
-            logging.debug("Found target language in message : %s"%to_lang)
+            log.debug("Found target language in message : %s"%to_lang)
         # Case where the target language is not given ; we will simply use the current locale
         else:
             matched_translate = re.search( i18n.t('translate_default_locale'), message.strip(), flags=re.IGNORECASE )
             if matched_translate:
-                logging.debug("Detected 'translate a message' case")
+                log.debug("Detected 'translate a message' case")
 
         ###
         #
@@ -446,7 +449,7 @@ class TransBot(Bot):
         # FIXME re.compile((i18n.t('Shutdown'),re.IGNORECASE).search(message) does not work
         # as expected so we use re.search(...)
         if re.search( self.re_shutdown, message, re.IGNORECASE ):
-            logging.debug("Shutdown asked")
+            log.debug("Shutdown asked")
             self._logEvent({ 'type':'shutdown', 'message':message })
             self.chatter.stop()
 
@@ -459,22 +462,22 @@ class TransBot(Bot):
             self._logEvent(status_event)
             if to_lang:
                 translation = self.translate( [matched_translate.group('message')],target=to_lang )
-                logging.debug("Got translation : %s",repr(translation))
+                log.debug("Got translation : %s",repr(translation))
                 status_event['translation'] = translation
                 if translation and len(translation['translations'])>0:
                     answer = self.formatTranslation(translation,target=to_lang)
-                    logging.debug(">> %s" % answer)
+                    log.debug(">> %s" % answer)
                     status_event['answer'] = answer
                     self.chatter.send(answer)
                 else:
                     # TODO Make translate throw an error with details
-                    logging.warning("Did not get a translation in %s for %s",to_lang,message)
+                    log.warning("Did not get a translation in %s for %s",to_lang,message)
                     answer = i18n.t('all_messages',message=i18n.t('IDontKnow'))
                     status_event['error'] = 'no_translation'
                     status_event['answer'] = answer
                     self.chatter.send(answer)
             else:
-                logging.warning("Could not identify target language in %s",message)
+                log.warning("Could not identify target language in %s",message)
                 answer = i18n.t('all_messages',message=i18n.t('IDontKnow'))
                 status_event['error'] = 'unknown_target_language'
                 status_event['answer'] = answer
@@ -496,31 +499,31 @@ class TransBot(Bot):
             for lang in langs:
                 # Gets a translation in this random language
                 translation = self.translate( [message], target=lang['language'] )
-                logging.debug("Got translation : %s",repr(translation))
+                log.debug("Got translation : %s",repr(translation))
                 status_translation = { 'target_language':lang['language'], 'translation':translation }
                 status_translations.append(status_translation)
                 if translation and len(translation['translations'])>0:
                     answer = self.formatTranslation(translation,target=lang['language'])
-                    logging.debug(">> %s" % answer)
+                    log.debug(">> %s" % answer)
                     status_translation['answer'] = answer
                     self.chatter.send(answer)
                     # Returns as soon as one translation was done
                     return
                 else:
-                    logging.debug("No translation for %s in %r",message,langs)
+                    log.debug("No translation for %s in %r",message,langs)
                     status_translation['error'] = 'no_translation'
                     pass
 
-            logging.warning("Could not find a translation in %s for %s",repr(langs),message)
+            log.warning("Could not find a translation in %s for %s",repr(langs),message)
 
         else:
-            logging.debug("Message did not match any known pattern")
+            log.debug("Message did not match any known pattern")
             self._logEvent({ 'type':'ignored', 'message':message })
 
 
     def onExit( self ):
 
-        logging.debug("Exiting...")
+        log.debug("Exiting...")
         status_shutdown = { 'type':'shutdown' }
         self._logEvent(status_shutdown)
 
@@ -533,9 +536,9 @@ class TransBot(Bot):
                 status_shutdown['answer'] = text
                 status_shutdown['timestamp'] = sent
             else:
-                logging.debug("Empty 'Goodbye' text : nothing was sent")
+                log.debug("Empty 'Goodbye' text : nothing was sent")
         except KeyError:
-            logging.debug("No 'Goodbye' text : nothing was sent")
+            log.debug("No 'Goodbye' text : nothing was sent")
             pass
 
 
@@ -560,14 +563,14 @@ class TransBot(Bot):
                 sent = self.chatter.send(text)
                 self._logEvent({ 'type':'startup', 'answer':text, 'timestamp':sent })
             else:
-                logging.debug("Empty 'Hello' text : nothing was sent")
+                log.debug("Empty 'Hello' text : nothing was sent")
         except KeyError:
-            logging.debug("No 'Hello' text : nothing was sent")
+            log.debug("No 'Hello' text : nothing was sent")
             pass
 
         self.registerExitHandler()
         self.chatter.start(self)
-        logging.debug("Chatter loop ended")
+        log.debug("Chatter loop ended")
         return self.status
 
 
@@ -609,16 +612,17 @@ def run( args=sys.argv[1:] ):
     #
 
     # i18n + l10n
-    logging.debug("Current locale : %s"%repr(locale.getlocale()))
+    log.debug("Current locale : %s"%repr(locale.getlocale()))
     # e.g. if config.locale is 'en_US' we split it into : ['en', 'US'] ; dash separator is the RFC norm '-', but underscore '_' is used with Python
     lang = re.split( r'[_-]', config.locale )
     # See https://pypi.org/project/python-i18n/
     # FIXME Manually sets the locale : how come a Python library named 'i18n' doesn't take into account the Python locale by default ?
     i18n.set('locale',lang[0])
-    logging.debug("i18n locale : %s"%i18n.get('locale'))
+    log.debug("i18n locale : %s"%i18n.get('locale'))
     i18n.set('filename_format', 'i18n.{locale}.{format}')    # Removing the namespace from keys is simpler for us
     i18n.set('error_on_missing_translation',True)
-    i18n.load_path.append(config.config_dir)
+    for cd in config.config_dirs:
+        i18n.load_path.append(cd)
 
     # These MUST be instanciated AFTER i18n has been configured !
     try:
@@ -635,28 +639,31 @@ def run( args=sys.argv[1:] ):
 
     # config.keywords is used if given
     # else, check for an existing keywords_file
-    if len(config.keywords_files) == 0:
-        # As a last resort, use 'keywords.json' in the config directory
-        config.keywords_files = [ os.path.join(config.config_dir,'keywords.json') ]
-    # Convenience check to better warn the user and allow filenames relative to config_dir
     if not config.keywords:
-        found_keywords_files = []
-        for keywords_file in config.keywords_files:
-            relative_filename = os.path.join(config.config_dir,keywords_file)
-            winners = filter_files( [keywords_file, relative_filename], should_exist=True, fallback_to=None )
-            if len(winners) > 0:
-                found_keywords_files = found_keywords_files + winners
-        if len(found_keywords_files) > 0:
-            config.keywords_files = found_keywords_files
-        else:
+        # keywords_files entries are tried either as a full path or as a filename relative to the config dirs
+        # As a last resort, use all the 'keywords.json' found in the config directories
+        keywords_paths_or_files = config.keywords_files
+        if len(config.keywords_files) == 0:
+            keywords_paths_or_files = ['keywords.json']
+        keywords_files_filtered = []
+        # For each given keywords file given, check in all config dirs
+        for kf in keywords_paths_or_files:
+            keywords_files_filtered = keywords_files_filtered + filter_files(
+                [kf] + [ os.path.join(dir,kf) for dir in config.config_dirs ],
+                should_exist=True,
+                fallback_to=None )[0]
+        config.keywords_files = keywords_files_filtered
+        log.debug("Found the following keywords files : %s", repr(config.keywords_files))
+        # Convenience check to better warn the user and allow filenames relative to config dirs
+        if len(config.keywords_files) == 0:
             raise ValueError("Could not open any keywords file in %s : please generate with --keywords first or create the file indicated with --keywords-file"%repr(config.keywords_files))
 
     # Finds an existing languages_file
     # By default, uses 'languages.<lang>.json' or 'languages.json' in the config directory
-    config.languages_file = filter_files( [
-        config.languages_file,
-        os.path.join( config.config_dir, "languages.%s.json"%lang[0] ),
-        os.path.join( config.config_dir, 'languages.json' ) ],
+    config.languages_file = filter_files(
+        [ config.languages_file ]
+        + [ os.path.join( dir, "languages.%s.json"%lang[0] ) for dir in config.config_dirs ]
+        + [ os.path.join( dir, 'languages.json' ) for dir in config.config_dirs ],
         should_exist=True,
         fallback_to=1 )[0]
     # Convenience check to better warn the user
@@ -664,9 +671,9 @@ def run( args=sys.argv[1:] ):
         raise ValueError("Missing language file : please use only --languages-file to generate it automatically or --language for each target language")
 
     # Finds a "likely language" file
-    config.languages_likely = filter_files([
-        config.languages_likely,
-        os.path.join( config.config_dir, 'likelySubtags.json' ) ],
+    config.languages_likely = filter_files(
+        [ config.languages_likely ]
+        + [ os.path.join( dir, 'likelySubtags.json' ) or dir in config.config_dirs ],
         should_exist=True,
         fallback_to=1 )[0]
 

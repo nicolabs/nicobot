@@ -2,7 +2,7 @@
     "args": {
         "backend": "console",
         "config_file": "/home/nicobo/nicobot/test/transbot-sample-conf/config.yml",
-        "config_dir": "/home/nicobo/nicobot/test/transbot-sample-conf/",
+        "config_dirs": ["/home/nicobo/nicobot/test/transbot-sample-conf/"],
         "group": null,
         "ibmcloud_url": "https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/f93001df-abcd-afgh-ijkl-d9c534aeba42",
         "ibmcloud_apikey": "(obfuscated)",

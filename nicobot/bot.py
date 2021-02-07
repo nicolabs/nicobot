@@ -74,7 +74,7 @@ class ArgsHelper:
         self.__dict__.update({
             'backend': "console",
             'config_file': "config.yml",
-            'config_dir': os.getcwd(),
+            'config_dirs': [os.getcwd()],
             'input_file': sys.stdin,
             'stealth': False,
             'verbosity': "WARNING",
@@ -90,7 +90,7 @@ class ArgsHelper:
 
         # Bootstrap options
         parser.add_argument("--config-file", "-c", "--config", dest="config_file", default=self.config_file, help="YAML configuration file.")
-        parser.add_argument("--config-dir", "-C", dest="config_dir", default=self.config_dir, help="Directory where to find configuration files by default.")
+        parser.add_argument("--config-dir", "-C", dest="config_dirs", nargs='+', default=self.config_dirs, help="Directories where to find configuration files by default.")
         parser.add_argument('--verbosity', '-v', dest='verbosity', default=self.verbosity, help="Log level")
         # Chatter-generic arguments
         parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','signal'], default=self.backend, help="Chat backend to use")
@@ -110,7 +110,7 @@ class ArgsHelper:
     def jabber_chatter( args ):
         """
             Builds a JabberChatter from Namespace argument 'args'.
-            Sets its data directory to <config_dir>/.omemo
+            Sets its data directory to <config_dirs>/.omemo or the given value for --jabber-config-dir
         """
 
         username = args.jabber_username if args.jabber_username else args.username
@@ -123,7 +123,8 @@ class ArgsHelper:
             raise ValueError("Missing --jabber-recipient")
         data_dir = args.jabber_config_dir
         if not data_dir:
-            data_dir = os.path.join(args.config_dir,".omemo")
+            data_dir = os.path.join(args.config_dirs[0],".omemo")
+        logging.debug("Using this directory for jabber config : %s",data_dir)
         # TODO allow multiple recipients
         return JabberChatter(
             jid=username,
@@ -148,7 +149,8 @@ class ArgsHelper:
             raise ValueError("Either --signal-recipient or --signal-group must be provided")
         config_dir = args.signal_config_dir
         if not config_dir:
-            config_dir = os.path.join(args.config_dir,".signal-cli")
+            config_dir = os.path.join(args.config_dirs[0],".signal-cli") ]
+        logging.debug("Using this directory for signal config : %s",config_dir)
         # TODO allow multiple recipients
         return SignalChatter(
             username=username,

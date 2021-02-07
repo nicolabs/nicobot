@@ -77,7 +77,7 @@ def parse_args_2pass( parser, args, config ):
     # because it would not be possible to make the difference between the default values
     # and the ones explictely given by the user
     # This is usefull for instance to throw an exception if a file given by the user doesn't exist, which is different than the default filename
-    # 'config' is therefore the defaults overriden by user options while 'ns' has only user options
+    # 'config' has therefore the default values overriden by user options, while 'ns' has only user options
     ns = parser.parse_args(args=args)
 
     # Logging configuration
@@ -86,10 +86,9 @@ def parse_args_2pass( parser, args, config ):
 
     # Fills the config with user-defined default options from a config file
     try:
-        # Allows config_file to be relative to the config_dir
+        # Allows config_file to be relative to the config dir
         config.config_file = filter_files(
-            [ns.config_file,
-            os.path.join(ns.config_dir,"config.yml")],
+            [ns.config_file] + [ os.path.join(dir,"config.yml") for dir in ns.config_dirs ],
             should_exist=True,
             fallback_to=1 )[0]
         logging.debug("Using config file %s",config.config_file)

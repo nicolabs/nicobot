@@ -159,6 +159,10 @@ It emphasizes *FROM* and *COPY* relations between the images (base and stages).
 Here are the main application files and directories from within the images :
 
     📦 /
+     ┣ 📂 etc/nicobot/  - - - - - - - - - - - -> Default configuration files
+     ┃ ┣ 📜 config.yml
+     ┃ ┣ 📜 i18n.en.yml
+     ┃ ┗ 📜 ...
      ┣ 📂 root/
      ┃ ┗ 📂 .local/
      ┃   ┣ 📂 bin/  - - - - - - - - - - - - - -> shortcuts
@@ -167,11 +171,9 @@ Here are the main application files and directories from within the images :
      ┃   ┃ ┣ 📜 transbot
      ┃   ┃ ┗ 📜 ...
      ┃   ┗ 📂 lib/pythonX.X/site-packages/  - -> Python packages (nicobot & dependencies)
-     ┗ 📂 var/nicobot/  - - - - - - - - - - - -> Configuration files & data (contains secret stuff !)
+     ┗ 📂 var/nicobot/  - - - - - - - - - - - -> Custom configuration files & data (contains secret stuff !)
        ┣ 📂 .omemo/ - - - - - - - - - - - - - -> OMEMO keys (XMPP)
        ┣ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
-       ┣ 📜 config.yml
-       ┣ 📜 i18n.en.yml
        ┗ 📜 ...
 
 
