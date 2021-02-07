@@ -149,7 +149,7 @@ class ArgsHelper:
             raise ValueError("Either --signal-recipient or --signal-group must be provided")
         config_dir = args.signal_config_dir
         if not config_dir:
-            config_dir = os.path.join(args.config_dirs[0],".signal-cli") ]
+            config_dir = os.path.join(args.config_dirs[0],".signal-cli")
         logging.debug("Using this directory for signal config : %s",config_dir)
         # TODO allow multiple recipients
         return SignalChatter(
