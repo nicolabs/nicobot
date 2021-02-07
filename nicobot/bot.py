@@ -90,7 +90,7 @@ class ArgsHelper:
 
         # Bootstrap options
         parser.add_argument("--config-file", "-c", "--config", dest="config_file", default=self.config_file, help="YAML configuration file.")
-        parser.add_argument("--config-dir", "-C", dest="config_dirs", nargs='+', default=self.config_dirs, help="Directories where to find configuration files by default.")
+        parser.add_argument("--config-dirs", "-C", dest="config_dirs", nargs='+', default=self.config_dirs, help="Directories where to find configuration files by default.")
         parser.add_argument('--verbosity', '-v', dest='verbosity', default=self.verbosity, help="Log level")
         # Chatter-generic arguments
         parser.add_argument("--backend", "-b", dest="backend", choices=['console','jabber','signal'], default=self.backend, help="Chat backend to use")

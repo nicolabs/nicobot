@@ -310,7 +310,7 @@ matched = [ p['name'] for p in output['messages'][-1]['patterns'] if p['matched'
 
 The following options are common to both bots :
 
-- **--config-file** and **--config-dir** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
+- **--config-file** and **--config-dirs** let you change the default configuration directory and file. All configuration files will be looked up from this directory ; `--config-file` allows overriding the location of `config.yml`.
 - **--backend** selects the *chatter* system to use : it currently supports "console", "signal" and "jabber" (see below)
 - **--stealth** will make the bot connect and listen to messages but print answers to the console instead of sending it ; useful to observe the bot's behavior in a real chatroom...
 - **--debug / -d / --verbosity / -v** those options modify the verbosity level : `--debug` is a flag that sets it to *DEBUG* while with `--verbosity` you can define [the exact level](https://docs.python.org/3/library/logging.html#levels) (e.g. `-v TRACE`).
@@ -320,7 +320,7 @@ The following options are common to both bots :
 #### Configuration file : config.yml
 
 Options can also be taken from a configuration file.
-By default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dir` options.
+By default it reads the `config.yml` file in the current directory but can be changed with the `--config-file` and `--config-dirs` options.
 
 This file is in YAML format with all options at root level.
 Keys are named after the command line options, with middle dashes `-` replaced with underscores `_` and a `s` appended for lists (option `--ibmcloud-url https://api...` will become `ibmcloud_url: https://api...` and `--keywords-file 1.json --keywords-file 2.json` will become :

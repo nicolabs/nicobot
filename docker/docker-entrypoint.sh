@@ -72,7 +72,7 @@ case "${opt_bot}" in
     askbot|transbot)
         #exec python3 -m "nicobot.${opt_bot}" "$@"
         # TODO Allow to override config dirs with the docker command line
-        exec "${opt_bot}" "--config-dir" /etc/nicobot /var/nicobot "$@"
+        exec "${opt_bot}" "--config-dirs" /etc/nicobot /var/nicobot "$@"
         ;;
     *)
         echo "Unknown bot : '*{opt_bot}'" >2
