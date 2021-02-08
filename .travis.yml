@@ -25,10 +25,11 @@ addons:
       - libssl-dev
       - make
       - python3-dev
-      - rustc
-  homebrew:
-    # TODO Check this list to see if something is missing : https://docs.travis-ci.com/user/reference/osx#compilers-and-build-toolchain
-    packages: rust
+  # homebrew:
+  #   # TODO Check this list to see if something is missing : https://docs.travis-ci.com/user/reference/osx#compilers-and-build-toolchain
+  #   packages: rust
+before_install:
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y && source $HOME/.cargo/env
 install:
   - pip3 install -r requirements-build.txt -r requirements-runtime.txt
   # Generates nicobot/version.py
