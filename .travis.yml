@@ -12,12 +12,28 @@ jobs:
       os: osx
       osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.4
       language: shell       # 'language: python' is an error on Travis CI macOS
+# Build requisites (only some of them)
+addons:
+  apt:
+    packages:
+      # See the Dockerfiles for more details about those dependencies
+      - build-essential
+      - cmake
+      - g++
+      - git
+      - libffi-dev
+      - libssl-dev
+      - make
+      - python3-dev
+      - rustc
+  homebrew:
+    packages: rust
 install:
+  - pip3 install -r requirements-build.txt -r requirements-runtime.txt
   # Generates nicobot/version.py
   # 'python' points to Python 2.7 on macOS but points to Python 3.8 on Linux and Windows
   # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only
   - python3 setup.py build || python setup.py build
-  - pip3 install -r requirements-build.txt -r requirements-runtime.txt
 script:
   # 'python' points to Python 2.7 on macOS but points to Python 3.8 on Linux and Windows
   # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only

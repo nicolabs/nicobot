@@ -11,4 +11,5 @@ emoji-country-flag
 pyyaml
 
 ##### Requirements for jabber #####
+slixmpp
 slixmpp-omemo
