@@ -4,6 +4,11 @@
 
 FROM python:3 as builder
 
+# Very strange but it seems that cryptography should be installed before rust...
+# https://cryptography.io/en/latest/installation.html#rust
+RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
+    python3 -m pip install --no-cache-dir --user cryptography; exit 0
+
 RUN apt-get update && \
     # The following fails on arm : https://github.com/docker/buildx/issues/495
     apt-get install -y \
@@ -34,8 +39,7 @@ COPY requirements-*.txt \
      setup.py \
      .
 # This step WILL trigger a compilation on platforms without matching Python wheels
-RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
-    python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
+RUN python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
 
 # Builds & installs nicobot (should change often, especially the .git directory)
 COPY LICENSE \
