@@ -8,9 +8,9 @@ python:               # this works for Linux but is ignored on macOS or Windows
 # See https://docs.travis-ci.com/user/languages/python/#running-python-tests-on-multiple-operating-systems
 jobs:
   include:
-    - name: "Python 3.7 on macOS"
+    - name: "Python on macOS"
       os: osx
-      osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.4
+      osx_image: xcode12.2  # Latest version at time of writing : see https://docs.travis-ci.com/user/reference/osx#macos-version
       language: shell       # 'language: python' is an error on Travis CI macOS
 # Build requisites (only some of them)
 addons:
@@ -27,6 +27,7 @@ addons:
       - python3-dev
       - rustc
   homebrew:
+    # TODO Check this list to see if something is missing : https://docs.travis-ci.com/user/reference/osx#compilers-and-build-toolchain
     packages: rust
 install:
   - pip3 install -r requirements-build.txt -r requirements-runtime.txt

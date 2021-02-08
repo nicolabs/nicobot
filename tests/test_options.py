@@ -58,11 +58,14 @@ class TestOptions(unittest.TestCase):
             Tests the default configuration tree of the docker image
         """
 
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory() as tmproot:
+            # Creates a subdirectory so that we don't need the 'dirs_exist_ok'
+            # option, which is only available since Python 3.8
+            tmpdir = os.path.join(tmproot,"slash")
             dir_var_nicobot = os.path.join(tmpdir,'var/nicobot')
             dir_etc_nicobot = os.path.join(tmpdir,'etc/nicobot')
             # 1. Reproduces the initial Docker environment
-            shutil.copytree('tests/fixtures/docker_file_tree', tmpdir, dirs_exist_ok=True)
+            shutil.copytree('tests/fixtures/docker_file_tree', tmpdir)
             config = TransbotConfig()
             # Mimics the command line parameters in the docker image
             args = [ '--config-dirs', dir_var_nicobot, dir_etc_nicobot ]
@@ -81,11 +84,14 @@ class TestOptions(unittest.TestCase):
             Tests a common configuration tree with docker where the user bind-mounts the /var/nicobot directory
         """
 
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory() as tmproot:
+            # Creates a subdirectory so that we don't need the 'dirs_exist_ok'
+            # option, which is only available since Python 3.8
+            tmpdir = os.path.join(tmproot,"slash")
             dir_var_nicobot = os.path.join(tmpdir,'var/nicobot')
             dir_etc_nicobot = os.path.join(tmpdir,'etc/nicobot')
             # 1. Reproduces the initial Docker environment
-            shutil.copytree('tests/fixtures/docker_with_var_mount', tmpdir, dirs_exist_ok=True)
+            shutil.copytree('tests/fixtures/docker_with_var_mount', tmpdir)
             config = TransbotConfig()
             # Mimics the command line parameters in the docker image
             args = [ '--config-dirs', dir_var_nicobot, dir_etc_nicobot ]
