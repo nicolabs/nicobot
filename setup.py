@@ -103,7 +103,8 @@ setuptools.setup(
         'Topic :: Software Development :: Internationalization'
     ],
     # PyYAML requires Python 3.5+
-    python_requires='>=3.5',
+    # slixmpp 1.7.0+ requires Python 3.7 (but still compiles on 3.6)
+    python_requires='>=3.6',
     # TODO This duplicates requirements-build.txt ?
     setup_requires=['setuptools-scm'],
     # TODO This duplicates requirements-runtime.txt

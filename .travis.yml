@@ -1,6 +1,5 @@
 language: python
 python:               # this works for Linux but is ignored on macOS or Windows
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
