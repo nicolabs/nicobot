@@ -1,3 +1,5 @@
+# Syntax : https://pip.pypa.io/en/stable/user_guide/#requirements-files
+
 ##### Requirements for signalcli #####
 python-i18n
 

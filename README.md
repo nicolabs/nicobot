@@ -70,7 +70,7 @@ To install from source you need to fulfill the requirements for a package instal
     git clone https://github.com/nicolabs/nicobot.git
     cd nicobot
     python3 setup.py build
-    pip3 install -r requirements-runtime.txt .
+    pip3 install -c constraints.txt -r requirements-runtime.txt .
 
 > **NOTE**
 > Depending on your platform, `pip install` may trigger a compilation for some or all of the dependencies (i.e. when *Python wheels* are not available).

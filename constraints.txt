@@ -1,0 +1,10 @@
+# Syntax : https://pip.pypa.io/en/stable/user_guide/#constraints-files
+
+# Since 3.4.3 cryptography requires rust 1.45+, which is not available on all platforms
+# See https://cryptography.io/en/latest/changelog.html#v3-4-3
+# For now there is a patch (see debian.Dockerfile) with CRYPTOGRAPHY_DONT_BUILD_RUST=1
+# but next versions of cryptography will probably break the build so we lock it
+cryptography<=3.4.3
+
+# Since 1.7.0 slixmpp does not compile on Python 3.5 so it should be upgraded by hand
+slixmpp<=1.7.0

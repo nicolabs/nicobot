@@ -10,7 +10,7 @@
 
 Install Python dependencies (for both building and running) and generate `nicobot/version.py` with :
 
-    pip3 install -r requirements-build.txt -r requirements-runtime.txt
+    pip3 install -c constraints.txt -r requirements-build.txt -r requirements-runtime.txt
     python3 setup.py build
 
 To run unit tests :
@@ -37,7 +37,7 @@ To install the test package from test.pypi.org and check that it works :
     python3 -m venv venv/pypi_test && source venv/pypi_test/bin/activate
 
     # Then install dependencies using the regular pypi repo
-    pip3 install -r requirements-runtime.txt
+    pip3 install -c constraints.txt -r requirements-runtime.txt
 
     # Finally install this package from the test repo
     pip3 install -i https://test.pypi.org/simple/ --no-deps nicobot

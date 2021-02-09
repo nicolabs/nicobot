@@ -1,4 +1,6 @@
 ##### Requirements for building only #####
+# Syntax : https://pip.pypa.io/en/stable/user_guide/#requirements-files
+
 setuptools
 wheel
 twine

@@ -12,6 +12,8 @@
 # STAGE 1 : Builder image
 #
 
+# This builder must have a Python version comptabile with the final image
+# So built artifacts will work
 FROM python:3-alpine as builder
 
 # python:3-alpine misses gcc, ffi.h, ...
@@ -48,12 +50,13 @@ RUN apk add --no-cache build-base gcc abuild binutils cmake \
 WORKDIR /usr/src/app
 
 # Builds & installs requirements (shoduld not change often)
-COPY requirements-*.txt \
+COPY constraints.txt \
+     requirements-*.txt \
      setup.py \
      .
 # This step WILL trigger a compilation on platforms without matching Python wheels
 RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
-    python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
+    python3 -m pip install --no-cache-dir --user -c constraints.txt -r requirements-build.txt -r requirements-runtime.txt
 
 # Builds & installs nicobot (should change often, especially the .git directory)
 COPY LICENSE \
@@ -70,7 +73,7 @@ RUN python3 -m pip install --no-cache-dir --user .
 #
 
 # The base image must provide :
-# - Python version > 3.4.2
+# - Python matching setup.py's python_requires
 # - bash
 # - glibc
 FROM python:3-alpine

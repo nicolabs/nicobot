@@ -30,7 +30,7 @@ addons:
 before_install:
   - curl https://sh.rustup.rs -sSf | sh -s -- -y && source $HOME/.cargo/env
 install:
-  - pip3 install -r requirements-build.txt -r requirements-runtime.txt
+  - pip3 install -c constraints.txt -r requirements-build.txt -r requirements-runtime.txt
   # Generates nicobot/version.py
   # 'python' points to Python 2.7 on macOS but points to Python 3.8 on Linux and Windows
   # 'python3' is a 'command not found' error on Windows but 'py' works on Windows only

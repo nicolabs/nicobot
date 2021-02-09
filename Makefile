@@ -2,7 +2,7 @@ clean:
 	rm -rf build
 
 build:
-	pip3 install --upgrade -r requirements-build.txt -r requirements-runtime.txt
+	pip3 install --upgrade -c constraints.txt -r requirements-build.txt -r requirements-runtime.txt
 	python3 setup.py build sdist bdist_wheel
 
 docker-build-alpine:
