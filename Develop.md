@@ -137,7 +137,7 @@ _Github actions_ are currently used (see [`.github/workflows/dockerhub.yml`](.gi
 
 Since I could not find an easy way to generate exactly the tags I wanted, the `setup.py` script embeds a custom command to generate them from the git context (tag, commit) and the image variant :
 
-- [docker/github-actions](https://github.com/docker/github-actions) tagging strategy does not explicitely allows to tag with *latest* an image of choice (I may be able to force it by tagging the wanted image in the end but it does not look 100% sure)
+- [docker/github-actions](https://github.com/docker/github-actions) tagging strategy does not explicitely allow tagging with *latest* an image of choice (I may be able to force it by tagging the wanted image in the end but it does not look 100% sure)
 - [crazy-max/ghaction-docker-meta](https://github.com/crazy-max/ghaction-docker-meta) is quite complex to understand and I could not figure out a way to implement my strategy
 - See [setup.py#DockerTagsCommand](setup.py#DockerTagsCommand) for the custom solution
 
@@ -149,28 +149,28 @@ It emphasizes *FROM* and *COPY* relations between the images (base and stages).
 ![nicobot docker images build process](http://www.plantuml.com/plantuml/proxy?cache=no&src=https%3A%2F%2Fraw.github.com%2Fnicolabs%2Fnicobot%2Fmaster%2Fdocker%2Fdocker-images.puml)
 
 
-### Why no image is available for x arch ?
+### Why no image is available for arch x ?
 
 [The open issues labelled with *docker*](https://github.com/nicolabs/nicobot/labels/docker) should reference the reasons for missing arch / configuration.
 
 
 ### Docker image structure
 
-Here are the main application files and directories from within the images :
+Here are the main application files and directories inside the images :
 
     📦 /
-     ┣ 📂 etc/nicobot/  - - - - - - - - - - - -> Default configuration files
+     ┣ 📂 etc/nicobot/ - - - - - - - - - - - -> Default configuration files
      ┃ ┣ 📜 config.yml
      ┃ ┣ 📜 i18n.en.yml
      ┃ ┗ 📜 ...
      ┣ 📂 root/
      ┃ ┗ 📂 .local/
-     ┃   ┣ 📂 bin/  - - - - - - - - - - - - - -> Executable commands
+     ┃   ┣ 📂 bin/ - - - - - - - - - - - - - -> Executable commands
      ┃   ┃ ┣ 📜 askbot
      ┃   ┃ ┣ 📜 docker-entrypoint.sh
      ┃   ┃ ┣ 📜 transbot
      ┃   ┃ ┗ 📜 ...
-     ┃   ┗ 📂 lib/pythonX.X/site-packages/  - -> Python packages (nicobot & dependencies)
+     ┃   ┗ 📂 lib/pythonX.X/site-packages/ - -> Python packages (nicobot & dependencies)
      ┗ 📂 var/nicobot/  - - - - - - - - - - - -> Custom configuration files & data (contains secret stuff !)
        ┣ 📂 .omemo/ - - - - - - - - - - - - - -> OMEMO keys (XMPP)
        ┣ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
