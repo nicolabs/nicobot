@@ -14,13 +14,6 @@
 
 FROM python:3-alpine as builder
 
-# Very strange but it seems that cryptography should be installed before rust...
-# Although I don't believe there is a wheel for Alpine, doing this way allows
-# Debian & Alpine builds to be closer
-# https://cryptography.io/en/latest/installation.html#rust
-RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
-    python3 -m pip install --no-cache-dir --user cryptography; exit 0
-
 # python:3-alpine misses gcc, ffi.h, ...
 #
 # GCC part :
@@ -59,7 +52,8 @@ COPY requirements-*.txt \
      setup.py \
      .
 # This step WILL trigger a compilation on platforms without matching Python wheels
-RUN python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
+RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
+    python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
 
 # Builds & installs nicobot (should change often, especially the .git directory)
 COPY LICENSE \

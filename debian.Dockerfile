@@ -4,11 +4,6 @@
 
 FROM python:3 as builder
 
-# Very strange but it seems that cryptography should be installed before rust...
-# https://cryptography.io/en/latest/installation.html#rust
-RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
-    python3 -m pip install --no-cache-dir --user cryptography; exit 0
-
 RUN apt-get update && \
     # The following fails on arm : https://github.com/docker/buildx/issues/495
     apt-get install -y \
@@ -16,21 +11,23 @@ RUN apt-get update && \
         # not all may be required on all platforms...
         # XEdDSA needs at least make & cmake (future versions will not : see https://github.com/Syndace/python-xeddsa)
         cmake g++ make \
-        # Rust is a requirement to build the 'cryptography' Python module
-        # The recommended procedure is to use 'rustup but the both Debian &
-        # Alpine ship with more CPU architectures so we use the OS' packages.
-        # At the time of writing rustup only provides installers for x86_64 and
-        # aarch64 (arm64).
-        # https://forge.rust-lang.org/infra/other-installation-methods.html
-        # Alpine packages : https://pkgs.alpinelinux.org/packages?name=rust
-        # Debian packages : https://packages.debian.org/buster/rustc
-        #RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        rustc \
+        # rustc \
         # More dependencies for the 'cryptography' module
         # See https://cryptography.io/en/latest/installation.html#debian-ubuntu
         build-essential libssl-dev libffi-dev python3-dev \
         # git required by setuptools-scm during 'pip install'
         git
+
+# Rust is a requirement to build the 'cryptography' Python module
+# The recommended procedure is to use 'rustup but the both Debian &
+# Alpine ship with more CPU architectures so we use the OS' packages.
+# At the time of writing rustup only provides installers for x86_64 and
+# aarch64 (arm64).
+# https://forge.rust-lang.org/infra/other-installation-methods.html
+# Alpine packages : https://pkgs.alpinelinux.org/packages?name=rust
+# Debian packages : https://packages.debian.org/buster/rustc
+# Here we try the official method first and fall back to the package
+RUN (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y) || apt-get install -y rustc
 
 WORKDIR /usr/src/app
 
@@ -39,7 +36,8 @@ COPY requirements-*.txt \
      setup.py \
      .
 # This step WILL trigger a compilation on platforms without matching Python wheels
-RUN python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
+RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
+    python3 -m pip install --no-cache-dir --user -r requirements-build.txt -r requirements-runtime.txt
 
 # Builds & installs nicobot (should change often, especially the .git directory)
 COPY LICENSE \
