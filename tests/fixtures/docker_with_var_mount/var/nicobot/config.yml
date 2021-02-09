@@ -1,0 +1,8 @@
+locale: en
+
+backend: jabber
+
+jabber_username: mybot@conversations.im
+jabber_password: TheBestPasswordInTheWorld
+jabber_recipients:
+    - itsme@conversations.im
