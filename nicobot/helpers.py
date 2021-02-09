@@ -15,6 +15,9 @@ TRACE = 5
 logging.addLevelName(TRACE,'TRACE')
 
 
+log = logging.getLogger(__name__)
+
+
 def configure_logging( level=None, debug=None ):
     """
         Sets default logging preferences for this module
@@ -44,17 +47,22 @@ def filter_files( files, should_exist=False, fallback_to=None ):
         Returns : a list with only the files that passed the filters
     """
 
+    log.log(TRACE,"filter_files",files,should_exist,fallback_to)
+
     found = []
     for file in files:
         if should_exist:
             try:
                 with open(file,'r') as f:
+                    log.log(TRACE,"%s was found" % file)
                     pass
             except:
+                log.log(TRACE,"%s was NOT found" % file)
                 continue
         found = found + [file]
 
     if len(found) == 0 and fallback_to is not None:
+        log.log(TRACE,"None found ; using fallback : %s" % repr(files[fallback_to:fallback_to+1]) )
         return files[fallback_to:fallback_to+1]
 
     return found
@@ -82,7 +90,7 @@ def parse_args_2pass( parser, args, config ):
 
     # Logging configuration
     configure_logging(ns.verbosity,debug=ns.debug)
-    logging.debug( "Configuration for bootstrap : %s", repr(vars(ns)) )
+    log.debug( "Configuration for bootstrap : %s", repr(vars(ns)) )
 
     # Fills the config with user-defined default options from a config file
     try:
@@ -91,7 +99,7 @@ def parse_args_2pass( parser, args, config ):
             [ns.config_file] + [ os.path.join(dir,"config.yml") for dir in ns.config_dirs ],
             should_exist=True,
             fallback_to=1 )[0]
-        logging.debug("Using config file %s",config.config_file)
+        log.debug("Using config file %s",config.config_file)
         with open(config.config_file,'r') as file:
             # The FullLoader parameter handles the conversion from YAML
             # scalar values to Python the dictionary format
@@ -101,15 +109,15 @@ def parse_args_2pass( parser, args, config ):
             except AttributeError:
                 # Some systems (e.g. raspbian) ship with an older version of pyyaml
                 dictConfig = yaml.load(file)
-            logging.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
+            log.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
             config.__dict__.update(dictConfig)
     except OSError as e:
         # If it was a user-set option, stop here
         if ns.config_file == config.config_file:
             raise e
         else:
-            logging.debug("Could not open %s ; no config file will be used",config.config_file)
-            logging.debug(e, exc_info=True)
+            log.debug("Could not open %s ; no config file will be used",config.config_file)
+            log.debug(e, exc_info=True)
             pass
     # From here the config object has only the default values for all configuration options
 
@@ -120,6 +128,6 @@ def parse_args_2pass( parser, args, config ):
     config = parser.parse_args(args=args,namespace=config)
     # From the bootstrap parameters, only logging level may need to be read again
     configure_logging(config.verbosity,debug=config.debug)
-    logging.debug( "Final configuration : %s", repr(vars(config)) )
+    log.debug( "Final configuration : %s", repr(vars(config)) )
 
     return config

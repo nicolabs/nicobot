@@ -94,8 +94,9 @@ class TestOptions(unittest.TestCase):
             shutil.copytree('tests/fixtures/docker_with_var_mount', tmpdir)
             config = TransbotConfig()
             # Mimics the command line parameters in the docker image
-            args = [ '--config-dirs', dir_var_nicobot, dir_etc_nicobot ]
+            args = [ '--verbosity', '1', '--config-dirs', dir_var_nicobot, dir_etc_nicobot ]
             # 2. Test begins
+            logging.getLogger().setLevel(1)
             config = parse_args_2pass( self.parser, args, config )
             # Directories should be present in the same order
             self.assertEqual( 2, len(config.config_dirs) )
