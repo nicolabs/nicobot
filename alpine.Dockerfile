@@ -43,6 +43,8 @@ RUN apk add --no-cache build-base gcc abuild binutils cmake \
     # https://forge.rust-lang.org/infra/other-installation-methods.html
     # Alpine packages : https://pkgs.alpinelinux.org/packages?name=rust
     #RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    # TODO Maybe use the rust image as in debian.Dockerfile (pros : should work ootb
+    # cons: limited in platforms and the copy might break if the image changes)
     cargo rust \
     # git required by setuptools-scm during 'pip install'
     git

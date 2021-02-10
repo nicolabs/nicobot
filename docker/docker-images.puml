@@ -16,7 +16,7 @@ left to right direction
 object "Docker context" as docker_context $dockercontext
 object "<i>python:3</i>" as python3 $baseimage
 object "<i>python:3-slim</i>" as python3_slim $baseimage
-object "<i>rust:slim</i>" as rust_slim $baseimage
+'object "<i>rust:slim</i>" as rust_slim $baseimage
 object "debian builder" as nicobot_debian_builder <<temp>> $tempimage {
     Builds nicobot & dependencies
 }
@@ -25,7 +25,7 @@ object "nicolabs/nicobot:debian" as nicobot_debian $finalimage {
 }
 
 python3 --> nicobot_debian_builder : FROM
-rust_slim --> nicobot_debian_builder : COPY
+'rust_slim --> nicobot_debian_builder : COPY
 docker_context ...> nicobot_debian_builder : COPY
 
 python3_slim --> nicobot_debian : FROM
