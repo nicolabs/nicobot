@@ -56,6 +56,14 @@ COPY constraints.txt \
      requirements-*.txt \
      setup.py \
      .
+# FIXME Either with rustup or rustc package, rust version for linux/386 on debian is only 1.41 as of buster
+# => Since 3.4.3 cryptography requires rust 1.45+, which is not available on all platforms
+# https://cryptography.io/en/latest/changelog.html#v3-4-3
+# => For now we use the patch below to disable rust but the next version of cryptography
+# will probably force us to use packages from debian testing or to use an older cryptography version
+# FIXME Also, after using all patches that I could find, I finally end up having this issue : https://github.com/nicolabs/nicobot/issues/59
+# So Rust extensions are now officially disabled until cryptography builds again on ARM
+ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
 # This step WILL trigger a compilation on platforms without matching Python wheels
 RUN python3 -m pip install --no-cache-dir --user --upgrade pip && \
     python3 -m pip install --no-cache-dir --user -c constraints.txt -r requirements-build.txt -r requirements-runtime.txt
