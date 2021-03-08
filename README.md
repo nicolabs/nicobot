@@ -46,7 +46,7 @@ The bots can be installed and run at your choice from :
 A classic (Python package) installation requires :
 
 - Python 3 (>= 3.6) and pip ([should already be bundled with Python](https://pip.pypa.io/en/stable/installing)) ; e.g. on Debian : `sudo apt install python3 python3-pip`
-- [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend](#using-the-signal-backend) below for requirements)
+- For the *Signal* backend : [signal-cli](https://github.com/AsamK/signal-cli) (see [Using the Signal backend](#using-the-signal-backend) below for requirements)
 - For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
 To install,  simply do :
