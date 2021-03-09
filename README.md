@@ -46,7 +46,7 @@ The bots can be installed and run at your choice from :
 A classic (Python package) installation requires :
 
 - Python 3 (>= 3.6) and pip ([should already be bundled with Python](https://pip.pypa.io/en/stable/installing)) ; e.g. on Debian : `sudo apt install python3 python3-pip`
-- [signal-cli](https://github.com/AsamK/signal-cli) for the *Signal* backend (see [Using the Signal backend](#using-the-signal-backend) below for requirements)
+- For the *Signal* backend : [signal-cli](https://github.com/AsamK/signal-cli) (see [Using the Signal backend](#using-the-signal-backend) below for requirements)
 - For *transbot* : an IBM Cloud account ([free account ok](https://www.ibm.com/cloud/free))
 
 To install,  simply do :
@@ -90,17 +90,17 @@ Now you can run the bots by their name as if they were installed via the package
 
 At the present time there are [several Docker images available](https://hub.docker.com/r/nicolabs/nicobot/tags), with the following tags :
 
-- **debian** (or **X.Y.Z-debian**) : this is the most portable image ; in order to keep it relatively small it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
+- **debian** (or **X.Y.Z-debian**) : this is the most portable image ; it should offer the best platforms compatibility. However, in order to keep it relatively small, it does not include the *Signal* backend (will throw an error if you try --> use XMPP instead)
 
-- **signal-debian** (or **X.Y.Z-signal-debian**) : this is the most complete image ; it is also the largest one, but allows *Signal* messaging
+- **signal-debian** (or **X.Y.Z-signal-debian**) : this is the most complete image ; it is also the largest one, but allows both XMPP and *Signal* messaging systems
 
-- **alpine** (or **X.Y.Z-alpine**) : this should be the smallest image, but it's more complex to maintain and therefore might not always meet this expectation. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't provide the Signal backend (you can use XMPP instead).
+- **alpine** (or **X.Y.Z-alpine**) : this should be the smallest image, but it's more complex to maintain and therefore might not always meet the expectations. Also, due to the lack/complexity of Alpine support for some Python, Java & native dependencies, images may support less platforms and it currently doesn't embed the Signal backend (you can use XMPP instead).
 
 - **X.Y.Z-\<image variant\>** tags are simply version *X.Y.Z* of *\<image variant\>*. E.g. *1.2.3-alpine* is nicobot version 1.2.3 in the *alpine* variant (not related with alpine's version).
 
 - **latest** points to the latest versioned image of *signal-debian* (which offers all features).
 
-- **dev-\<image variant\>** tags are development versions of the master branch. **Do not use : they are probably broken !** History is currently not preserved : there is only one *dev-* tag of an image variant at a time.
+- **dev-\<image variant\>** tags are development versions of the *master branch*. **Do not use : they are probably broken !** History is currently not preserved : there is only one *dev-* tag of an image variant at a time.
 
 Please have a look at the status shields at the top of this document to get more details like status and size.
 

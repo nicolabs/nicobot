@@ -162,7 +162,7 @@ Here are the main application files and directories inside the images :
      ┣ 📂 etc/nicobot/ - - - - - - - - - - - -> Default configuration files
      ┃ ┣ 📜 config.yml
      ┃ ┣ 📜 i18n.en.yml
-     ┃ ┗ 📜 ...
+     ┃ ┗ 📜 i18n.fr.yml
      ┣ 📂 root/
      ┃ ┗ 📂 .local/
      ┃   ┣ 📂 bin/ - - - - - - - - - - - - - -> Executable commands
@@ -171,10 +171,9 @@ Here are the main application files and directories inside the images :
      ┃   ┃ ┣ 📜 transbot
      ┃   ┃ ┗ 📜 ...
      ┃   ┗ 📂 lib/pythonX.X/site-packages/ - -> Python packages (nicobot & dependencies)
-     ┗ 📂 var/nicobot/  - - - - - - - - - - - -> Custom configuration files & data (contains secret stuff !)
+     ┗ 📂 var/nicobot/  - - - - - - - - - - - -> Working directory & custom configuration files & data (contains secret stuff !)
        ┣ 📂 .omemo/ - - - - - - - - - - - - - -> OMEMO keys (XMPP)
-       ┣ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
-       ┗ 📜 ...
+       ┗ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
 
 
 ## Versioning
