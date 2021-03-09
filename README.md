@@ -105,7 +105,7 @@ At the present time there are [several Docker images available](https://hub.dock
 Please have a look at the status shields at the top of this document to get more details like status and size.
 
 > **ADVICE**
-> The current state of those images is such that I suggest you try the **alpine** image first and switch to a **debian\*** one if you need Signal or encounter runtime issues.
+> The current state of those images is such that I suggest you use the **signal-debian** image if you need Signal, otherwise the **alpine** one.
 
 The container is invoked this way :
 
