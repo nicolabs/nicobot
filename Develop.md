@@ -176,6 +176,36 @@ Here are the main application files and directories inside the images :
        ┗ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
 
 
+## Deploy on AWS
+
+This chapter describes a very simple way to deploy the bots on Amazon Web Services.
+There are many other methods and Cloud providers but you can build on this example to start implementing your specific case.
+
+Here is the process :
+
+1. Create an AWS account or reuse one
+2. Install the latest Docker Desktop or [Docker Compose CLI with ECS support](https://docs.docker.com/cloud/ecs-integration/#install-the-docker-compose-cli-on-linux) (make sure to start a new shell if you've just installed it)
+3. Configure the AWS credentials (with `AWS_*` environnement variables or `~/.aws/credentials`)
+4. Create and switch your local docker to an 'ecs' context : `docker context create ecs myecs && docker context use myecs`
+5. Craft a `docker-compose.yml` file (see templates [tests/transbot-jabber.docker-compose.yml](tests/transbot-jabber.docker-compose.yml) and [tests/transbot-signal.docker-compose.yml](tests/transbot-signal.docker-compose.yml))
+6. Make sure you have the proper configuration files (only a `config.yml` is required in the given templates) and start the service : `docker compose up`
+
+If you follow the templates, this will deploy nicobot on AWS' *Fargate* with the config.yml file injected as a secret.
+It will use the writable layer of the container to download translation files and generate temporary files like OMEMO keys.
+If you use the signal backend it should print the QRCode to scan at startup ; you should also find the URI to manually generate it in the logs on *CloudWatch* console.
+
+Once done, `docker compose down` will stop the bot by clearing everything from Fargate.
+
+As this method relies on a docker-compose file it is very straightforward, but also limited to the supported mapping with *CloudFormation* templates (the native AWS deployment descriptor) and AWS's choice of services (Fargate, EFS, ...).
+
+More info :
+
+- [Deploying Docker containers on ECS (Docker's doc.)](https://docs.docker.com/cloud/ecs-integration/)
+- [Deploy applications on Amazon ECS using Docker Compose (Amazon's doc.)](https://aws.amazon.com/fr/blogs/containers/deploy-applications-on-amazon-ecs-using-docker-compose/)
+- [Amazon ECS on AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)
+
+
+
 ## Versioning
 
 The `--version` command-line option that displays the bots' version relies on _setuptools_scm_, which extracts it from the underlying git metadata.
