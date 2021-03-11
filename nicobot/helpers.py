@@ -39,6 +39,26 @@ def configure_logging( level=None, debug=None ):
     logging.basicConfig(level=logLevel, stream=sys.stderr, format='%(asctime)s\t%(levelname)s\t%(message)s')
 
 
+# TODO also obfuscate (partially ?) less sensitive values like jabber id, signal number, API URL, ...
+def obfuscate( obj, keys=['ibmcloud_apikey','jabber_password'] ):
+    """
+        Returns an obfuscated copy of an object.
+
+        obj : object to obfuscate (string or dictionary)
+        keys : keys to obfuscate in case the object is dictionary
+    """
+    if isinstance(obj, str):
+        return '<obfuscated>'
+    elif isinstance(obj, dict):
+        d = obj.copy()
+        for k in keys:
+            if k in d:
+                d[k] = '<obfuscated>'
+        return d
+    else:
+        return obj
+
+
 def filter_files( files, should_exist=False, fallback_to=None ):
     """
         files: a list of filenames / open files to filter
@@ -47,7 +67,7 @@ def filter_files( files, should_exist=False, fallback_to=None ):
         Returns : a list with only the files that passed the filters
     """
 
-    log.log(TRACE,"filter_files",files,should_exist,fallback_to)
+    log.log(TRACE,"filter_files%s", (files,should_exist,fallback_to))
 
     found = []
     for file in files:
@@ -109,7 +129,7 @@ def parse_args_2pass( parser, args, config ):
             except AttributeError:
                 # Some systems (e.g. raspbian) ship with an older version of pyyaml
                 dictConfig = yaml.load(file)
-            log.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(dictConfig)))
+            log.debug("Successfully loaded configuration from %s : %s" % (config.config_file,repr(obfuscate(dictConfig))))
             config.__dict__.update(dictConfig)
     except OSError as e:
         # If it was a user-set option, stop here
@@ -128,6 +148,6 @@ def parse_args_2pass( parser, args, config ):
     config = parser.parse_args(args=args,namespace=config)
     # From the bootstrap parameters, only logging level may need to be read again
     configure_logging(config.verbosity,debug=config.debug)
-    log.debug( "Final configuration : %s", repr(vars(config)) )
+    log.debug( "Final configuration : %s", repr(obfuscate(vars(config))) )
 
     return config

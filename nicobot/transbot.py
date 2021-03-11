@@ -103,7 +103,7 @@ class TransBot(Bot):
     """
         Sample bot that translates text.
 
-        It only answers to messages containing defined keywords.
+        It only answers messages containing defined keywords.
         It uses IBM Watson™ Language Translator (see API docs : https://cloud.ibm.com/apidocs/language-translator) to translate the text.
     """
 
@@ -692,12 +692,8 @@ def run( args=sys.argv[1:] ):
         shutdown_pattern=config.shutdown,
         chatter=chatter
         )
-    status_args = vars(config)
-    # TODO Add an option to list the fields to obfuscate (nor not)
-    for k in [ 'ibmcloud_apikey', 'jabber_password' ]:
-        status_args[k] = '(obfuscated)'
     status_result = bot.run()
-    status = { 'args':vars(config), 'result':status_result }
+    status = { 'args':obfuscate(vars(config)), 'result':status_result }
     # Returns the full status to this module can be called CLI-style
     return status
 

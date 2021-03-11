@@ -180,12 +180,8 @@ def run( args=sys.argv[1:] ):
         patterns=config.patterns,
         max_count=config.max_count
         )
-    status_args = vars(config)
-    # TODO Add an option to list the fields to obfuscate (nor not)
-    for k in [ 'jabber_password' ]:
-        status_args[k] = '(obfuscated)'
     status_result = bot.run()
-    status = { 'args':vars(config), 'result':status_result }
+    status = { 'args':obfuscate(vars(config)), 'result':status_result }
     # Returns the full status to this module can be called CLI-style
     return status
 
