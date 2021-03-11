@@ -367,17 +367,6 @@ With :
 - `-r me@myserver.im` the *JabberID* of the correspondent
 
 
-##### Common issues
-
-If you have the following error :
-
-    ERROR	Couldn't load the OMEMO object; ¯\_(ツ)_/¯
-    ERROR	And error occured when loading the omemo plugin.
-    omemo.exceptions.inconsistentinfoexception.InconsistentInfoException: Given storage is only usable for jid mybot@myserver.im on device 1234567890.
-
-This may be because you previously registered another device at the same place : move or delete the `.omemo` directory and retry.
-
-
 #### Using the Signal backend
 
 By specifying `--backend signal` you can make the bot chat with Signal users.
@@ -405,6 +394,35 @@ Example :
 
     transbot -b signal -U +33612345678 -g "mABCDNVoEFGz0YeZM1234Q==" --ibmcloud-url https://api.eu-de.language-translator.watson.cloud.ibm.com/instances/a234567f-4321-abcd-efgh-1234abcd7890 --ibmcloud-apikey "f5sAznhrKQyvBFFaZbtF60m5tzLbqWhyALQawBg5TjRI"
 
+
+
+## Common issues
+
+### Couldn't load the OMEMO object
+
+The following error is XMPP/Jabber related :
+
+    ERROR	Couldn't load the OMEMO object; ¯\_(ツ)_/¯
+    ERROR	And error occured when loading the omemo plugin.
+    omemo.exceptions.inconsistentinfoexception.InconsistentInfoException: Given storage is only usable for jid mybot@myserver.im on device 1234567890.
+
+This may be because you previously registered another device at the same place : move or delete the `.omemo` directory and retry.
+
+
+### ERROR	No appropriate login method
+
+This message may mean that your XMPP/Jabber account or password is incorrect.
+
+
+### Authorization failed!
+
+Sample error stack :
+
+    nicobot_1  | Failed to resolve uuids from server: Authorization failed!
+    nicobot_1  | Failed to get sender certificate: org.whispersystems.signalservice.api.push.exceptions.AuthorizationFailedException: Authorization failed!
+    nicobot_1  | Failed to send message: Authorization failed!
+
+This error is probably triggered by a misconfiguration or absence of Signal credentials. Make sure to link the bot with a device (see instructions above, including the `--signal-register` option for the Docker images).
 
 
 ## External resources
