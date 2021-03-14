@@ -35,17 +35,17 @@ To install the test package from test.pypi.org and check that it works :
 
     # First create a virtual environment not to mess with the host system
     python3 -m venv venv/pypi_test && source venv/pypi_test/bin/activate
-
+    
     # Then install dependencies using the regular pypi repo
     pip3 install -c constraints.txt -r requirements-runtime.txt
-
+    
     # Finally install this package from the test repo
     pip3 install -i https://test.pypi.org/simple/ --no-deps nicobot
-
+    
     # Do some test
     python -m nicobot.askbot -V
     ...
-
+    
     # Exit the virtual environment
     deactivate
 
