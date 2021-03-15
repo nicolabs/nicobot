@@ -23,7 +23,9 @@ def local_scheme(version):
 """
 class DockerTagsCommand(setuptools.Command):
 
-    description = "Prints a tag list for the given 'base tag'"
+    description = """Prints a tag list for the given 'base tag'.
+                    Each tag is printed on its own line,
+                    more specific tag first : versionned > variant > 'latest'."""
     user_options = [
           ('image=', 'i', 'Image name (defaults to nicolabs/nicobot)'),
           ('variant=', 'v', 'Image variant / base tag : debian|signal-debian|alpine'),
@@ -37,6 +39,7 @@ class DockerTagsCommand(setuptools.Command):
         self.image = 'nicolabs/nicobot'
         self.variant = None
         self.branch = None
+        # Git tag (so the version)
         self.tag = None
         self.ref = None
         self.sep = '\n'
@@ -69,16 +72,16 @@ class DockerTagsCommand(setuptools.Command):
         # version = get_version(local_scheme='no-local-version')
         tags = []
         if self.tag:
-            # When git-tagged, the variant name alone means : the 'latest' for this variant
-            tags = [ "%s:%s" % (self.image,self.variant) ]
-            # It is also tagged with the version
+            # It is first tagged with the version
             tags = tags + [ "%s:%s-%s" % (self.image,self.tag,self.variant) ]
-            # Only signal-debian is explicitely tagged with 'latest', additionaly
+            # When git-tagged, the variant name alone means : the 'latest' for this variant
+            tags = tags + [ "%s:%s" % (self.image,self.variant) ]
+            # Only signal-debian is explicitely tagged with 'latest'
             if self.variant == "signal-debian":
                 tags = tags + [ "%s:latest" % (self.image) ]
         elif self.branch:
             # All non git-tagged commits overwrite the 'dev' tag (only one is useful currently)
-            tags = tags + [ "%s:dev-%s" % (self.image,self.variant) ]
+            tags = [ "%s:dev-%s" % (self.image,self.variant) ]
         print( self.sep.join(tags) )
 
 
