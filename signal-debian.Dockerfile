@@ -1,4 +1,11 @@
 ############################
+# Global variables
+
+# Change this var to build from a local dev image for instance
+ARG NICOBOT_BASE_IMAGE=nicolabs/nicobot:debian
+
+
+############################
 # STAGE 1
 #
 # Getting around this bug : https://github.com/docker/buildx/issues/395
@@ -94,7 +101,7 @@ RUN zip -d /opt/signal-cli/lib/zkgroup-java-*.jar libzkgroup.so
 # that inherits from the default nicobot (without signal support)
 #
 
-FROM nicolabs/nicobot:debian
+FROM ${NICOBOT_BASE_IMAGE}
 
 ARG TARGETPLATFORM
 
