@@ -12,7 +12,7 @@
 # STAGE 1 : Builder image
 #
 
-# This builder must have a Python version comptabile with the final image
+# This builder must have a Python version compatible with the final image
 # So built artifacts will work
 FROM python:3-alpine as builder
 

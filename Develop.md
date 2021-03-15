@@ -196,7 +196,8 @@ If you use the signal backend it should print the QRCode to scan at startup ; yo
 
 Once done, `docker compose down` will stop the bot by clearing everything from Fargate.
 
-As this method relies on a docker-compose file it is very straightforward, but also limited to the supported mapping with *CloudFormation* templates (the native AWS deployment descriptor) and AWS's choice of services (Fargate, EFS, ...).
+As this method relies on the *docker-compose* specification, it is very straightforward and also works on a developer workstation (simply replace `docker compose` with `docker-compose`).
+However it cannot go beyond the supported mappings with *CloudFormation* templates (the native AWS deployment descriptor) and AWS's choice of services (Fargate, EFS, ...).
 
 More info :
 
