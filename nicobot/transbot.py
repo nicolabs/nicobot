@@ -90,8 +90,8 @@ def _logResponse( r ):
 
 def sanitizeNotPattern( string ):
     """
-        Returns a string that will only all 'non-word' characters escaped with backslash
-        in order to use it in a regular expression pattern without including special character.
+        Returns a string with all 'non-word' characters escaped with backslash
+        so it can be inserted in a regular expression without breaking it.
 
         We could just replace any character 'c' with '\c' but replacing only special characters keep it somewhat still readable.
     """
@@ -315,6 +315,10 @@ class TransBot(Bot):
                 return json.loads(likelySubtags)
 
 
+    # TODO Return more context as a second return value
+    # E.g. Response : <Response [404]>	body: b'{\n  "code" : 404,\n  "error" : "Automatically detected source language is the same as target, cannot translate. Try to set the source language explicitly if you think the source language was not correctly detected"\n}'
+    # => the 'error' message could be printed out to the chat in 'verbose' mode
+    # E.g. translation, error = self.translate("Hello World","en")
     def translate( self, messages, target, source=None ):
         """
             Translates a given list of messages.
@@ -418,13 +422,22 @@ class TransBot(Bot):
 
     def onMessage( self, message ):
         """
-            Called by self.chatter whenever a message hsa arrived :
-            if the given message contains any of the keywords in any language,
-            will answer with a translation in a random language
-            including the flag of the random language.
+            Called by self.chatter whenever a message has arrived.
+
+            It has 3 use cases :
+            1. execute a custom command (currently only shutdown if the message matches the *Shutdown* pattern)
+            2. explicitely translate a given text (if the message matches pattern *translate* or *translate_default_locale*)
+            3. translate the whole message if it contains any of the configured *keywords*, in any language
+
+            For use case 2 it will translate the text into a **custom target language** if given as part of the *translate* pattern
+            or into the **configured locale's language** by default.
+
+            For use case 3 it will translate the text into a **random language**.
+
+            For use cases 2 and 3 it will also include the flag of the target language.
 
             message: A plain text message
-            Returns nothing
+            Returns nothing (calls self.chatter.send)
         """
         log.debug("onMessage(%s)",message)
 
@@ -656,6 +669,7 @@ def run( args=sys.argv[1:] ):
         log.debug("Found the following keywords files : %s", repr(config.keywords_files))
         # Convenience check to better warn the user and allow filenames relative to config dirs
         if len(config.keywords_files) == 0:
+            # FIXME The bot should work without keywords or keywords_file (will be triggered only by other patterns)
             raise ValueError("Could not open any keywords file in %s : please generate with --keywords first or create the file indicated with --keywords-file"%repr(config.keywords_files))
 
     # Finds an existing languages_file
@@ -673,7 +687,7 @@ def run( args=sys.argv[1:] ):
     # Finds a "likely language" file
     config.languages_likely = filter_files(
         [ config.languages_likely ]
-        + [ os.path.join( dir, 'likelySubtags.json' ) or dir in config.config_dirs ],
+        + [ os.path.join( dir, 'likelySubtags.json' ) for dir in config.config_dirs ],
         should_exist=True,
         fallback_to=1 )[0]
 
