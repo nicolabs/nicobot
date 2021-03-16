@@ -101,6 +101,8 @@ jobs:
     name: Build, Publish debian
     environment: prod
     runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.docker_build_debian.outputs.digest }}
     steps:
 
     - name: Checkout
@@ -250,7 +252,7 @@ jobs:
           context: ./
           file: ./signal-debian.Dockerfile
           build-args: |
-            NICOBOT_BASE_IMAGE=${{ steps.docker_build_debian.outputs.digest }}
+            NICOBOT_BASE_IMAGE=${{ needs.build-publish-debian.outputs.digest }}
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
