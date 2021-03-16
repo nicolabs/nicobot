@@ -144,14 +144,17 @@ class TransBot(Bot):
 
         self.likelyLanguages = self.loadLikelyLanguages(languages_likely)
 
+        self.re_keywords = None
         # After self.languages has been set, we can iterate over it to translate keywords
         kws = self.loadKeywords( keywords=keywords, files=keywords_files, limit=LIMIT_KEYWORDS )
-        # And build a regular expression pattern with all keywords and their translations
-        pattern = r'\b%s\b' % sanitizeNotPattern(kws[0])
-        for keyword in kws[1:]:
-            pattern = pattern + r'|\b%s\b' % sanitizeNotPattern(keyword)
-        # Built regular expression pattern that triggers an answer from this bot
-        self.re_keywords = pattern
+        if kws:
+            # And build a regular expression pattern with all keywords and their translations
+            pattern = r'\b%s\b' % sanitizeNotPattern(kws[0])
+            for keyword in kws[1:]:
+                pattern = pattern + r'|\b%s\b' % sanitizeNotPattern(keyword)
+            # Built regular expression pattern that triggers an answer from this bot
+            self.re_keywords = pattern
+
         # Regular expression pattern of messages that stop the bot
         self.re_shutdown = shutdown_pattern
 
@@ -500,7 +503,7 @@ class TransBot(Bot):
         #
         # Case 'answer to keywords'
         #
-        elif re.search( self.re_keywords, message, flags=re.IGNORECASE ):
+        elif self.re_keywords and re.search( self.re_keywords, message, flags=re.IGNORECASE ):
 
             status_translations = []
             status_event = { 'type':'keyword', 'message':message, 'translations':status_translations }
@@ -601,7 +604,7 @@ def run( args=sys.argv[1:] ):
         description="A bot that reacts to messages with given keywords by responding with a random translation"
         )
     # Core arguments for this bot
-    parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="A keyword a bot should react to (will write them into the file specified with --keywords-file)")
+    parser.add_argument("--keyword", "-k", dest="keywords", action="append", help="A keyword a bot should react to, in any language (will write them & their translations into the file specified with --keywords-file)")
     parser.add_argument("--keywords-file", dest="keywords_files", action="append", help="File to load from and write keywords to")
     parser.add_argument('--locale', '-l', dest='locale', default=config.locale, help="Change default locale (e.g. 'fr_FR')")
     parser.add_argument("--languages-file", dest="languages_file", help="File to load from and write languages to")
@@ -658,19 +661,21 @@ def run( args=sys.argv[1:] ):
         keywords_paths_or_files = config.keywords_files
         if len(config.keywords_files) == 0:
             keywords_paths_or_files = ['keywords.json']
-        keywords_files_filtered = []
         # For each given keywords file given, check in all config dirs
+        keywords_files_filtered = []
         for kf in keywords_paths_or_files:
-            keywords_files_filtered = keywords_files_filtered + filter_files(
+            found = filter_files(
                 [kf] + [ os.path.join(dir,kf) for dir in config.config_dirs ],
                 should_exist=True,
-                fallback_to=None )[0]
+                fallback_to=None )
+            if found:
+                keywords_files_filtered = keywords_files_filtered + found[0]
         config.keywords_files = keywords_files_filtered
         log.debug("Found the following keywords files : %s", repr(config.keywords_files))
         # Convenience check to better warn the user and allow filenames relative to config dirs
         if len(config.keywords_files) == 0:
             # FIXME The bot should work without keywords or keywords_file (will be triggered only by other patterns)
-            raise ValueError("Could not open any keywords file in %s : please generate with --keywords first or create the file indicated with --keywords-file"%repr(config.keywords_files))
+            log.info("Could not open any keywords file in %s. You can generate one with --keywords first or create the file indicated with --keywords-file"%repr(config.keywords_files))
 
     # Finds an existing languages_file
     # By default, uses 'languages.<lang>.json' or 'languages.json' in the config directory
