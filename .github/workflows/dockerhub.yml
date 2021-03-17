@@ -90,7 +90,7 @@ jobs:
             ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-to: type=local,dest=/tmp/.buildx-cache
 
     - name: Image digest
       run: echo ${{ steps.docker_build_alpine.outputs.digest }}
@@ -262,7 +262,7 @@ jobs:
             ${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-to: type=local,dest=/tmp/.buildx-cache
 
     - name: Image digest
       run: echo ${{ steps.docker_build_signal_debian.outputs.digest }}
