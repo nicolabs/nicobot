@@ -9,7 +9,32 @@ Docker images :
 [![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
 [![Docker debian][docker-debian-size] ![Docker signal-debian][docker-signal-debian-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
+<!-- toc -->
 
+- [About](#about)
+- [Requirements & installation](#requirements--installation)
+  * [Python package installation](#python-package-installation)
+  * [Installation from source](#installation-from-source)
+  * [Docker usage](#docker-usage)
+- [How to use the bots](#how-to-use-the-bots)
+  * [Transbot usage](#transbot-usage)
+  * [Quick start](#quick-start)
+    + [Main configuration options and files](#main-configuration-options-and-files)
+  * [Askbot usage](#askbot-usage)
+    + [Main configuration options](#main-configuration-options)
+    + [Examples](#examples)
+  * [Generic instructions](#generic-instructions)
+    + [Common options](#common-options)
+    + [Configuration file : config.yml](#configuration-file--configyml)
+    + [Using the Jabber/XMPP backend](#using-the-jabberxmpp-backend)
+    + [Using the Signal backend](#using-the-signal-backend)
+- [Common issues](#common-issues)
+  * [Couldn't load the OMEMO object](#couldnt-load-the-omemo-object)
+  * [ERROR No appropriate login method](#error---no-appropriate-login-method)
+  * [Authorization failed!](#authorization-failed)
+- [External resources](#external-resources)
+
+<!-- tocstop -->
 
 ## About
 

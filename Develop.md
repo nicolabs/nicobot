@@ -5,6 +5,24 @@
 [![Docker debian][docker-debian-size] ![Docker signal-debian][docker-signal-debian-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
 
+<!-- toc -->
+
+- [Basic development](#basic-development)
+  * [PyPi upload](#pypi-upload)
+  * [Automation for PyPi](#automation-for-pypi)
+- [Docker build](#docker-build)
+  * [Automation for Docker Hub](#automation-for-docker-hub)
+    + [Tagging strategy](#tagging-strategy)
+  * [Docker build process overview](#docker-build-process-overview)
+  * [Why no image is available for arch x ?](#why-no-image-is-available-for-arch-x-)
+  * [Docker image structure](#docker-image-structure)
+- [Deploying on AWS](#deploying-on-aws)
+- [Versioning](#versioning)
+- [Building signal-cli](#building-signal-cli)
+- [Resources](#resources)
+
+<!-- tocstop -->
+
 
 ## Basic development
 
