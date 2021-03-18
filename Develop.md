@@ -12,7 +12,7 @@
   * [Automation for PyPi](#automation-for-pypi)
 - [Docker build](#docker-build)
   * [Automation for Docker Hub](#automation-for-docker-hub)
-    + [Tagging strategy](#tagging-strategy)
+  * [Tagging strategy](#tagging-strategy)
   * [Docker build process overview](#docker-build-process-overview)
   * [Why no image is available for arch x ?](#why-no-image-is-available-for-arch-x-)
   * [Docker image structure](#docker-image-structure)
@@ -151,7 +151,7 @@ _Github actions_ are currently used (see [`.github/workflows/dockerhub.yml`](.gi
 2. Alpine images and Debian images are built in parallel to speed up things. Debian-signal is built after Debian. Caching is used for both. See [.github/workflows/dockerhub.yml](.github/workflows/dockerhub.yml).
 3. Images are uploaded to [Docker Hub](https://hub.docker.com/repository/docker/nicolabs/nicobot)
 
-#### Tagging strategy
+### Tagging strategy
 
 Since I could not find an easy way to generate exactly the tags I wanted, the `setup.py` script embeds a custom command to generate them from the git context (tag, commit) and the image variant :
 
@@ -169,7 +169,7 @@ It emphasizes *FROM* and *COPY* relations between the images (base and stages).
 
 ### Why no image is available for arch x ?
 
-[The open issues labelled with *docker*](https://github.com/nicolabs/nicobot/labels/docker) should reference the reasons for missing arch / configuration.
+You may find the reason for a missing CPU architecture / combination within [the open issues labelled with *docker*](https://github.com/nicolabs/nicobot/labels/docker).
 
 
 ### Docker image structure
