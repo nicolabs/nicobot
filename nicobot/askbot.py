@@ -167,6 +167,8 @@ def run( args=sys.argv[1:] ):
     # (because required arguments may have been set from the config file and not on the command line)
     #
 
+    log.debug( "Final configuration : %s", repr(obfuscate(vars(config))) )
+
     # Creates the chat engine depending on the 'backend' parameter
     chatter = BotArgsHelper.chatter(config)
 

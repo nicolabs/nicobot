@@ -696,6 +696,8 @@ def run( args=sys.argv[1:] ):
         should_exist=True,
         fallback_to=1 )[0]
 
+    log.debug( "Final configuration : %s", repr(obfuscate(vars(config))) )
+
     # Creates the chat engine depending on the 'backend' parameter
     chatter = BotArgsHelper.chatter(config)
 

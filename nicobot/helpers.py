@@ -148,6 +148,6 @@ def parse_args_2pass( parser, args, config ):
     config = parser.parse_args(args=args,namespace=config)
     # From the bootstrap parameters, only logging level may need to be read again
     configure_logging(config.verbosity,debug=config.debug)
-    log.debug( "Final configuration : %s", repr(obfuscate(vars(config))) )
+    log.debug( "Configuration after 2nd pass : %s", repr(obfuscate(vars(config))) )
 
     return config
