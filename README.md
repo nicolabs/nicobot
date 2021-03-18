@@ -18,7 +18,7 @@ Docker images :
   * [Docker usage](#docker-usage)
 - [How to use the bots](#how-to-use-the-bots)
   * [Transbot usage](#transbot-usage)
-  * [Quick start](#quick-start)
+    + [Quick start](#quick-start)
     + [Main configuration options and files](#main-configuration-options-and-files)
   * [Askbot usage](#askbot-usage)
     + [Main configuration options](#main-configuration-options)
@@ -29,9 +29,6 @@ Docker images :
     + [Using the Jabber/XMPP backend](#using-the-jabberxmpp-backend)
     + [Using the Signal backend](#using-the-signal-backend)
 - [Common issues](#common-issues)
-  * [Couldn't load the OMEMO object](#couldnt-load-the-omemo-object)
-  * [ERROR No appropriate login method](#error---no-appropriate-login-method)
-  * [Authorization failed!](#authorization-failed)
 - [External resources](#external-resources)
 
 <!-- tocstop -->
@@ -187,7 +184,7 @@ The sample configuration in `tests/transbot-sample-conf`, demoes how to make the
 Transbot can also pick a random language to translate into ; the sample configuration file shows how to make it translate messages containing "Hello" or "Goodbye" into a random language.
 
 
-### Quick start
+#### Quick start
 
 1. Install **nicobot** (see above)
 2. [Create a *Language Translator* service instance on IBM Cloud](https://cloud.ibm.com/catalog/services/language-translator) and [get the URL and API key from your console](https://cloud.ibm.com/resources?groups=resource-instance)
