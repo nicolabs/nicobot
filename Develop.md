@@ -35,17 +35,17 @@ To install the test package from test.pypi.org and check that it works :
 
     # First create a virtual environment not to mess with the host system
     python3 -m venv venv/pypi_test && source venv/pypi_test/bin/activate
-    
+
     # Then install dependencies using the regular pypi repo
     pip3 install -c constraints.txt -r requirements-runtime.txt
-    
+
     # Finally install this package from the test repo
     pip3 install -i https://test.pypi.org/simple/ --no-deps nicobot
-    
+
     # Do some test
     python -m nicobot.askbot -V
     ...
-    
+
     # Exit the virtual environment
     deactivate
 
@@ -176,35 +176,40 @@ Here are the main application files and directories inside the images :
        ┗ 📂 .signal-cli/  - - - - - - - - - - -> signal-cli configuration files
 
 
-## Deploy on AWS
+## Deploying on AWS
 
 This chapter describes a very simple way to deploy the bots on Amazon Web Services.
 There are many other methods and Cloud providers but you can build on this example to start implementing your specific case.
 
 Here is the process :
 
-1. Create an AWS account or reuse one
+1. Get an AWS account
 2. Install the latest Docker Desktop or [Docker Compose CLI with ECS support](https://docs.docker.com/cloud/ecs-integration/#install-the-docker-compose-cli-on-linux) (make sure to start a new shell if you've just installed it)
 3. Configure the AWS credentials (with `AWS_*` environnement variables or `~/.aws/credentials`)
 4. Create and switch your local docker to an 'ecs' context : `docker context create ecs myecs && docker context use myecs`
 5. Craft a `docker-compose.yml` file (see templates [tests/transbot-jabber.docker-compose.yml](tests/transbot-jabber.docker-compose.yml) and [tests/transbot-signal.docker-compose.yml](tests/transbot-signal.docker-compose.yml))
 6. Make sure you have the proper configuration files (only a `config.yml` is required in the given templates) and start the service : `docker compose up`
 
-If you follow the templates, this will deploy nicobot on AWS' *Fargate* with the config.yml file injected as a secret.
-It will use the writable layer of the container to download translation files and generate temporary files like OMEMO keys.
-If you use the signal backend it should print the QRCode to scan at startup ; you should also find the URI to manually generate it in the logs on *CloudWatch* console.
+If you follow the given templates :
 
-Once done, `docker compose down` will stop the bot by clearing everything from Fargate.
+- this will deploy *nicobot* on AWS' *Fargate*
+- the given `config.yml` file will be injected as a secret
+- it will use the writable layer of the container to download translation files and generate temporary files like OMEMO keys
+- if you use the *Signal* backend it should print the QRCode to scan at startup ; you should also find the URI to manually generate it in the logs on *CloudWatch* console
+- once done, `docker compose down` will stop the bot by clearing everything from AWS
 
-As this method relies on the *docker-compose* specification, it is very straightforward and also works on a developer workstation (simply replace `docker compose` with `docker-compose`).
+If you want to customize the image, you have the option to upload it to a private registry on AWS before deploying your stack :
+
+1. First make a copy of [tests/transbot-sample-conf/sample.env](tests/transbot-sample-conf/sample.env) and set the variables inside according to your needs. Let's say you've put it at `tests/transbot-sample-conf/aws.env`.
+Image-related variables should look like : `NICOBOT_IMAGE=123456789012.dkr.ecr.eu-west-1.amazonaws.com/nicobot` and `NICOBOT_BASE_IMAGE=123456789012.dkr.ecr.eu-west-1.amazonaws.com/nicobot:dev-signal-debian` (see [ECR docs](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html)
+2. Make sure to [authenticate against your private registry](https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html) - tip : use *Amazon ECR Docker Credential Helper* for a seamless integration with the *docker* command line
+2. Build the image with `docker-compose` (`docker compose` on AWS doesn't support *build* nor *push*) : `cd tests/transbot-sample-conf && docker-compose build`
+3. Push the image to your private AWS ECR[^1][^2] : `docker-compose --env-file aws.env push`
+4. Finally, deploy as before : `docker context use myecs && docker compose --env-file aws.env up`
+
+As this method relies on a standard *docker-compose* file, it is very straightforward and also works on a developer workstation (simply replace `docker compose` with `docker-compose`).
 However it cannot go beyond the supported mappings with *CloudFormation* templates (the native AWS deployment descriptor) and AWS's choice of services (Fargate, EFS, ...).
-
-More info :
-
-- [Deploying Docker containers on ECS (Docker's doc.)](https://docs.docker.com/cloud/ecs-integration/)
-- [Deploy applications on Amazon ECS using Docker Compose (Amazon's doc.)](https://aws.amazon.com/fr/blogs/containers/deploy-applications-on-amazon-ecs-using-docker-compose/)
-- [Amazon ECS on AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)
-
+In addition, as seen above, you currently have to use different commands (*docker-compose* / *docker compose*) to build & push or deploy.
 
 
 ## Versioning
@@ -232,6 +237,14 @@ This led to build separate images (same _repo_ but different _tags_), to allow u
 
 
 ## Resources
+
+### AWS
+
+- [Deploying Docker containers on ECS (Docker's doc.)](https://docs.docker.com/cloud/ecs-integration/)
+- [Deploy applications on Amazon ECS using Docker Compose (Amazon's doc.)](https://aws.amazon.com/fr/blogs/containers/deploy-applications-on-amazon-ecs-using-docker-compose/)
+- [Amazon ECS on AWS Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html)
+- [Amazon ECR | Private registry authentication](https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html)
+- [Amazon ECR | Pushing a Docker image](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html)
 
 ### IBM Cloud
 
