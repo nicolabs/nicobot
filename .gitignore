@@ -136,3 +136,5 @@ dmypy.json
 
 nicobot/version.py*
 deploy
+**/*.env
+!tests/transbot-sample-conf/sample.env

@@ -2,7 +2,7 @@
 # Global variables
 
 # Change this var to build from a local dev image for instance
-ARG NICOBOT_BASE_IMAGE=nicolabs/nicobot:debian
+ARG NICOBOT_DEBIAN_FROM=nicolabs/nicobot:debian
 
 
 ############################
@@ -101,7 +101,7 @@ RUN zip -d /opt/signal-cli/lib/zkgroup-java-*.jar libzkgroup.so
 # that inherits from the default nicobot (without signal support)
 #
 
-FROM ${NICOBOT_BASE_IMAGE}
+FROM ${NICOBOT_DEBIAN_FROM}
 
 ARG TARGETPLATFORM
 

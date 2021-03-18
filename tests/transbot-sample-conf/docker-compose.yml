@@ -1,0 +1,24 @@
+# For AWS integration see https://docs.docker.com/cloud/ecs-integration
+version: "3.9"
+
+services:
+  nicobot:
+    image: ${NICOBOT_DEPLOY_IMAGE:-nicolabs/nicobot:mydeploy}
+    build:
+      context: .
+      dockerfile: ${NICOBOT_DEPLOY_DOCKERFILE:-deploy.Dockerfile}
+      args:
+        NICOBOT_DEPLOY_BASE_IMAGE: ${NICOBOT_DEPLOY_BASE_IMAGE:-nicolabs/nicobot:signal-debian}
+    #image: nicolabs/nicobot:dev-signal-debian
+    # Overrides the command line to point to the injected files/volumes
+    command: "transbot --config-file /run/secrets/config.yml ${ARGS}"
+    # Allows printing the QRCode to terminal in order to link with a Signal device
+    # Not supported on AWS so look at the logs to get the URI to QR-encode
+    tty: true
+    secrets:
+      - config.yml
+
+secrets:
+  # Injects the local 'config.yml' file into the container as a docker secret (/run/secrets/*)
+  config.yml:
+    file: ${NICOBOT_CONFIG_FILE:-./config.yml}
