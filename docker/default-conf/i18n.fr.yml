@@ -29,4 +29,4 @@ fr:
 
     # Phrase clé pour éteindre le bot
     # Matching is made with case ignored
-    Shutdown: couché nicobot
+    Shutdown: couché @?nicobot

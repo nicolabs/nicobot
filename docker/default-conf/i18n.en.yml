@@ -30,4 +30,4 @@ en:
     # Key sentence that shuts the bot down
     # Matching is made with case ignored
     # TODO rename to pattern_Shutdown or command_shutdown to make it clear it's not a text to localize
-    Shutdown: bye nicobot
+    Shutdown: bye @?nicobot
