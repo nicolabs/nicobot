@@ -87,8 +87,8 @@ jobs:
           push: true
           tags: ${{ env.ALPINE_TAGS }}
           labels: |
-            ${{ env.NICOBOT_VERSION }}
-            ${{ github.sha }}
+            version=${{ env.NICOBOT_VERSION }}
+            github.sha:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -173,8 +173,8 @@ jobs:
           push: true
           tags: ${{ env.DEBIAN_TAGS }}
           labels: |
-            ${{ env.NICOBOT_VERSION }}
-            ${{ github.sha }}
+            version=${{ env.NICOBOT_VERSION }}
+            github.sha:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
@@ -261,8 +261,8 @@ jobs:
           push: true
           tags: ${{ env.SIGNAL_DEBIAN_TAGS }}
           labels: |
-            ${{ env.NICOBOT_VERSION }}
-            ${{ github.sha }}
+            version=${{ env.NICOBOT_VERSION }}
+            github.sha:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           # mode=max to cache intermediate layers : https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
           cache-to: type=local,dest=/tmp/.buildx-cache
