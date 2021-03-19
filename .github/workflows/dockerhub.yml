@@ -64,7 +64,8 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-alpine-${{ github.sha }}
+          # Change CACHE_VERSION to clear all caches ; see https://github.community/t/how-to-clear-cache-in-github-actions/129038/5
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-buildx-alpine-${{ github.sha }}
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-alpine-
@@ -149,7 +150,8 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-debian-debian-${{ github.sha }}
+          # Change CACHE_VERSION to clear all caches ; see https://github.community/t/how-to-clear-cache-in-github-actions/129038/5
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-buildx-debian-debian-${{ github.sha }}
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-debian-
@@ -234,7 +236,8 @@ jobs:
       uses: actions/cache@v2
       with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-debian-signaldebian-${{ github.sha }}
+          # Change CACHE_VERSION to clear all caches ; see https://github.community/t/how-to-clear-cache-in-github-actions/129038/5
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-buildx-debian-signaldebian-${{ github.sha }}
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
           restore-keys: |
             ${{ runner.os }}-buildx-debian-
