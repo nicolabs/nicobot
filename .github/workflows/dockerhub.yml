@@ -103,7 +103,7 @@ jobs:
     environment: prod
     runs-on: ubuntu-latest
     outputs:
-      digest: ${{ env.DEBIAN_TAGS }}
+      digest: ${{ steps.docker_build_debian.outputs.digest }}
     steps:
 
     - name: Checkout
