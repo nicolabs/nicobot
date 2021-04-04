@@ -264,7 +264,7 @@ jobs:
           context: ./
           file: ./signal-debian.Dockerfile
           build-args: |
-            NICOBOT_DEBIAN_FROM=nicolabs/nicobot:${{ env.NICOBOT_DEBIAN_FROM }}
+            NICOBOT_DEBIAN_FROM=${{ env.NICOBOT_DEBIAN_FROM }}
           builder: ${{ steps.buildx.outputs.name }}
           platforms: linux/arm/v7,linux/arm64,linux/386,linux/amd64
           push: true
