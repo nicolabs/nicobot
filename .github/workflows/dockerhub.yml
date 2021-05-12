@@ -80,7 +80,7 @@ jobs:
 
     - name: Build and push alpine
       id: docker_build_alpine
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v2.4.0
       with:
           context: ./
           file: ./alpine.Dockerfile
@@ -169,7 +169,7 @@ jobs:
 
     - name: Build and push debian
       id: docker_build_debian
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v2.4.0
       with:
           context: ./
           file: ./debian.Dockerfile
@@ -259,7 +259,7 @@ jobs:
 
     - name: Build and push signal-debian
       id: docker_build_signal_debian
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v2.4.0
       with:
           context: ./
           file: ./signal-debian.Dockerfile
