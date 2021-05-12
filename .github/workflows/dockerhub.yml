@@ -49,7 +49,7 @@ jobs:
     ##############
 
     - name: Set up QEMU for multiarch
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v1.1.0
 
     - name: Set up Docker Buildx
       id: buildx
@@ -138,7 +138,7 @@ jobs:
     ##############
 
     - name: Set up QEMU for multiarch
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v1.1.0
 
     - name: Set up Docker Buildx
       id: buildx
@@ -228,7 +228,7 @@ jobs:
     ##############
 
     - name: Set up QEMU for multiarch
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v1.1.0
 
     - name: Set up Docker Buildx
       id: buildx
