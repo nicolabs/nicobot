@@ -63,7 +63,7 @@ jobs:
         sudo apt clean
 
     - name: Set up cache for Docker layers layers
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v3.0.6
       with:
           path: /tmp/.buildx-cache
           # Change CACHE_VERSION to clear all caches ; see https://github.community/t/how-to-clear-cache-in-github-actions/129038/5
@@ -152,7 +152,7 @@ jobs:
         sudo apt clean
 
     - name: Set up cache for Docker layers layers
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v3.0.6
       with:
           path: /tmp/.buildx-cache
           # Change CACHE_VERSION to clear all caches ; see https://github.community/t/how-to-clear-cache-in-github-actions/129038/5
@@ -242,7 +242,7 @@ jobs:
         sudo apt clean
 
     - name: Set up cache for Docker layers layers
-      uses: actions/cache@v2.1.4
+      uses: actions/cache@v3.0.6
       with:
           path: /tmp/.buildx-cache
           # Change CACHE_VERSION to clear all caches ; see https://github.community/t/how-to-clear-cache-in-github-actions/129038/5
