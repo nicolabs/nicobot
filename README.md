@@ -1,15 +1,8 @@
 # nicobot
 
+[![GitHub repo](https://img.shields.io/badge/GitHub-source-pink.svg?logo=github)](https://github.com/nicolabs/musiccast-repairkit) [![Build Status on 'master' branch][travisci-shield]][travisci-link] [![PyPi][pypi-shield]][pypi-link]
+[![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link] [![Docker debian][docker-debian-size] ![Docker signal-debian][docker-signal-debian-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 [![Buy us a tree](https://img.shields.io/badge/Plant%20trees-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/nicolabs/nicobot)
-
-Python package :
-
-[![Build Status on 'master' branch][travisci-shield]][travisci-link] [![PyPi][pypi-shield]][pypi-link]
-
-Docker images :
-
-[![Build and publish to Docker Hub][dockerhub-shield]][dockerhub-link]  
-[![Docker debian][docker-debian-size] ![Docker signal-debian][docker-signal-debian-size] ![Docker alpine][docker-alpine-size]](https://hub.docker.com/r/nicolabs/nicobot/tags)
 
 <!-- toc -->
 
